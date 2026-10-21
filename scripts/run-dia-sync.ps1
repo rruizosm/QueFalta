@@ -38,10 +38,13 @@ if (-not $role) { throw "Falta SUPABASE_SERVICE_ROLE en .env.local (agrega la se
 $env:SUPABASE_URL          = $url
 $env:SUPABASE_SERVICE_ROLE = $role
 $env:CONCURRENCY           = '4'
+# Este lanzador siempre publica. Evita heredar un DRY_RUN=1 de la consola
+# interactiva o de otro proceso que invoque la tarea.
+Remove-Item Env:DRY_RUN -ErrorAction SilentlyContinue
 
 # --- Ejecutar el sync ---
 Set-Location $repo
-"=== Dia sync $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log
+"=== Dia sync $(Get-Date -Format 'u') (publicación; DRY_RUN desactivado) ===" | Tee-Object -FilePath $log
 # Windows PowerShell 5.1 convierte el stderr de Node en NativeCommandError al
 # mezclarlo con *>&1; con ErrorActionPreference=Stop abortaría ante un aviso.
 # cmd.exe mezcla ambos flujos antes de entregarlos a PowerShell, conservando

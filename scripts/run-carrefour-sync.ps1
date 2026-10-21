@@ -6,6 +6,8 @@
 #   EXPO_PUBLIC_SUPABASE_URL=...     (ya lo tienes; se usa como SUPABASE_URL)
 #   SUPABASE_SERVICE_ROLE=...        (AÑÁDELO: la service_role key, la misma del secret de GitHub)
 
+param([switch]$SkipDetail)
+
 $ErrorActionPreference = 'Stop'
 
 $repo   = Split-Path -Parent $PSScriptRoot          # ...\MercaAppMobile
@@ -39,12 +41,18 @@ $env:CONCURRENCY           = '4'
 # así que aunque la ficha se corte el catálogo queda a salvo; el backlog se drena en ~3 runs
 # semanales (DETAIL_TTL_DAYS=30). Súbelo/quítalo (Infinity) si amplías el límite de la tarea.
 if (-not $env:DETAIL_MAX) { $env:DETAIL_MAX = '6000' }
+$previousSkipDetail = $env:SKIP_DETAIL
+if ($SkipDetail) { $env:SKIP_DETAIL = '1' }
 
 # --- Ejecutar el sync ---
 Set-Location $repo
 "=== Carrefour sync $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log
-& node scripts/sync-carrefour.mjs *>&1 | Tee-Object -FilePath $log -Append
-$code = $LASTEXITCODE
+try {
+  & cmd.exe /d /c 'node scripts/sync-carrefour.mjs 2>&1' | Tee-Object -FilePath $log -Append
+  $code = $LASTEXITCODE
+} finally {
+  $env:SKIP_DETAIL = $previousSkipDetail
+}
 if ($code -eq 0 -and $env:DRY_RUN -ne '1') {
   "=== Actualizando comparador (carrefour) ===" | Tee-Object -FilePath $log -Append
   $env:STORES = 'carrefour'

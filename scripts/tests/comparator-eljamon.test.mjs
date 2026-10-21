@@ -9,6 +9,11 @@ const worker = read('../../supabase/functions/catalog-embed/index.ts');
 const workflow = read('../../.github/workflows/sync-eljamon.yml');
 const component = read('../../src/components/SimilarProductsSection.tsx');
 
+test('el workflow de El Jamón se programa cada lunes y conserva el disparo manual', () => {
+  assert.match(workflow, /schedule:\s*\n\s*- cron: '35 14 \* \* 1'/);
+  assert.match(workflow, /workflow_dispatch/);
+});
+
 test('El Jamón materializa solo productos publicables con precio canónico', () => {
   assert.match(migration, /create or replace view public\.eljamon_comparator_products/i);
   assert.match(migration, /from public\.eljamon_products/i);

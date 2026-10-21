@@ -6,8 +6,10 @@ import { jsx, jsxs } from 'react/jsx-runtime';
 
 function gesture() {
   const handlers = {};
-  const chain = new Proxy({ handlers }, { get: (target, key) => key === 'handlers' ? handlers : (callback) => {
+  const options = {};
+  const chain = new Proxy({ handlers, options }, { get: (target, key) => key in target ? target[key] : (callback) => {
     if (key.startsWith('on')) handlers[key] = callback;
+    else options[key] = callback;
     return chain;
   } });
   return chain;
@@ -43,6 +45,7 @@ const dependencies = {
   '../context/LanguageContext': { useTranslation: () => ({ t: (key) => key }) },
   '../context/ThemeContext': { useThemedStyles: (factory) => factory(), useTheme: () => ({ scheme: 'light' }) },
   '../lib/pantryLayout': layout,
+  './PantryShelfLabel': 'PantryShelfLabel',
   './bottom-tabs-pager/PagerGestureContext': { PagerGestureContext: {} },
 };
 function loadComponent(name) {
@@ -62,6 +65,54 @@ dependencies['./PantryWoodShelf'] = loadComponent('PantryWoodShelf');
 const PantryShelf = loadComponent('PantryShelf').default;
 const expectedShelfWidthRatio = 1.12;
 const canvasWidth = 370 / expectedShelfWidthRatio;
+
+test('label editing disables pan, tap, add slots and accessibility actions without changing visual positions', () => {
+  const item = { instanceId: 'locked', product: { id: '10699', name: 'Leche', illustrationUrl: 'https://example.com/milk.png' },
+    ...layout.defaultPantryPlacement(0) };
+  let actions = 0;
+  const props = { items: [item], shelfCount: 4, selectedId: null, onSelect: () => actions++, onPlace: () => actions++,
+    canAdd: true, onAddAt: () => actions++, scrollGesture: gesture(), onChangeShelfLabel() {} };
+  const noLabels = nodes(PantryShelf({ ...props, onChangeShelfLabel: undefined }));
+  const normal = nodes(PantryShelf({ ...props, shelfLabels: { 0: { name: 'Básicos', emoji: null } } }));
+  const editing = nodes(PantryShelf({ ...props, shelfLabels: { 0: { name: 'Básicos', emoji: null } }, editingLabels: true }));
+  assert.equal(noLabels.filter((node) => node.type === 'PantryShelfLabel').length, 0);
+  assert.equal(normal.filter((node) => node.type === 'PantryShelfLabel').length, 1);
+  assert.ok(normal.find((node) => node.props.testID === 'pantry-canvas').props.style.height
+    > noLabels.find((node) => node.props.testID === 'pantry-canvas').props.style.height);
+  const product = editing.find((node) => node.props.testID === 'pantry-item-locked');
+  assert.equal(product.props.pointerEvents, 'none');
+  assert.equal(product.props.accessibilityState.disabled, true);
+  assert.deepEqual(product.props.accessibilityActions, []);
+  for (const actionName of ['activate', 'left', 'shelfDown']) product.props.onAccessibilityAction({ nativeEvent: { actionName } });
+  const gestures = editing.find((node) => node.type === 'GestureDetector').props.gesture;
+  assert.ok(gestures.every((g) => g.options.enabled === false));
+  gestures[1].handlers.onEnd({}, true);
+  assert.equal(actions, 0);
+  assert.equal(editing.filter((node) => node.props.testID?.startsWith('pantry-slot-')).length, 0);
+  assert.equal(editing.filter((node) => node.type === 'PantryShelfLabel').length, 4);
+  assert.deepEqual(frameStyle(product).evaluate(), frameStyle(normal.find((node) => node.props.testID === 'pantry-item-locked')).evaluate());
+});
+
+test('dragging between labeled shelves maps visible row spacing back into saved shelf coordinates', () => {
+  const item = { instanceId: 'moving', product: { id: '10699', name: 'Leche', illustrationUrl: 'https://example.com/milk.png' },
+    ...layout.defaultPantryPlacement(0) };
+  const commits = [];
+  const tree = nodes(PantryShelf({ items: [item], shelfCount: 6, selectedId: null, onSelect() {},
+    onPlace: (_id, placement) => commits.push(placement), canAdd: true, scrollGesture: gesture(), onChangeShelfLabel() {},
+    shelfLabels: { 0: { name: 'Desayuno', emoji: '🥣' } } }));
+  const drag = tree.find((node) => node.type === 'GestureDetector').props.gesture[0].handlers;
+  const headerHeight = tree.find((node) => node.type === 'PantryShelfLabel').props.editing === false ? 52 : NaN;
+  const height = canvasWidth / layout.PANTRY_ASPECT_RATIO;
+  drag.onStart();
+  drag.onUpdate({ translationX: 0, translationY: 4 * layout.PANTRY_SHELF_SPACING_Y * height + headerHeight });
+  drag.onFinalize({}, true);
+  assert.equal(commits[0].shelfIndex, 4);
+  assert.equal(commits[0].size, item.size);
+  assert.equal(commits[0].x, item.x);
+  const product = tree.find((node) => node.props.testID === 'pantry-item-moving');
+  const box = frameStyle(product).evaluate();
+  assert.ok(Math.abs(box.top + box.height - (layout.pantryShelfSurfaceY(4) * height + headerHeight)) < 1e-9);
+});
 
 // Hit rectangles include the fixed frame and the UI-thread translation.
 function frameStyle(product) {
@@ -160,6 +211,16 @@ test('pantry draws three evenly spaced wooden shelves without adding decorative 
   assert.deepEqual(selectedSlots[1], layout.pantrySlotPlacement(2, 1));
   slots[12].props.onPress();
   assert.deepEqual(selectedSlots[2], layout.pantrySlotPlacement(2, 2));
+});
+
+test('pantry can hide add targets while keeping the shelves and products visible', () => {
+  const item = { instanceId: 'milk', product: { id: '10699', name: 'Leche', illustrationUrl: 'https://example.com/milk.png' },
+    ...layout.pantrySlotPlacement(2) };
+  const tree = nodes(PantryShelf({ items: [item], selectedId: null, onSelect() {}, onPlace() {},
+    onAddAt() {}, canAdd: true, showAddSlots: false, scrollGesture: gesture() }));
+  assert.equal(tree.filter((node) => node.props.testID?.startsWith('pantry-slot-')).length, 0);
+  assert.equal(tree.filter((node) => node.props.testID === 'pantry-wood-shelf').length, 3);
+  assert.ok(tree.some((node) => node.props.testID === 'pantry-item-milk'));
 });
 
 test('products render on the shelf even with a legacy vertical position', () => {

@@ -94,8 +94,9 @@ el explorador, incorporarlo al sync y mantener en paridad las referencias en:
 - `src/constants/retailerZones.ts`, guardia visible del cliente.
 
 La prueba `scripts/tests/bm-app-integration.test.mjs` falla si ambas listas dejan
-de coincidir. El workflow productivo continúa manual hasta que se valide su
-operación recurrente.
+de coincidir. El workflow productivo se ejecuta automáticamente los lunes a
+las 12:15 UTC y conserva el disparo manual. Las siete zonas y la primera carga
+productiva ya están validadas.
 
 ## Validación de la fuente nutricional (2026-09-28)
 

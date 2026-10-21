@@ -7,7 +7,7 @@
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      LIDL_FLEET_JOB_LIMIT=10
 //      LIDL_FLEET_LEASE_MINUTES=45, LIDL_FLEET_STORE_TIMEOUT_MINUTES=35
-//      LIDL_FLEET_MAX_ATTEMPTS=3
+//      LIDL_FLEET_MAX_ATTEMPTS=1 (sin reintentos automáticos de tienda)
 // Uso: node scripts/sync-lidl-fleet.mjs [--schedule-only|--work-only]
 import { spawn } from 'node:child_process';
 import { hostname, tmpdir } from 'node:os';
@@ -46,10 +46,10 @@ function integerEnv(name, fallback, min, max) {
   return parsed;
 }
 
-const JOB_LIMIT = integerEnv('LIDL_FLEET_JOB_LIMIT', 10, 1, 100);
+const JOB_LIMIT = integerEnv('LIDL_FLEET_JOB_LIMIT', 10, 1, 300);
 const LEASE_MINUTES = integerEnv('LIDL_FLEET_LEASE_MINUTES', 45, 5, 120);
 const STORE_TIMEOUT_MINUTES = integerEnv('LIDL_FLEET_STORE_TIMEOUT_MINUTES', 35, 1, 115);
-const MAX_ATTEMPTS = integerEnv('LIDL_FLEET_MAX_ATTEMPTS', 3, 1, 10);
+const MAX_ATTEMPTS = integerEnv('LIDL_FLEET_MAX_ATTEMPTS', 1, 1, 10);
 const SHOULD_SCHEDULE = args.size === 0 || args.has('--schedule-only');
 const SHOULD_WORK = args.size === 0 || args.has('--work-only') || args.has('--recover-only');
 
@@ -62,7 +62,7 @@ function parseStoreIds(raw) {
 
 const STORE_IDS = parseStoreIds(process.env.LIDL_FLEET_STORE_IDS);
 if (SHOULD_SCHEDULE && STORE_IDS) throw new Error('El filtro de tiendas solo se admite en recuperación');
-const IDLE_MINUTES = integerEnv('LIDL_FLEET_IDLE_MINUTES', 35, 0, 60);
+const IDLE_MINUTES = integerEnv('LIDL_FLEET_IDLE_MINUTES', 0, 0, 60);
 const WORK_MINUTES = integerEnv('LIDL_FLEET_WORK_MINUTES', 300, 1, 330);
 const ACCESS_FAILURE_LIMIT = integerEnv('LIDL_FLEET_ACCESS_FAILURE_LIMIT', 2, 1, 10);
 const MASTER_STORE_ID = String(process.env.LIDL_MASTER_STORE_ID || 'ES3572').trim().toUpperCase();
@@ -79,7 +79,7 @@ if (!/^ES\d+$/.test(MASTER_STORE_ID)) throw new Error('LIDL_MASTER_STORE_ID inv�
 function workerId() {
   const parts = [
     'lidl',
-    process.env.GITHUB_RUN_ID || hostname(),
+    process.env.LIDL_FLEET_RUN_ID || process.env.GITHUB_RUN_ID || hostname(),
     process.env.GITHUB_RUN_ATTEMPT || 'local',
     process.env.LIDL_FLEET_WORKER_INDEX || process.pid,
   ];

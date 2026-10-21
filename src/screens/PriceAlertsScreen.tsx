@@ -141,12 +141,6 @@ export default function PriceAlertsScreen() {
         contentContainerStyle={[styles.content, { paddingTop: headerTop + 66, paddingBottom: bottomPad }]}
       >
         <Text style={styles.intro}>{t('priceAlerts.intro')}</Text>
-        {freeLimitsApply ? (
-          <View style={styles.freeAllowance}>
-            <Ionicons name="gift-outline" size={17} color={colors.accent} />
-            <Text style={styles.freeAllowanceText}>{t('priceAlerts.freeAllowance')}</Text>
-          </View>
-        ) : null}
 
         {loading ? (
           <ActivityIndicator size="large" color={colors.accent} style={styles.loader} />
@@ -235,8 +229,6 @@ const themedStyles = () => StyleSheet.create({
   content: { paddingHorizontal: 14 },
   headerAdd: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent },
   intro: { fontSize: 13, lineHeight: 19, fontFamily: fonts.medium, color: colors.inkSoft, marginBottom: 14 },
-  freeAllowance: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 13, paddingHorizontal: 11, paddingVertical: 10, backgroundColor: colors.accentLight, borderWidth: 1, borderColor: colors.accentMid, marginBottom: 14 },
-  freeAllowanceText: { flex: 1, fontSize: 11.5, lineHeight: 16, fontFamily: fonts.semibold, color: colors.accent },
   loader: { marginTop: 70 },
   empty: { alignItems: 'center', paddingHorizontal: 26, paddingTop: 72 },
   emptyIcon: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight, marginBottom: 14 },

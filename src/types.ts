@@ -42,6 +42,8 @@ export interface MercadonaProduct {
   id: string;
   slug: string;
   display_name: string;
+  /** Coincidencia de nombre en ES/CA calculada por el espejo para el filtro «Sin gluten». */
+  glutenFreeByName?: boolean;
   packaging: string;
   thumbnail: string;
   price_instructions: PriceInstructions;

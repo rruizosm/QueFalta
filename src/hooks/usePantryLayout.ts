@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { normalizePantryItems, PANTRY_DEFAULT_SHELF_COUNT, type PantryItem, type PantryLayout, type PantrySection } from '../lib/pantryLayout';
+import { normalizePantryItems, updatePantryShelfLabel, PANTRY_DEFAULT_SHELF_COUNT,
+  type PantryItem, type PantryLayout, type PantrySection, type PantryShelfLabel } from '../lib/pantryLayout';
 import { readPantryLayout, writePantryLayout } from '../lib/pantryStorage';
 
 /** The owning screen is keyed by account and keeps one stable hook instance per section. */
@@ -49,14 +50,39 @@ export function usePantryLayout(userId: string | null, section: PantrySection = 
   const addShelf = useCallback(() => {
     if (!mounted.current || !ready || !userId) return;
     const shelfCount = current.current.shelfCount + 1;
-    const next = { shelfCount, items: normalizePantryItems(current.current.items, shelfCount) };
+    const next = { ...current.current, shelfCount, items: normalizePantryItems(current.current.items, shelfCount) };
+    current.current = next;
+    setLayout(next);
+    persist(next);
+  }, [persist, ready, userId]);
+
+  const setShelfLabel = useCallback((index: number, label: PantryShelfLabel | null) => {
+    if (!mounted.current || !ready || !userId) return;
+    const next = updatePantryShelfLabel(current.current, index, label);
+    if (next === current.current) return;
+    current.current = next;
+    setLayout(next);
+    persist(next);
+  }, [persist, ready, userId]);
+
+  const setKitchenLocations = useCallback((kitchenLocations: string[], previousLocations: string[], removedIndex?: number) => {
+    if (!mounted.current || !ready || !userId) return;
+    const items = current.current.items.map((item) => {
+      if (removedIndex !== undefined) {
+        return item.kitchenLocation === previousLocations[removedIndex] ? { ...item, kitchenLocation: '' } : item;
+      }
+      const index = previousLocations.indexOf(item.kitchenLocation ?? '');
+      return index >= 0 && kitchenLocations[index] !== undefined && kitchenLocations[index] !== item.kitchenLocation
+        ? { ...item, kitchenLocation: kitchenLocations[index] } : item;
+    });
+    const next = { ...current.current, items, kitchenLocations };
     current.current = next;
     setLayout(next);
     persist(next);
   }, [persist, ready, userId]);
 
   return {
-    ...layout, ready, loadError, saveError, update, addShelf,
+    ...layout, ready, loadError, saveError, update, addShelf, setShelfLabel, setKitchenLocations,
     retryLoad: () => setAttempt((n) => n + 1),
     retrySave: () => persist(current.current),
   };

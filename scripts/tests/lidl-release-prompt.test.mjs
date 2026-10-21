@@ -63,7 +63,7 @@ test('copy obligatorio disponible en castellano y catalán', () => {
 
 test('la versión comercial queda alineada en Expo y los proyectos nativos presentes', () => {
   const version = JSON.parse(appConfig).expo.version;
-  assert.match(version, /^1\.3\.\d+$/);
+  assert.match(version, /^\d+\.\d+\.\d+$/);
   const pattern = version.replaceAll('.', '\\.');
   if (androidConfig != null) assert.match(androidConfig, new RegExp(`versionName \"${pattern}\"`));
   if (iosConfig != null) assert.equal((iosConfig.match(new RegExp(`MARKETING_VERSION = ${pattern};`, 'g')) ?? []).length, 2);

@@ -6,6 +6,13 @@ ni una autorización comercial: son los endpoints que utiliza la web pública.
 
 Base: `https://www.compraonline.alcampo.es`.
 
+Actualización 15-10-2026: el [runner local](README-alcampo-playwright.md) integra
+este cliente para directorios y detalles de ofertas; Playwright queda reservado
+al catálogo. El probe de este documento sigue siendo una comprobación separada
+de solo lectura. La comprobación de hoy completó el directorio global: 4.192
+productos únicos, 14 páginas y 601 identificadores de promoción, en Vaguada.
+Se comprobó un detalle de campaña; no se han descargado los 601 detalles.
+
 | Datos | Método y ruta | Resultado real |
 | --- | --- | --- |
 | Árbol de categorías | GET `/api/webproductpagews/v1/categories?decoration=false&categoryDepth=6` | 200; 28 raíces, 4.513 nodos contando apariciones en ramas |
@@ -94,10 +101,10 @@ lado. No se ha probado ningún proxy; no hay proxy configurado en las variables
 HTTP_PROXY/HTTPS_PROXY/ALL_PROXY del proceso de prueba.
 
 El acceso general necesita una sesión que Alcampo acepte o un acceso facilitado
-por el proveedor. El runner existente de
-[navegador](README-alcampo-playwright.md) sigue siendo una vía separada para el
-catálogo. Esta prueba no lo sustituye, no automatiza verificaciones humanas,
-no despliega cambios y no ejecuta migraciones ni escrituras en producción.
+por el proveedor. El [runner híbrido](README-alcampo-playwright.md) mantiene el
+navegador para el catálogo y utiliza esta API para ofertas, exigiendo que ambas
+regiones coincidan. El probe no ejecuta ese runner, no despliega cambios y no
+ejecuta migraciones ni escrituras en producción.
 
 ### Vías externas para desbloquear el catálogo
 

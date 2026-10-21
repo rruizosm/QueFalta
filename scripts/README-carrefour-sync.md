@@ -1,5 +1,125 @@
 # Sync de Carrefour — tarea programada en tu PC
 
+## Corrección de ofertas (2026-09-26, local)
+
+El sync distingue `badge_map.promotions` de `campaign`/`highlighted`. No convierte
+Air Fryer, Innovación, Novedad ni etiquetas genéricas de precio en ofertas. Un
+badge antiguo sin mapa tipado solo se acepta si describe una mecánica económica
+reconocida. Los originales se mantienen en `raw` para revisar etiquetas nuevas.
+
+Se procesan todas las promociones reconocidas, se deduplican y se selecciona una
+vigente para las columnas existentes. Prioridad de presentación: multicompras,
+segunda unidad, descuento, Club/cupón. Es una prioridad estable, no un cálculo del
+mayor ahorro. Envío gratis se conserva como beneficio adicional; por sí solo no
+crea una oferta de producto. Las fechas se comparan en Europe/Madrid, inclusive;
+se descartan fechas inválidas y se guardan promociones futuras/caducadas en los
+metadatos, sin ponerlas en las columnas de oferta vigente. Una fecha estructurada
+prevalece sobre el texto; si falta, se intenta leer `Válido del DD/MM/YYYY al ...`.
+El tachado solo se guarda cuando supera el precio actual.
+
+### Contrato para el cliente (sin cambios de app ni migración)
+
+- Se conservan `promo_name`, `promo_text`, `promo_start`, `promo_end` y
+  `strikethrough_price`. Se envían nulos explícitos para limpiar falsas ofertas.
+- `raw.quefalta_offers = { version: 1, observed_at, promotions: [...] }` contiene
+  las promociones normalizadas de la zona base (primera zona donde se encontró
+  el producto, normalmente Madrid). Se conservan además los campos raw originales.
+- Cada promoción tiene `{ name, text, start, end, kind, link }`. `start`/`end`
+  son ISO o null; `kind` es `multibuy`, `second_unit`, `discount`, `club` o
+  `shipping`. El cliente debe reevaluar vigencia: el array incluye futuras y
+  caducadas. No sumar beneficios automáticamente ni convertir Club en descuento
+  inmediato. Las condiciones del texto pueden limitar cantidades/combinaciones.
+- `regional_prices[CCAA]` conserva `p,pf,ppu,ppuu,av` y añade
+  `offers: { version: 1, observed_at, promo_name, promo_text, promo_start,
+  promo_end, strikethrough_price, promotions }`.
+- Ahora se guarda un override cuando cambia el precio **o la promoción**.
+  `offers.promotions: []` significa que no hay promoción en esa zona: NO heredar
+  la base. Si no hay override y existe metadata v1 base, la zona hereda la base
+  (siempre aplicar `regions` para la disponibilidad). Si hay un override antiguo
+  sin `offers`, no se puede afirmar cuál es su oferta regional.
+- Para leer la base, proyectar solo `raw->quefalta_offers` mediante la API, no
+  descargar todo `raw` en el catálogo. El cliente actual sigue mostrando su
+  promoción escalar base; aprovechar varias promociones y las regionales requiere
+  el trabajo separado en el Mac, incluidos filtros/contadores/paginación.
+
+### Cobertura y ejecución
+
+El extractor respeta strings JSON y ya no excluye productos de más de 4 KB.
+La cobertura se comprueba por recorrido de offsets, no por igualdad entre IDs
+únicos y `total_results`: una discrepancia se registra como información. Una
+página final que solo repite algún producto ya visto es válida si no replica
+una página completa anterior. Se reintenta dos veces la misma página ante
+total desconocido, offset incorrecto, respuesta vacía antes del final, repetición
+de una página completa o error de descarga. Se comprueban HTTP 200 y la URL final:
+una redirección a la portada u otra categoría no se acepta como listado ni como
+categoría vacía. Quitar `offset=0` en la URL canónica de la misma categoría sí es
+válido. Las páginas de una categoría solo se incorporan tras validar su recorrido.
+
+Si una categoría falla en alguna zona, **el resto del barrido se publica** y acaba
+con `OK PARCIAL`/exit 0, para que el runner actualice también el comparador. Se
+conservan esa categoría en todas las zonas y sus productos anteriores completos
+(incluidos precios, ofertas, regiones, ficha y fecha). También se protegen los
+productos compartidos con otras categorías según la pertenencia ya guardada;
+no se incorporan nuevos productos de las categorías pendientes. Antes de escribir,
+se leen sus IDs desde Supabase, por `category_ids` o el `category_id` antiguo.
+Un fallo de esa lectura impide publicar para evitar sobrescribir datos sin saber
+qué productos deben conservarse. En DRY_RUN se filtran los productos observados
+de las categorías fallidas, pero no se consulta Supabase para proteger IDs previos.
+
+En un barrido parcial se omite la despublicación global de productos/categorías,
+y `catalog_sync_status` conserva la fecha del **último barrido completo**. El log
+detalla cada fallo categoría/zona, las categorías pendientes, los IDs previos
+protegidos y los productos omitidos. Un barrido sin productos validados sigue
+fallando sin escribir. Al completar un barrido posterior vuelve la limpieza normal
+de ausentes y se actualiza la fecha global.
+
+Se respeta el total anunciado en cada página, que puede cambiar durante el
+recorrido. Los límites `MAX_ZONES` y
+`MAX_CATEGORIES` solo permiten `DRY_RUN=1`. `ONLY_CATEGORY` sigue siendo parcial
+sin borrado global. Estos controles no garantizan cobertura completa por sí solos:
+los patrocinados y cambios del catálogo durante un barrido requieren contrastar
+un piloto real. La resolución de zonas mantiene su comportamiento anterior.
+
+Pruebas offline:
+
+```powershell
+node --test scripts/tests/carrefour-offers.test.mjs scripts/tests/carrefour-sync-resilience.test.mjs scripts/lib/carrefour-product-detail.test.mjs
+```
+
+La corrección NO ha ejecutado un sync, modificado datos remotos ni cambiado la
+tarea de Windows. Las etiquetas existentes se limpian cuando se publica el
+siguiente barrido corregido. No reejecutar el backfill antiguo de
+`carrefour_offers.sql`: volvería a copiar indiscriminadamente `badge.name`.
+
+### Frecuencia de actualización
+
+Un sync semanal no cubre campañas que empiezan entre semana. Para explotación,
+usar un barrido diario de catálogo/precios/ofertas y mantener el enriquecimiento
+nutricional semanal. El runner acepta `-SkipDetail` (equivale a `SKIP_DETAIL=1`
+solo durante esa ejecución), conserva la actualización del comparador y no añade
+un nuevo mecanismo de descarga. Sigue recorriendo todas las categorías y zonas;
+no es un crawler rápido exclusivo de campañas.
+
+Ejecución manual, cuando se quiera publicar el refresco:
+
+```powershell
+.\scripts\run-carrefour-sync.ps1 -SkipDetail
+```
+
+Para una tarea diaria adicional, después de revisar la ventana de ejecución:
+
+```powershell
+$carrefourRunner = Join-Path (Get-Location) 'scripts\run-carrefour-sync.ps1'
+$carrefourAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$carrefourRunner`" -SkipDetail"
+$carrefourTrigger = New-ScheduledTaskTrigger -Daily -At 16:00
+$carrefourSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 4) -MultipleInstances IgnoreNew
+Register-ScheduledTask -TaskName 'QueFalta - Carrefour precios y ofertas diario' -Action $carrefourAction -Trigger $carrefourTrigger -Settings $carrefourSettings
+```
+
+Ejecutar desde MercaAppMobile. Evitar solapar esta tarea con el barrido semanal u
+otro sync Carrefour; IgnoreNew solo impide duplicados de la misma tarea. La
+programación diaria requiere que el PC esté disponible, igual que la semanal.
+
 Carrefour está detrás de **Cloudflare**, que bloquea con un **403** las IPs de
 datacenter de GitHub Actions. Tu IP residencial española **sí** pasa, así que el
 sync de Carrefour se ejecuta desde tu PC con una Tarea Programada de Windows

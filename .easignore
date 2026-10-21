@@ -1,0 +1,81 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# Config de Firebase (FCM Android). Fuera del repo público (GitHub secret
+# scanning avisó de la API key en el commit 1a6032c). Los builds de EAS la
+# reciben vía la file env var GOOGLE_SERVICES_JSON (ver app.config.js); en
+# local se usa la copia de esta carpeta (que git ya no trackea).
+google-services.json
+
+# logs del sync de Carrefour (tarea programada local)
+scripts/logs/
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# design handoff (referencias de diseño, no necesarias para el build)
+LaCompra/
+
+# Supabase CLI cache local
+supabase/.temp/
+
+# Checkout local de otro repositorio; sus cambios se publican en QueFaltaDatos
+/QueFaltaDatos-email-board/
+
+# vectores generados del piloto (reproducibles; ~7 MB y no necesarios en Git)
+supabase/experiments/comparator-embedding-pilot-vectors.jsonl
+supabase/experiments/comparator-embedding-pilot-vectors.jsonl.tmp
+
+# EAS prioriza este fichero sobre .gitignore. Mantener las reglas anteriores
+# alineadas con .gitignore al añadir nuevas exclusiones locales.
+
+# Evitar que la copia Git de EAS arrastre originales ya commiteados.
+/.git/
+
+# Originales, prompts e informes de generación; la app carga las ilustraciones
+# publicadas mediante illustration_url. Conservar el resto de assets/.
+/assets/product-illustrations/
+
+# Documentación, resultados de QA y temporales locales; no se usan en el build.
+/docs/
+/output/
+/outputs/
+/tmp/
+/logs/

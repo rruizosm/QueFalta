@@ -11,6 +11,7 @@ const ALL_OFFER_TYPES: OfferType[] = ['discount', 'second_unit', 'multibuy', 'cl
 const OFFER_TYPE_SUPPORT: Record<string, OfferType[]> = {
   carrefour: ALL_OFFER_TYPES,
   esclat: ALL_OFFER_TYPES,
+  bonarea: ['discount'],
   consum: ['discount'],
   dia: ['discount', 'second_unit', 'multibuy', 'club'],
   sorli: ['discount', 'second_unit', 'multibuy', 'other'],

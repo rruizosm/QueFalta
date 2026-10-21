@@ -98,6 +98,27 @@ Register-ScheduledTask -TaskName 'QueFalta - Sync bonArea' -Action $action -Trig
 
 ## Notas / pendiente
 
+### Ofertas (2026-10-15)
+
+- El sync ya conserva la señal oficial **«Bajada precio» / «Baixada preu»**
+  como `{descripcio: "BAIXADA_PREU"}` dentro de `raw.caracteristiques`.
+  El cliente la usa en Ofertas, tanto para bonÀrea como para «Todos», con
+  paginación, categorías, búsqueda ES/CA y orden por precio/precio unitario.
+- No se usa `discount` (cero incluso en estos productos) ni el histórico de
+  variaciones como señal de oferta. Se conserva el precio actual; la fuente
+  no publica aquí precio anterior ni fecha de fin, por lo que quedan vacíos.
+- La búsqueda requiere
+  [`20261015115457_bonarea_explicit_offers.sql`](../supabase/migrations/20261015115457_bonarea_explicit_offers.sql),
+  que habilita las cuatro ramas ES/CA × FTS/trigram del RPC de feeds existente.
+  No añade columnas ni necesita volver a sincronizar el catálogo. El listado
+  sin texto y las categorías consultan la señal JSON directamente.
+- Aplicada en producción el 15-10-2026 como `20261015115729`. QA con clave
+  pública: 114 rebajas/46 categorías, recorridos completos sin duplicados y
+  búsqueda/filtros ES/CA correctos. El cliente corregido sigue local.
+
+Las notas siguientes describen pendientes del prototipo original; la lectura
+del catálogo y la pantalla/modal ya están integradas en el cliente.
+
 - **Cobertura:** se recorren las hojas. Si algún producto vive solo en un nodo
   intermedio "destacado" (los N1 devuelven ~50 ítems propios), podría no capturarse;
   para el prototipo es marginal.

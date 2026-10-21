@@ -8,6 +8,8 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const orchestratorPath = fileURLToPath(new URL('../sync-lidl-fleet.mjs', import.meta.url));
 const orchestratorModule = pathToFileURL(orchestratorPath).href;
+const localRunnerPath = fileURLToPath(new URL('../run-lidl-fleet-local.mjs', import.meta.url));
+const localRunnerModule = pathToFileURL(localRunnerPath).href;
 
 const migration = await readFile(
   new URL('../../supabase/migrations/20260904141250_lidl_catalog_sync_queue.sql', import.meta.url),
@@ -160,16 +162,79 @@ test('el orquestador arranca y programa el barrido con la RPC esperada', async (
   assert.match(stdout, /0 tiendas incluidas en el barrido semanal/);
 });
 
-test('el único workflow ejecuta capacidad para todo el censo cada lunes', () => {
-  assert.match(fleetWorkflow, /cron: '20 11 \* \* 1'/);
-  assert.match(fleetWorkflow, /workers=\[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24\]/);
+test('GitHub queda manual y conserva recuperación y barrido excepcional', () => {
+  assert.doesNotMatch(fleetWorkflow, /schedule:\s*\n\s*- cron:/);
+  assert.match(fleetWorkflow, /workflow_dispatch:/);
+  assert.match(fleetWorkflow, /weekly\)[\s\S]*?workers=\[1,2,3,4,5,6,7,8\]/);
   assert.match(fleetWorkflow, /recover\) echo 'workers=\[1,2,3,4,5,6,7,8\]'/);
   assert.match(fleetWorkflow, /LIDL_FLEET_JOB_LIMIT:.*'100'/);
+  assert.match(fleetWorkflow, /LIDL_FLEET_MAX_ATTEMPTS: '1'/);
+  assert.match(fleetWorkflow, /LIDL_FLEET_IDLE_MINUTES: '0'/);
   assert.match(fleetWorkflow, /--report-only/);
   assert.match(fleetWorkflow, /default: recover/);
   assert.match(fleetWorkflow, /schedule_all_lidl_catalog_sync_jobs|--schedule-only/);
-  assert.match(fleetWorkflow, /vars\.LIDL_SYNC_ENABLED == 'true'/);
   assert.doesNotMatch(fleetWorkflow, /MIN_PRIORITY|SCHEDULE_LIMIT|MAX_AGE_DAYS/);
+});
+
+test('el runner local programa, reparte entre tres workers y cierra informe y comparador', async () => {
+  const bootstrap = `
+    import childProcess from 'node:child_process';
+    import { EventEmitter } from 'node:events';
+    import { syncBuiltinESMExports } from 'node:module';
+    import assert from 'node:assert/strict';
+    const calls = [];
+    childProcess.spawn = (exe, args, options) => {
+      calls.push({ args, env: options.env });
+      const child = new EventEmitter();
+      queueMicrotask(() => child.emit('close', 0, null));
+      return child;
+    };
+    syncBuiltinESMExports();
+    process.argv = [process.execPath, ${JSON.stringify(localRunnerPath)}];
+    await import(${JSON.stringify(localRunnerModule)});
+    assert.equal(calls.length, 6);
+    assert.equal(calls[0].args[1], '--schedule-only');
+    assert.deepEqual(calls.slice(1, 4).map((call) => call.env.LIDL_FLEET_WORKER_INDEX), ['1','2','3']);
+    assert.ok(calls.slice(1, 4).every((call) => call.args[1] === '--recover-only'));
+    assert.ok(calls.slice(1, 4).every((call) => call.env.LIDL_FLEET_MAX_ATTEMPTS === '1'));
+    assert.ok(calls.slice(1, 4).every((call) => call.env.LIDL_FLEET_JOB_LIMIT === '300'));
+    assert.equal(calls[4].args[1], '--report-only');
+    assert.equal(calls[5].env.STORES, 'lidl');
+  `;
+  const { stderr } = await execFileAsync(process.execPath, ['--input-type=module', '--eval', bootstrap], {
+    env: { ...process.env, SUPABASE_URL: 'https://supabase.invalid', SUPABASE_SERVICE_ROLE: 'test' },
+    timeout: 5000,
+  });
+  assert.equal(stderr, '');
+});
+
+test('el runner local informa de un worker fallido y materializa los éxitos', async () => {
+  const bootstrap = `
+    import childProcess from 'node:child_process';
+    import { EventEmitter } from 'node:events';
+    import { syncBuiltinESMExports } from 'node:module';
+    import assert from 'node:assert/strict';
+    const calls = [];
+    childProcess.spawn = (exe, args, options) => {
+      calls.push(args);
+      const child = new EventEmitter();
+      const failed = options.env.LIDL_FLEET_WORKER_INDEX === '2';
+      queueMicrotask(() => child.emit('close', failed ? 1 : 0, null));
+      return child;
+    };
+    syncBuiltinESMExports();
+    process.argv = [process.execPath, ${JSON.stringify(localRunnerPath)}];
+    await import(${JSON.stringify(localRunnerModule)});
+    assert.equal(calls.length, 6);
+    assert.equal(calls[4][1], '--report-only');
+    assert.ok(calls[5][0].endsWith('sync-comparator-embedding-catalog.mjs'));
+    assert.equal(process.exitCode, 1);
+    process.exitCode = 0;
+  `;
+  await execFileAsync(process.execPath, ['--input-type=module', '--eval', bootstrap], {
+    env: { ...process.env, SUPABASE_URL: 'https://supabase.invalid', SUPABASE_SERVICE_ROLE: 'test' },
+    timeout: 5000,
+  });
 });
 
 async function runFleetScenario(mode, setup, extraEnv = {}) {

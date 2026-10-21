@@ -1,8 +1,8 @@
 name: Sync BM catalog
 
-# Se mantiene manual hasta desplegar la migracion BM y validar la primera carga.
-# La programacion semanal se activara despues de esa comprobacion controlada.
 on:
+  schedule:
+    - cron: '15 12 * * 1' # lunes 12:15 UTC, semanal
   workflow_dispatch: {}
 
 concurrency:

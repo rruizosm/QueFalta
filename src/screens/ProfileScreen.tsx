@@ -282,12 +282,6 @@ export default function ProfileScreen() {
               rounded
             />
             <ProfileRow
-              icon="pricetag-outline"
-              label={t('profile.priceAlerts')}
-              onPress={() => navigation.navigate('PriceAlerts')}
-              rounded
-            />
-            <ProfileRow
               icon="receipt-outline"
               label={t('profile.purchaseHistory')}
               onPress={() => navigation.navigate('History')}

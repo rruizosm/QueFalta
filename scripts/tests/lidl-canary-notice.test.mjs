@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 const dropdown = read('src/components/StoreDropdown.tsx');
-const catalog = read('src/screens/CatalogScreen.tsx');
+const catalog = read('src/screens/CatalogScreen.tsx') + read('src/components/catalogBrowserStyles.ts');
 const allStoresModal = read('src/components/AllStoresInfoModal.tsx');
 const infoButton = read('src/components/StoreInfoButton.tsx');
 const cardActionButton = read('src/components/StoreCardActionButton.tsx');
@@ -57,7 +57,7 @@ test('the combined-store information button appears only while the Plus option i
   assert.match(infoButton, /<StoreCardActionButton[\s\S]*icon="information-circle-outline"/);
   assert.match(cardActionButton, /width: 44, height: 44/);
   assert.match(cardActionButton, /width: 34, height: 34/);
-  assert.match(cardActionButton, /fallbackColor=\{colors\.accentLight\}/);
+  assert.match(cardActionButton, /fallbackColor=\{hasSelectionAppearance \? colors\.white : colors\.accentLight\}/);
 });
 
 test('the combined-store popup includes a real list example for the three requested stores', () => {

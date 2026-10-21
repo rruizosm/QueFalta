@@ -117,6 +117,7 @@ export default function ProductFilterSheet({
 
   const [categoryGroupOpen, setCategoryGroupOpen] = useState<string | null>(null);
   const [offerTypeGroupOpen, setOfferTypeGroupOpen] = useState<string | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [sortPaywallVisible, setSortPaywallVisible] = useState(false);
   const plusAppearance = appearance === 'plus';
   const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
@@ -278,8 +279,17 @@ export default function ProductFilterSheet({
     </TouchableOpacity>
   );
 
-  const sectionHeading = (label: string, icon: IoniconName | 'unitPrice', first = false) => plusAppearance ? (
-    <View style={[styles.visualSectionHeading, first && styles.visualSectionHeadingFirst]}>
+  const sectionHeading = (label: string, icon: IoniconName | 'unitPrice', first = false) => {
+    const collapsed = collapsedSections[label] ?? false;
+    return <TouchableOpacity
+      style={plusAppearance
+        ? [styles.visualSectionHeading, first && styles.visualSectionHeadingFirst]
+        : [styles.sectionHeading, first && styles.sectionTitleFirst]}
+      onPress={() => setCollapsedSections((current) => ({ ...current, [label]: !collapsed }))}
+      activeOpacity={0.75}
+      accessibilityRole="button"
+      accessibilityState={{ expanded: !collapsed }}
+    >
       <View style={styles.visualSectionIcon}>
         {icon === 'unitPrice' ? (
           <Text style={styles.unitPriceIcon}>€/kg</Text>
@@ -287,11 +297,12 @@ export default function ProductFilterSheet({
           <Ionicons name={icon} size={17} color={colors.accent} />
         )}
       </View>
-      <Text style={styles.visualSectionTitle}>{label}</Text>
-    </View>
-  ) : (
-    <Text style={[styles.sectionTitle, first && styles.sectionTitleFirst]}>{label}</Text>
-  );
+      <Text style={plusAppearance ? styles.visualSectionTitle : styles.sectionTitle}>{label}</Text>
+      <Ionicons name={collapsed ? 'chevron-down' : 'chevron-up'} size={17} color={colors.inkSoft} />
+    </TouchableOpacity>;
+  };
+
+  const sectionOpen = (label: string) => !(collapsedSections[label] ?? false);
 
   const storeIcon = (key: string) => CATALOG_STORES.find((store) => store.key === key)?.icon ?? null;
   const storeChip = (value: string, label: string, on: boolean, onPress: () => void) => (
@@ -383,61 +394,61 @@ export default function ProductFilterSheet({
       statusBarTranslucent
       onRequestClose={() => closeRef.current()}
     >
-      <Pressable
-        style={[styles.backdrop, plusAppearance && styles.backdropPlus]}
-        onPress={() => closeRef.current()}
-        accessible={false}
-      />
-      <View
-        style={[styles.sheet, plusAppearance && styles.sheetPlus, { paddingBottom: insets.bottom + 12 }]}
-        accessibilityViewIsModal
-      >
-        {plusAppearance ? (
-          <View style={styles.dragHandleArea} {...dragResponder.panHandlers}>
-            <View style={styles.grabber} />
+      <View style={styles.modalRoot}>
+        <Pressable style={styles.backdrop} onPress={() => closeRef.current()} accessible={false} />
+        <View
+          style={[styles.sheet, { paddingBottom: insets.bottom + 3 }]}
+          accessibilityViewIsModal
+        >
+        <View style={styles.dragHandleArea} {...dragResponder.panHandlers}>
+          <View style={styles.grabber} />
+        </View>
+        <View style={styles.sheetHeader}>
+          <View style={styles.headerIcon}>
+            <Ionicons name="options-outline" size={20} color={colors.accent} />
           </View>
-        ) : (
-          <View style={styles.sheetHeader}>
+          <View style={styles.headerCopy}>
             <Text style={styles.sheetTitle}>{t('filters.title')}</Text>
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => closeRef.current()}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.close')}
-            >
-              <Ionicons name="close" size={22} color={colors.ink} />
-            </TouchableOpacity>
+            <Text style={styles.headerSubtitle}>{t('filters.subtitle')}</Text>
           </View>
-        )}
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => closeRef.current()}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+          >
+            <Ionicons name="close" size={20} color={colors.inkSoft} />
+          </TouchableOpacity>
+        </View>
 
         <ScrollView style={[styles.scroll, plusAppearance && styles.scrollPlus]} showsVerticalScrollIndicator={false}>
           {stores.length > 1 && onStores && (
             <>
               {sectionHeading(t('filters.supermarket'), 'storefront-outline', true)}
-              <View style={styles.chipWrap}>
+              {sectionOpen(t('filters.supermarket')) && <View style={styles.chipWrap}>
                 {chip(t('common.all'), selectedStores.length === 0, () => onStores([]))}
                 {stores.map((option) =>
                   storeChip(option.value, option.label, selectedStores.includes(option.value), () => toggleStore(option.value)),
                 )}
-              </View>
+              </View>}
             </>
           )}
           {/* Orden por precio (primero en los listados que lo admiten). */}
           {showPriceControls && showSortControls ? (
             <>
               {sectionHeading(t('filters.sort'), 'swap-vertical-outline', stores.length <= 1)}
-              <View style={styles.chipWrap}>
+              {sectionOpen(t('filters.sort')) && <View style={styles.chipWrap}>
                 {chip(t('filters.priceAsc'), sort === 'asc', () => onSort(sort === 'asc' ? null : 'asc'))}
                 {chip(t('filters.priceDesc'), sort === 'desc', () => onSort(sort === 'desc' ? null : 'desc'))}
-              </View>
+              </View>}
             </>
           ) : null}
 
           {showSortControls && onPricePerUnitSort ? (
             <>
               {sectionHeading(t('filters.unitPriceSort'), 'unitPrice', !showPriceControls && stores.length <= 1)}
-              {unitPriceSortLocked ? (
+              {sectionOpen(t('filters.unitPriceSort')) && (unitPriceSortLocked ? (
                 <View style={styles.chipWrap}>
                   {lockedUnitPriceChip(t('filters.priceAsc'), 'asc')}
                   {lockedUnitPriceChip(t('filters.priceDesc'), 'desc')}
@@ -447,7 +458,7 @@ export default function ProductFilterSheet({
                   {chip(t('filters.priceAsc'), pricePerUnitSort === 'asc', () => selectPricePerUnitSort('asc'))}
                   {chip(t('filters.priceDesc'), pricePerUnitSort === 'desc', () => selectPricePerUnitSort('desc'))}
                 </View>
-              )}
+              ))}
             </>
           ) : null}
 
@@ -464,7 +475,7 @@ export default function ProductFilterSheet({
           {offerTypeGroups.length === 0 && offerTypes.length > 1 && onOfferTypes && (
             <>
               {sectionHeading(t('filters.offerType'), 'pricetag-outline')}
-              <View style={styles.chipWrap}>
+              {sectionOpen(t('filters.offerType')) && <View style={styles.chipWrap}>
                 {chip(t('filters.all'), selectedOfferTypes.length === 0, () => onOfferTypes([]))}
                 {offerTypes.map((option) =>
                   chip(
@@ -473,7 +484,7 @@ export default function ProductFilterSheet({
                     () => toggleOfferType(option.value),
                   ),
                 )}
-              </View>
+              </View>}
             </>
           )}
 
@@ -492,19 +503,19 @@ export default function ProductFilterSheet({
           {categoryGroups.length === 0 && categories.length > 1 && (
             <>
               {sectionHeading(t('filters.category'), 'grid-outline')}
-              <View style={styles.chipWrap}>
+              {sectionOpen(t('filters.category')) && <View style={styles.chipWrap}>
                 {categoryAllChip(category.length === 0, () => onCategory([]))}
                 {categories.map((c) =>
                   categoryChip(c, c, category.includes(c), () => toggleCategory(c)),
                 )}
-              </View>
+              </View>}
             </>
           )}
 
           {onPriceChangeRange ? (
             <>
               {sectionHeading(t('filters.priceChange'), 'trending-up-outline', !showPriceControls && categories.length <= 1 && categoryGroups.length === 0)}
-              <View style={styles.chipWrap}>
+              {sectionOpen(t('filters.priceChange')) && <View style={styles.chipWrap}>
                 {PRICE_CHANGE_RANGES.map((r, i) =>
                   chip(
                     changeRangeLabel(r),
@@ -512,7 +523,7 @@ export default function ProductFilterSheet({
                     () => onPriceChangeRange(priceChangeRange === i ? null : i),
                   ),
                 )}
-              </View>
+              </View>}
             </>
           ) : null}
 
@@ -520,11 +531,11 @@ export default function ProductFilterSheet({
           {showPriceControls ? (
             <>
               {sectionHeading(t('filters.price'), 'wallet-outline')}
-              <View style={styles.chipWrap}>
+              {sectionOpen(t('filters.price')) && <View style={styles.chipWrap}>
                 {PRICE_RANGES.map((r, i) =>
                   chip(rangeLabel(r), priceRange === i, () => onPriceRange(priceRange === i ? null : i)),
                 )}
-              </View>
+              </View>}
             </>
           ) : null}
         </ScrollView>
@@ -551,6 +562,7 @@ export default function ProductFilterSheet({
             )}
           </TouchableOpacity>
         </View>
+        </View>
       </View>
       </Modal>
       <PaywallModal
@@ -562,34 +574,37 @@ export default function ProductFilterSheet({
 }
 
 const themedStyles = () => StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' },
-  backdropPlus: { backgroundColor: 'rgba(18, 24, 29, 0.58)' },
+  modalRoot: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.28)' },
   sheet: {
     backgroundColor: colors.paper,
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingTop: 6,
-    maxHeight: '80%',
-  },
-  sheetPlus: {
-    borderTopLeftRadius: 30, borderTopRightRadius: 30,
-    paddingTop: 0, maxHeight: '94%', overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.border,
+    maxHeight: '94%', overflow: 'hidden',
   },
   dragHandleArea: {
-    height: 44, alignItems: 'center', justifyContent: 'center',
+    height: 14, alignItems: 'center', justifyContent: 'center',
   },
   grabber: {
     width: 38, height: 4, borderRadius: 2,
-    backgroundColor: colors.inkFaint, opacity: 0.55,
+    backgroundColor: colors.border, alignSelf: 'center', marginTop: 8,
   },
   sheetHeader: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 11,
+    paddingHorizontal: 16, paddingTop: 6, paddingBottom: 12,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
   },
-  sheetTitle: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  closeBtn: {
+  headerIcon: {
     width: 38, height: 38, borderRadius: 19,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight,
+  },
+  headerCopy: { flex: 1, justifyContent: 'center' },
+  sheetTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
+  headerSubtitle: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
+  closeBtn: {
+    width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
   },
 
   scroll: { paddingHorizontal: 16 },
@@ -598,6 +613,10 @@ const themedStyles = () => StyleSheet.create({
     fontSize: 13, fontFamily: fonts.bold, color: colors.inkSoft,
     textTransform: 'uppercase', letterSpacing: 0.4,
     marginTop: 14, marginBottom: 10,
+  },
+  sectionHeading: {
+    minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginTop: 14, marginBottom: 6,
   },
   sectionTitleFirst: { marginTop: 4 },
   visualSectionHeading: {

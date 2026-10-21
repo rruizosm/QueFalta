@@ -49,6 +49,8 @@ interface Props<K extends string> {
   value: K | null;
   onChange: (key: K) => void;
   style?: StyleProp<ViewStyle>;
+  /** Altura de la pista y su contorno cuando deben alinearse con otro selector. */
+  height?: number;
   /** Segmentos cuadrados de ancho fijo y solo icono (p. ej. lista/cuadrícula). */
   compact?: boolean;
   /** Variante más estrecha para filas con varios controles compactos. */
@@ -74,7 +76,7 @@ function hexToRgba(hex: string, a: number): string {
 }
 
 export default function SlidingSegments<K extends string>({
-  segments, value, onChange, style, compact = false, dense = false, emphasized = false,
+  segments, value, onChange, style, height, compact = false, dense = false, emphasized = false,
   condensed = false, transparentTrack = false, opaqueSelection = false,
   allowReselect = false, activationDirection,
 }: Props<K>) {
@@ -174,6 +176,7 @@ export default function SlidingSegments<K extends string>({
         emphasized && (compact
           ? styles.trackEmphasizedCompact
           : condensed ? styles.trackEmphasizedCondensed : styles.trackEmphasized),
+        height != null && { height, borderRadius: height / 2 },
         emphasized && emphasizedTrackColors,
         transparentTrack && styles.trackTransparent,
         opaqueSelection && { backgroundColor: colors.white, borderColor: colors.border },
@@ -193,6 +196,7 @@ export default function SlidingSegments<K extends string>({
             compact && dense && styles.pillDenseCompact,
             emphasized && !compact && styles.pillEmphasized,
             condensed && styles.pillCondensed,
+            height != null && { borderRadius: height / 2 - PAD },
             opaqueSelection && styles.pillOpaque,
             { width: activeW, transform: [{ translateX }, { scaleX }, { scaleY }] },
           ]}
@@ -263,6 +267,7 @@ export default function SlidingSegments<K extends string>({
         compact && styles.trackCompact,
         compact ? styles.emphasizedShellCompact
           : condensed ? styles.emphasizedShellCondensed : styles.emphasizedShellLarge,
+        height != null && { height, borderRadius: height / 2 },
         compactTrackWidth != null && { width: compactTrackWidth },
         style,
       ]}

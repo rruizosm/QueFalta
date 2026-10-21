@@ -1,6 +1,85 @@
 # QuéFalta — Contexto del proyecto
 
+## Integración Mac y Windows (rama conjunta, 2026-10-21)
+
+- `codex/merge-mac-windows-20261021` reúne los commits de ambas máquinas en el PR borrador #79. Conserva los cambios de app y syncs, y resuelve las secciones concurrentes de este documento y `HANDOFF.md`.
+- El checkpoint LFS y el JSON de prueba de Windows, junto con las ilustraciones y temporales excluidos en Mac, no forman parte de la rama conjunta.
+- Corregidas las advertencias de lint y actualizadas las pruebas que seguían validando la interfaz anterior de Despensa. Comprobación local: TypeScript, lint y 1127/1127 pruebas. Pendiente el check remoto y la integración en `main`.
+
+## Lidl: traslado del fleet semanal a Windows (local, 2026-10-21)
+
+- Preparados `scripts/run-lidl-fleet-local.mjs` y `scripts/run-lidl-fleet.ps1`:
+  programan el censo, procesan con tres workers locales en paralelo (hasta 900
+  tiendas), verifican la cola y ejecutan el comparador una vez. Mantienen un
+  intento por tienda, los controles de cobertura y el fallback existente.
+- `.github/workflows/sync-lidl.yml` pierde el cron y conserva ejecución manual.
+  `sync-lidl-stores.yml` sigue actualizando el directorio en GitHub.
+- **Pendiente de activación:** publicar estos cambios, actualizar el checkout
+  Windows e instalar allí la Tarea Programada de los lunes a las 13:00 locales
+  siguiendo `scripts/README-lidl-sync.md`. Hasta entonces el runner local no
+  se ejecuta automáticamente. Sin sync productivo ni instalación remota en
+  esta revisión.
+
+## BM y El Jamón: sync semanal los lunes (local, 2026-10-21)
+
+- `.github/workflows/sync-bm.yml` programa BM cada lunes a las 12:15 UTC;
+  `.github/workflows/sync-eljamon.yml` programa El Jamón a las 14:35 UTC.
+  Ambos conservan `workflow_dispatch`, el sync completo y la materialización
+  posterior del comparador. Cambio local, pendiente de publicar; sin ejecutar
+  los syncs ni escribir en Supabase.
+
+## Lidl: minutos de Actions y reducción de reintentos (local, 2026-10-21)
+
+- Los 3.118 minutos de Actions Usage Metrics desde el 1 de octubre cuadran
+  exactamente al sumar los jobs no cancelados de cuatro runs Lidl, redondeados
+  individualmente al minuto. La duración de pared total es ~1.062 minutos;
+  había hasta tres workers simultáneos. Conciliación por run y enlaces en
+  `docs/lidl-actions-usage-20261021.md`.
+- El diseño inicial redujo el workflow de 24 a ocho workers; con el traslado,
+  el runner local usa tres procesos (900 tiendas de capacidad frente a ~720
+  actuales). Un fallo de tienda pasa directamente a `dead` tras
+  un intento; no se esperan 35 minutos por reintentos diferidos. El informe
+  final sigue fallando si hay tiendas sin completar y permite recuperación
+  manual por ID. Se conservan fallback de catálogo vacío y guardarraíles.
+- Cambio local sin publicar ni lanzar un sync. Validar en el próximo barrido
+  el número de tiendas y los minutos reales; si supera 800 hay que ampliar la
+  capacidad antes de ejecutar.
+
+## Embeddings: drenaje autorizado completado (producción, 2026-10-20)
+
+- Procesados 6.085 mensajes mediante 61 canarios secuenciales: **5.967 embeddings
+  completados, 118 obsoletos, cero failed/deferred/dispatched**. Cada despacho
+  vuelve a `paused` dentro de su misma transacción. Recibos y postflight completos
+  en `docs/embedding-drain-20261020.json`.
+- Revalidados antes de materializar con excepción puntual auditada: Aldi 719
+  trabajos (`9e62ae50-3548-41af-9321-82560b09babd`) y Carrefour 2.101
+  (`5ef912c2-7c62-4212-b77d-ed43135725ff`). Ambos runs terminaron `settled`.
+  Los límites globales de 1.000/10 % permanecen intactos. Carrefour incluía 10.411
+  republicaciones del snapshot de septiembre: 10.367 mantenían el nombre y 9.510
+  ya tenían vector; el reconciliador reutilizó los vigentes. Sin IDs duplicados ni
+  contenidos vacíos. Su plan actualizado sustituyó el cálculo antiguo de 1.458.
+- El primer override de Carrefour fue rechazado por revisión automática por falta
+  de explicación del delta; tras investigar las republicaciones se aprobó el segundo.
+- Pausa de generación durante el autovacuum automático de HNSW al superar el
+  umbral del 5 %. Se reanudó cuando terminó, sin alterar protecciones.
+- Postflight a las **10:34 CEST**: cola vacía, cero peticiones en vuelo y cero
+  fallos. Todos los productos publicados de los 21 supermercados materializados
+  tienen embedding vigente; Aldi 2.591/2.591 y Carrefour 34.055/34.055.
+- HNSW válido/listo/vivo, 599.195.648 bytes, 1,883 % de tuplas muertas, sin
+  mantenimiento activo y `requiresAttention=false`. Estado final `paused`,
+  presupuesto canario cero y cron 17 inactivo. Futuros syncs pueden acumular cola.
+  Sin cambios de esquema ni worker. TypeScript correcto.
+
+
 ## Aldi: enlaces estacionales retirados (2026-10-20)
+
+- Publicado y fusionado en PR #77, commit `ed57bac5d5c4eb3ebf61da7938571f93bd567444`.
+  Run manual `39383650762` terminado correctamente el 20-10 a las 09:05 CEST:
+  2.591 productos, 145 categorías, 132 hojas; `[aldi] OK`. `markStale` retiró
+  130 filas ausentes. Quality remoto (TypeScript, lint y tests) también correcto.
+- El paso del comparador finaliza sin error, pero conserva su bloqueo previo:
+  `pipeline_mode=paused`, `anomaly_blocked=true`, sin upserts ni embeddings
+  encolados (719 previstos). No se ha forzado ni desactivado esa protección.
 
 - El run del 19-10 (`39291482938`) abortó antes de escribir por cuatro enlaces
   antiguos de Verano: tres redirigen a categorías N1 y cremas solares devuelve
@@ -13,6 +92,562 @@
   completo DRY_RUN: 25 N1, 132 hojas, 2.591 productos, 145 categorías, sin fallos;
   Charcutería 145/4 y Limpieza y hogar 154/8 (productos/subcategorías).
 
+
+## Despensa: etiqueta de supermercado solo con logo (local, 2026-10-20)
+
+- En el panel del producto seleccionado, la etiqueta del supermercado muestra
+  únicamente su logo: sin nombre visible ni fondo. El nombre sigue disponible
+  como etiqueta accesible; no cambia la ficha completa abierta desde el botón de
+  información.
+
+## Despensa: nombre y botón de información más compactos (local, 2026-10-20)
+
+- En la fila del nombre del producto seleccionado, la fuente baja de 22 a 19 pt
+  y la línea de 27 a 23 pt. El botón «i» baja de 44 a 38 pt y su icono de 23 a
+  20 pt; `hitSlop` mantiene el área táctil.
+
+## Despensa: control de cantidad compacto (local, 2026-10-20)
+
+- El bloque elimina el texto secundario bajo «Cantidad». Los botones pasan de
+  32 a 26 pt y la cifra de 24 a 16 pt, inferior a los 19 pt del nombre. Los
+  iconos también se reducen; `hitSlop` mantiene 44 pt de área táctil.
+
+## Despensa: fecha de caducidad en la cabecera del bloque (local, 2026-10-20)
+
+- El campo de fecha queda en la misma fila que el título «Caducidad», alineado
+  a la derecha. La nota de avisos y los errores de validación siguen debajo.
+
+## Despensa: logo junto al nombre del producto (local, 2026-10-20)
+
+- Se elimina la etiqueta de sección («Despensa»/«Nevera») del encabezado del
+  producto. El logo del supermercado queda a la izquierda del nombre, en su
+  misma fila.
+
+## Despensa: acciones en una fila (local, 2026-10-20)
+
+- «Añadir al carrito» y «Se ha terminado» aparecen lado a lado. Cada botón
+  coloca el icono sobre la etiqueta para que el texto quepa en el ancho reducido.
+
+## Despensa: ubicación de cocina independiente de las baldas (local, 2026-10-20)
+
+- La ficha conserva el bloque «Ubicación» como selector por producto,
+  persistido en el inventario local por usuario y sección. Tiene tres opciones
+  iniciales («Ubicación 1–3»), editables desde el lápiz al pie del desplegable.
+  Un botón «+» añade más opciones después de la última. La selección aparece en
+  la misma fila, a la derecha de «Ubicación». Elegir una opción solo
+  guarda la ubicación de cocina; no mueve el producto ni se bloquea por espacio.
+  La vista Lista muestra esta ubicación cuando existe, no la balda o el pendiente.
+  Las opciones conservan sus dimensiones al editar y muestran una papelera roja.
+  Se pueden eliminar incluso las tres iniciales; borrar una ubicación limpia
+  su asignación en los productos, sin asignarles otra. Abrir/cerrar anima altura,
+  opacidad y flecha en 240 ms, respetando movimiento reducido.
+
+## Despensa: filas compactas al añadir productos (local, 2026-10-19)
+
+- En la vista Lista del selector de alta, se ocultan las líneas de precio y
+  detalle bajo el nombre. La fila mide 76 pt frente a 84 pt (aprox. un 10 %
+  menos), reduciendo la imagen de 60 a 54 pt y el relleno. Solo afecta a este
+  selector; Cuadrícula y las demás listas conservan su presentación. Sin SQL.
+
+## BonÀrea: segunda tanda de 1000 ilustraciones en curso (2026-10-20)
+
+- Reanudada el 21-10 tras el reset de cuota indicado por ImageGen: primera
+  generación real correcta, PAUSE histórico archivado y tres primeros agentes
+  reactivados. Estado vivo en progress.md; los 1005 anteriores siguen intactos.
+- Nuevo encargo: otros 1000 productos con 10 agentes. Diez lotes exclusivos de 100
+  y 50 reservas cada uno. El entorno admite tres subagentes activos; diez agentes
+  distintos por tandas, con un máximo de tres simultáneos. Tres primeros iniciados.
+- Snapshot: 3160 productos activos y 2148 candidatos tras excluir los 1005 ya
+  ilustrados y las siete referencias descartadas anteriormente. IDs y fotos únicos.
+- ImageGen integrado por producto, foto oficial y estilo Mercadona 10699.
+  Prompts exactos, PNG nativos y recibos locales, con revisión visual y alfa real.
+  Los 1005 anteriores protegidos por SHA. No restaurar históricos borrados.
+- Selección, asignaciones y progreso en
+  `assets/product-illustrations/bonarea-20261020-1000-02/README.md`.
+  Entrega local, sin subir ni modificar Supabase, catálogo, esquema o cliente.
+  Un error real de cuota crea PAUSE global; se conservan resultados en vuelo.
+
+## BonÀrea: 1000 ilustraciones adicionales completadas (2026-10-20)
+
+- Completados **1000 productos únicos adicionales** con tres agentes en paralelo:
+  334/333/333 PNG finales, todos revisados y con transparencia real. Los cinco
+  anteriores conservan sus SHA: **1005 ilustraciones locales** entre ambas tandas.
+- ImageGen integrado con fotografía oficial y estilo Mercadona `10699`.
+  Los 1000 PNG finales coinciden por SHA con las salidas nativas; prompts exactos
+  y recibos por producto. Segunda revisión visual de los 1000 contra sus fuentes.
+- Auditoría completa: 1000/1000 válidos, cero duplicados, pendientes o PNG finales
+  sin recibo. `npx tsc --noEmit` correcto. Evidencia, manifiesto final y prompts en
+  `assets/product-illustrations/bonarea-20261019-1000/README.md`.
+- Siete sustituciones documentadas: cuatro rechazos de ImageGen sin reintento
+  y tres diferencias entre nombre/cantidad del catálogo y fotografía oficial.
+  Correcciones de los packs Rosa Blanca, San Miguel y Schweppes con versiones
+  anteriores conservadas. Reparto final equilibrado con asignaciones exclusivas.
+- **Entrega local, sin publicar en Supabase ni modificar catálogo, esquema o
+  cliente.** Se mantuvieron los borrados históricos y los cambios ajenos.
+
+## BonÀrea: cinco ilustraciones locales (2026-10-19)
+
+- Generados cinco PNG con ImageGen integrado y fotografías oficiales: leche
+  entera `13*9097`, huevos L `13*6252`, galletas María `13*8152`, aceite picual
+  `13*9548` y arroz La Fallera `13*0091339`. Mismo estilo Mercadona `10699`.
+- Prompt común recuperado de Git sin restaurar los históricos borrados.
+  PNG finales, cinco prompts específicos, tres versiones/ediciones de alfa,
+  manifiesto y verificación SHA/dimensiones/transparencia en
+  `assets/product-illustrations/bonarea-20261019-5/README.md`.
+- Solo entrega local: la tabla remota `bonarea_products` no tiene columna
+  `illustration_url`; no se subieron ni vincularon, sin cambios de esquema o app.
+
+## Despensa y Nevera: fecha de caducidad por producto (local, 2026-10-19)
+
+- La ficha de cada producto permite guardar una fecha de caducidad en formato
+  `DD/MM/AAAA`, con validación de fecha real. Se conserva en el inventario local
+  por usuario y sección; los layouts v1 anteriores siguen siendo compatibles.
+- Con «Avisos en el dispositivo» activado en Perfil y permiso del sistema
+  concedido, se programa una notificación local para las 09:00, tres días antes
+  de la fecha. Si la fecha ya está dentro de esos tres días, se avisa una vez
+  de que el producto está próximo a caducar. Cambiar o quitar la fecha, retirar
+  el producto o desactivar avisos cancela la programación correspondiente.
+- No requiere SQL ni cambios de Supabase. La preferencia de notificaciones y
+  las programaciones locales siguen siendo específicas de cada usuario y
+  dispositivo. `npx tsc --noEmit` y `git diff --check` correctos; falta QA
+  visual en dispositivo y publicar.
+
+## Despensa: «Mis compras» al añadir un producto (local, 2026-10-19)
+
+- Botón independiente a la derecha de Productos/Categorías, separado por
+  10 pt, exclusivamente en el selector de alta de Despensa (`section=pantry`).
+  No aparece en Catálogo, Nevera ni ingredientes de recetas. Se retiró la
+  ruta de historial añadida al stack de Catálogo.
+- Muestra `HistoryScreen` dentro del mismo panel del 90 %, con cabecera y
+  margen inferior adaptados. Volver, Atrás y escape accesible recuperan el
+  selector conservando supermercado, pestaña y búsquedas. Al desplegar una
+  compra, `PantryPurchaseProducts` muestra sus productos sin precios ni
+  acciones individuales. Un único botón «Añadir compra a la despensa» ocupa
+  el lugar de Repetir compra, debajo del listado. Añade juntos los productos
+  con ilustración y sus cantidades (normalizadas a los límites del inventario),
+  omitiendo los no disponibles. Perfil mantiene Repetir compra y sus precios.
+- La importación coloca cada producto en la primera balda con espacio y
+  guarda el lote en una sola actualización. Conserva los productos previos,
+  crea una instancia por línea de compra y mantiene las secciones separadas.
+  Si no cabe todo el lote, no guarda nada, mantiene el panel abierto y muestra
+  el aviso de espacio. Si cabe, cierra el selector. Evita duplicados por doble toque.
+- La disponibilidad se resuelve por supermercado e ID archivados, en lotes
+  de hasta 100 IDs deduplicados: `mercadona_products` y `lidl_product_master`.
+  Solo se acepta una `illustration_url` HTTPS válida. Sin ilustración, sin
+  ID o de una cadena aún no admitida, la fila muestra exactamente
+  «Producto no disponible para añadir a la despensa» y no se importa.
+  No filtra los productos ya comprados por la tienda o región actuales ni
+  busca coincidencias de nombre. Errores de red ofrecen Reintentar; no se
+  confunden con falta de ilustración. Consultas cancelables al cerrar/cambiar.
+- Textos ES/CA, colores temados y mínimo táctil de 44 pt. Conserva el ajuste
+  estrecho de la fila y la etiqueta catalana en dos líneas. Sin SQL/backend.
+- TypeScript y ESLint focalizado correctos; 74 pruebas de layout, selección,
+  catálogo, compras y navegación pasan. Cubren el botón único, cantidades,
+  escritura única, omisión de no disponibles, doble toque, importación sin
+  cambios parciales por falta de espacio, errores y cancelación. Actualizado
+  el harness de selección con mocks de efecto y avisos de caducidad; resuelto
+  su fallo anterior de dependencia. En iPhone 15 Pro/iOS 26.5 se comprueba el
+  botón bajo la compra real desplegada y la ausencia de acciones por fila.
+  La prueba previa de alta individual se retiró, conservando los 26 productos
+  originales. Sin nuevas altas de QA en esta revisión. Local, sin publicación.
+
+## Despensa: carteles del mismo tamaño al editar (local, 2026-10-19)
+
+- El cartel usa la misma caja compacta en lectura y edición: altura mínima
+  de 36 pt y ancho ajustado al nombre y emoticono. El texto visible dimensiona
+  ambas vistas; el campo editable se superpone sin ensanchar el cartel.
+- Las acciones de emoticono y borrado quedan junto al cartel. Su espacio se
+  reserva en ambos estados para que los nombres largos tampoco cambien de
+  ancho al activar la edición. Tipografía compartida y nombre por defecto
+  de la balda cuando está vacío; guardado automático.
+- TypeScript y ESLint focalizado correctos. Comprobación web de 24 pares en
+  claro/oscuro y anchos de 248/324 pt: nombres cortos, largos, vacíos y con
+  emoticonos mantienen exactamente las mismas dimensiones en ambos estados.
+
+## Despensa: lápiz y carteles de balda (local, 2026-10-16)
+
+- El lápiz activa la edición de carteles y se convierte en ✓ para terminar.
+  Desde Lista abre Armario. Mientras está activo quedan bloqueados los toques,
+  arrastres y acciones accesibles de productos (también Lista y pendientes),
+  el alta de productos y añadir baldas. Salir a Nevera termina este modo.
+- Cada balda puede tener un cartel encima del bloque de productos. En modo
+  edición, cada balda sin cartel ofrece un «+» compacto bajo la balda. Crea un
+  cartel editable en línea: nombre de hasta 40 caracteres, emoticono mediante
+  `GroupIconPickerSheet` y X para quitar el cartel. Guardado automático;
+  fuera del modo edición queda visible y su nombre se usa en Lista y ficha.
+- En modo edición, el «+» de una balda sin cartel mide 32 pt, queda alineado
+  a la izquierda debajo de esa balda y conserva un área táctil de 44 pt.
+- `shelfLabels` es opcional en el layout v1 y conserva el almacenamiento por
+  usuario/sección. Añadir baldas y editar productos conservan los carteles;
+  no requiere SQL. Cada cartel reserva una fila visual de 52 pt solo para su
+  balda y desplaza las inferiores. Una balda sin cartel no reserva espacio
+  adicional al editar; el «+» queda bajo la balda. El drag tiene en
+  cuenta los carteles sin modificar las coordenadas persistidas. Nevera mantiene
+  su geometría.
+- TypeScript, ESLint focalizado y 77 pruebas de Despensa correctos. QA con JS
+  actualizado en iPhone 15 Pro/iOS 26.5: bloqueo, alta, texto, selector de
+  emoticonos, salida y ubicación en Lista comprobados; guardado local verificado
+  con los 26 productos y sus posiciones intactos. Sin commit ni publicación.
+
+## Despensa: controles de cantidad más pequeños (local, 2026-10-16)
+
+- En la ficha que se abre al tocar un producto, los botones circulares de
+  sumar y restar cantidad pasan de 46 a 32 pt (aproximadamente un 30 % menos),
+  con iconos proporcionados. `hitSlop` conserva un área táctil de 44 pt.
+  El contador, los límites de cantidad y el resto de acciones no cambian.
+
+## Filtro «Sin gluten» en subcategorías (local, 2026-10-16)
+
+- La fila de productos de cada subcategoría incluye el botón de filtros
+  entre ordenación y vista, con la misma hoja «Sin gluten» del Catálogo. La
+  selección recorta localmente los productos ya cargados y se combina con la
+  búsqueda y el orden; al desactivarla se recupera la lista completa sin perder
+  las cantidades seleccionadas.
+- Los demás supermercados coinciden por el nombre visible («sin gluten» o
+  «sense gluten»). En Mercadona el espejo comprueba ambos nombres
+  (`display_name` y `display_name_ca`), igual que su filtro general, para que el
+  resultado no dependa del idioma activo. Es una indicación explícita en el
+  nombre, no una certificación de alérgenos. Solo cliente, sin SQL. TypeScript,
+  ESLint y QA en simulador iOS correctos: Mercadona («Galletas») y Carrefour
+  («Desayuno») muestran únicamente nombres señalados; al desactivar el filtro
+  reaparece la lista completa.
+
+## Productos de subcategoría: controles de Catálogo y título limpio (local, 2026-10-16)
+
+- Los listados de productos de subcategoría usan `CategoryProductToolbar`, con
+  el buscador compacto, segmentados de precio ascendente/descendente y €/unidad,
+  y selector Lista/Cuadrícula del Catálogo. Búsqueda y ordenación se aplican
+  localmente a los productos cargados; €/unidad conserva el acceso Plus y su
+  paywall. `StoreProductList` mantiene el toolbar anterior en otros usos.
+- Se elimina la ruta de ubicación bajo el título en las 17 cabeceras que la
+  mostraban. Gadis, Froiz y Ahorramás adoptan también los controles compartidos.
+  Solo cliente, sin migración ni cambios remotos. TypeScript, ESLint y 13
+  comprobaciones dirigidas correctos. Build y QA en iPhone 15 Pro/iOS 26.5:
+  título sin breadcrumb, orden asc/desc, Lista/Cuadrícula y búsqueda «vinagre»
+  verificados en una subcategoría Mercadona.
+
+## Menú de categorías: esquinas superiores redondeadas (local, 2026-10-16)
+
+- `ActionSheet`, abierto desde los tres puntos de una categoría en Catálogo y
+  Favoritos, redondea las dos esquinas superiores a 28 pt y recorta su contenido
+  dentro del panel. Coincide con la hoja de filtros del Catálogo.
+- Solo cambio visual local; sin datos ni migración.
+
+## Catálogo y selector de Despensa: cabecera estable entre pestañas (local, 2026-10-16)
+
+- El buscador de Categorías comparte la altura fija de la fila de Productos:
+  40 pt con Liquid Glass y 44 pt en fallback. Se elimina su relleno vertical
+  variable para que la cabecera no crezca al cambiar de pestaña.
+- Ajuste del componente compartido `CatalogSearchField`; afecta a Catálogo y
+  al selector de productos de Despensa. Sin cambios de datos ni migración.
+  TypeScript y ESLint focalizado correctos.
+
+## Despensa: acciones inferiores de alimento y edición (local, 2026-10-16)
+
+- Retirados los botones «+» de las baldas de Despensa. Dos botones circulares
+  quedan fijos abajo a la derecha en Armario y Lista: el de alimento abre el
+  selector y coloca el producto en el primer hueco disponible, continuando en
+  otra balda si la primera está llena; el lápiz se muestra desactivado, sin
+  acción todavía. La Nevera conserva sus huecos de alta.
+- El contenido deja espacio para los botones al desplazarse. Etiquetas
+  accesibles ES/CA y estado desactivado del lápiz; sin migración ni cambios
+  remotos. Ambos círculos e iconos aumentaron un 10 % respecto al tamaño
+  reducido previo (círculos de 34,32 pt), manteniendo objetivos táctiles de
+  44 pt. Los círculos quedan a 10 pt del borde superior de la barra de
+  navegación, usando su desplazamiento real también con barra flotante.
+  TypeScript, ESLint y pruebas dirigidas correctos.
+
+## Catálogo Mercadona: filtros en hoja compacta (local, 2026-10-16)
+
+- El acceso directo «Sin gluten» se sustituye por el botón de filtros de
+  Novedades (`options-outline`, segmentado Liquid Glass y fallback), ubicado
+  entre la ordenación de precio y el selector Lista/Cuadrícula en la fila de
+  productos. Conserva el indicador activo cuando se aplica el filtro.
+- Una hoja inferior de altura igual al 20 % de la ventana, con esquinas
+  superiores redondeadas, contiene la opción «Sin gluten». Se cierra con la X,
+  al tocar fuera o con el botón atrás; la selección se aplica al instante.
+  El fondo atenuado cubre también el área detrás de las esquinas, de modo que
+  el redondeo de 28 pt se ve claramente. Cabecera y opción recuperan su tamaño
+  habitual y quedan visibles dentro de la nueva altura. La fila «Sin gluten»
+  tiene un contorno suave, más marcado al seleccionar, sin fondo; icono y casilla
+  indican el estado.
+  La casilla usa estado visual local para responder al toque; la actualización
+  del catálogo se programa con menor prioridad. En alturas donde cabe el
+  contenido no se monta un ScrollView, evitando la espera táctil de ese
+  contenedor. Marcado, desmarcado y pulsaciones seguidas comprobados en iOS.
+  El contenido puede desplazarse en pantallas bajas. No cambia la consulta ni
+  requiere migración. TypeScript, ESLint y compilación iOS correctos; apertura,
+  selección, resultados y cierre comprobados en iPhone 15 Pro/iOS 26.5;
+  la altura del 20 % y el contenido visible, revisados en simulador.
+  Pendiente de publicar.
+
+## EAS: archivo de subida reducido (local, 2026-10-16)
+
+- Resuelto el rechazo del archivo de **5,2 GB** frente al límite de **2 GB**.
+  `assets/product-illustrations/` acumulaba aproximadamente 4,7 GB de
+  originales y evidencias de generación; no tiene imports en el cliente.
+- `.easignore` conserva todas las reglas actuales de `.gitignore` y excluye
+  además esa carpeta, `.git/`, `docs/`, `output/`, `outputs/`, `tmp/` y `logs/`.
+  EAS prioriza `.easignore`: mantener sus reglas comunes alineadas con
+  `.gitignore`. La exclusión de `.git/` evita incluir también los originales
+  commiteados dentro del historial que EAS clona para empaquetar.
+- Se conservan código, configuración, lockfile, plugins, `modules/`, locales
+  y el resto de `assets/` (logos, mascota y texturas de Despensa). Las
+  ilustraciones publicadas se cargan mediante `illustration_url`.
+  Se conserva la política existente de
+  variables de entorno y Firebase para los builds remotos.
+- Después, por petición expresa del usuario, se eliminó íntegramente la
+  carpeta local `assets/product-illustrations/`: aproximadamente **4,7 GiB**
+  de originales, prompts, informes y recibos. Las publicaciones remotas y
+  sus URLs permanecen intactas. Los enlaces históricos a tandas de esa
+  carpeta ya no corresponden a archivos locales. `.easignore` mantiene la
+  exclusión para futuras generaciones. Eliminaciones locales sin commit.
+- Verificación offline con las rutinas de selección y compresión de EAS CLI
+  21.8.0: **1.032 archivos, unos 32 MB sin comprimir y 24,5 MB en tar.gz**.
+  Reglas heredadas, exclusiones y archivos necesarios comprobados. No se ha
+  enviado el archivo ni lanzado una nueva build remota.
+  `npx tsc --noEmit` y `git diff --check` correctos.
+
+## Versión del proyecto 1.4 (local, 2026-10-16)
+
+- Versión `1.4.0` en Expo (`app.json`), npm (`package.json` y metadatos raíz
+  de `package-lock.json`) e iOS local (`Info.plist` y `MARKETING_VERSION`
+  de Debug/Release). Android heredará la versión de Expo al generar su proyecto.
+- Se conserva el número de build y el autoincremento remoto de EAS. Las claves
+  y textos históricos de avisos de versiones anteriores permanecen intactos.
+- Cambio local de configuración; pendiente generar y publicar una nueva build.
+
+## Lidl: cierre de 408 candidatos — 399 publicados y 9 excepciones (2026-10-16)
+
+- Completados **399 productos únicos publicados**, con foto oficial real y sin ilustración previa, de los 408 candidatos del snapshot. Excepciones: **2 HTTP 404, 3 bloqueos históricos de ImageGen sin reintentar y 4 imágenes solo de etiqueta técnica**. No se sustituyeron por productos ajenos a la selección. Informe y prompts en [assets/product-illustrations/lidl-20261016-408/README.md](assets/product-illustrations/lidl-20261016-408/README.md).
+- Auditoría remota **2026-10-16T13:43:50.590Z**: 399/399 publicados y verificados, cero pendientes, fallos, cambios de catálogo o incidencias abiertas; **26771732 bytes**. WebP con alpha real, máximo 768 px, MIME/SHA/bytes/dimensiones/vínculo BD comprobados. **2701 URLs anteriores intactas; 3100 ilustraciones Lidl en total**.
+- ImageGen integrado por producto, 25 revisiones y 399 aprobaciones únicas. **402 PNG nativos/versiones** idénticos a sus originales; tres correcciones resueltas antes de publicar (124, 86 y 99). Solo se escribe lidl_product_master.illustration_url, con guardas de publicación, tienda, foto y valor previo.
+- JPG/WebP exclusivamente en /private/tmp/lidl-20261016-408 y borrados tras verificar las subidas; referencia WebP temporal eliminada. **Cero JPG/JPEG/WebP en assets/product-illustrations y en el temporal de esta tanda; ninguno nuevo en el proyecto**. TypeScript, seis comprobaciones de sintaxis y auditoría local correctos. Sin commit/push de esta tanda.
+- Recuento remoto posterior: **413 publicados sin ilustración**, de los que **289 están en tiendas activas**: 280 con imagen genérica y las 9 excepciones citadas. Otros 124 fuera del catálogo activo.
+
+
+## Lidl: cuarta tanda de 600 completada (2026-10-16)
+
+- Completados **600/600 productos únicos publicados adicionales**, con foto oficial y sin ilustración previa; **2101 ilustraciones anteriores verificadas intactas**. Informe y recibos en [assets/product-illustrations/lidl-20261016-600/README.md](assets/product-illustrations/lidl-20261016-600/README.md).
+- **600 WebP con alpha real**, máximo 768 px y 34469980 bytes en total. Publicados en Supabase Storage product-illustrations/lidl; escritura únicamente en lidl_product_master.illustration_url, con comprobación de publicación, foto y URL previa. Auditoría remota 2026-10-16T09:22:05.646Z: 600 publicados, sin cambios de catálogo ni incidencias.
+- **623 PNG nativos**, 20 productos corregidos y 23 versiones adicionales; 50 nativos recuperados tras comparar las fotos. 233 fuentes inválidas y tres generaciones rechazadas sustituidas. 44 revisiones visuales, con 600 aprobaciones únicas; cinco bloques de continuación completados.
+- JPG/WebP exclusivamente fuera del proyecto, borrados tras verificar cada subida; también eliminada la referencia WebP temporal. Auditoría: **0 JPG/JPEG/WebP en assets/product-illustrations y en el temporal de esta tanda**, y 623 copias PNG idénticas a sus originales. TypeScript, sintaxis de cuatro scripts y git diff --check correctos. Sin commit/push de esta tanda.
+
+## Despensa: selector con diseño de Catálogo y Lidl (local, 2026-10-15)
+
+- Al añadir desde Despensa o Nevera se abre un panel inferior del **90 %**
+  de la altura, con esquinas superiores de 28 pt y contenido recortado dentro
+  del panel. Fondo atenuado, cierre al tocar fuera y ajuste sobre el teclado.
+  El área segura superior no se suma a su altura; se conserva el margen
+  inferior de las listas. Medidas y bordes comprobados en web a 393×852,
+  320×568 y 844×390; TypeScript y ESLint correctos. Incluye:
+  Productos/Categorías, buscador y vistas Lista/Cuadrícula. El selector muestra
+  las **fotos reales del supermercado** (`thumbnail`), nombre y formato, sin
+  precio, €/kg ni controles de orden por precio. Se ordena alfabéticamente.
+  Las ilustraciones se reservan para las baldas. Comparte `CatalogSearchField`,
+  `CatalogTabSelector`, los estilos temados y `StoreProductList` con Catálogo; conserva Liquid Glass y
+  fallback. La selección coloca el producto en el hueco de origen.
+- El «+» del selector usa Liquid Glass interactivo con borde y sombra suaves,
+  tanto en Lista (34 pt) como en Cuadrícula (26 pt visuales sobre la tarjeta).
+  Tamaño reducido por petición del usuario; la tarjeta conserva su área táctil.
+  Comprime a 0,9 y baja opacidad al pulsar; vuelve suavemente al soltar. Con
+  Reducir movimiento solo cambia opacidad. La tarjeta mantiene una única acción
+  accesible; la fila es opaca para evitar cristal anidado. Variante exclusiva de
+  este selector, mediante `ProductSelectionIndicator` + `actionAppearance`.
+  Cristal y pulsación comprobados en iPhone 15 Pro/iOS 26.5 con recarga de JS;
+  QA web de compresión/retorno, selección y Reducir movimiento en ambas vistas.
+  TypeScript, ESLint y pruebas dirigidas correctos.
+- El selector reutiliza `StoreDropdown`: Mercadona y Lidl habilitados para este
+  inventario ilustrado; los demás visibles, desactivados y con «Próximamente»
+  / «Pròximament». Esta disponibilidad es propia de Despensa; los demás usos
+  conservan sus reglas de catálogo/Plus y favoritos.
+- Búsqueda y categorías respetan CCAA de Mercadona y tienda concreta de Lidl.
+  Solo publicados con ilustración, filtrados antes de paginar; debounce,
+  cancelación, respuestas antiguas descartadas y reintentos de carga.
+  Lidl une `lidl_store_products` con `lidl_product_master`. La consulta de este
+  selector no descarga precios ni promociones. No se necesita otra migración.
+- El layout v1 guarda opcionalmente el supermercado; las entradas antiguas
+  siguen siendo Mercadona. Admite los IDs Lidl con sufijo `_ES`. La ficha,
+  logo y reposición en la cesta usan la cadena correcta e incluyen categoría.
+- Consultas públicas reales ES/CA, paginación sin duplicados y filtro de
+  ilustración comprobados. Fotos oficiales y ausencia de precios comprobadas
+  en API pública de ambos supers y en Lista/Cuadrícula web; la selección
+  conserva la ilustración para la balda. TypeScript, ESLint focalizado, 69 pruebas de
+  Despensa y 33 de catálogo/Lidl correctos. QA web en claro/oscuro, ES/CA,
+  393 y 320 pt: bloqueo, categorías Lidl, selección y descarte de búsqueda
+  antigua comprobados. Pendiente revisión nativa y publicación. Sin commit/push ni cambios remotos de datos.
+
+## Catálogo Mercadona: filtro «Sin gluten» local (2026-10-15)
+
+- Esfera circular de 44 pt alrededor de la espiga, con cristal interactivo y
+  sombra suave. Auditoría de colores: el tinte fijo conservaba el acento al
+  desmarcar. Ahora fondo, borde e icono comparten un fundido reversible de 180 ms:
+  neutros desmarcado, acento marcado, sobre una única superficie glass estable.
+  Respeta Reducir movimiento; la limpieza de la animación permite invertirla.
+- Acabado alineado con la estrella de supermercado favorito: reutiliza
+  `StoreCardActionButton`, incluidos cristal interactivo y pulsación; el filtro
+  amplía su superficie circular a 44 pt.
+  El fondo glass de la cabecera es hermano de los controles para evitar cristal
+  anidado. Icono 17 pt con glass / 20 pt en fallback; TypeScript y ESLint correctos.
+  Estados marcado/desmarcado y alternancia repetida comprobados visualmente en
+  iPhone 15 Pro/iOS 26.5, tema claro; oscuro/fallback pendientes de QA visual.
+- Botón con `MaterialCommunityIcons` `barley-off` (espiga tachada), junto al
+  selector Productos/Categorías y solo en Productos de Mercadona. Incluye el
+  estado seleccionado y traducciones ES/CA.
+- Consulta los nombres normalizados `sin gluten` y `sense gluten` en
+  `mercadona_products`, respeta la CCAA y permite buscar dentro de los resultados.
+  Sin columna nueva ni migración: la señal procede del nombre.
+- La consulta de producción devuelve 49 productos publicados (49 nombres ES y
+  38 nombres CA con la indicación). Verificado en iPhone 15 Pro/iOS 26.5:
+  botón alineado, estado activo, carga del filtro y búsqueda local «Mahou».
+  TypeScript, ESLint y build/run de simulador correctos; todavía no publicado.
+
+## Despensa: selectores de cabecera alineados (local, 2026-10-15)
+
+- «Despensa / Nevera» mide ahora 40 pt de alto, igual que el selector de vista
+  «Armario / Lista». `SlidingSegments` permite ajustar juntos pista y contorno
+  sin cambiar el estilo enfatizado ni la geometría de sus otros usos.
+
+## Lidl: tercera tanda de 600 completada (2026-10-15)
+
+- Completados **600/600 productos únicos publicados adicionales**, seleccionados entre 1888 elegibles con foto real y sin ilustración previa. 139 fuentes inválidas y un rechazo de ImageGen sustituidos; 110 reservas restantes. Selección y **1501 ilustraciones anteriores protegidas** en `assets/product-illustrations/lidl-20261015-600-03/manifest.json`.
+- Auditoría conjunta: **2026-10-15 21:22:34 UTC**, **600 publicados y verificados**, cero pendientes, fallos finales, incidencias visuales abiertas o cambios de catálogo; **34.717.272 bytes**. URL en BD, lectura pública, MIME WebP, SHA-256, bytes, dimensiones hasta 768 px, alfa y margen comprobados. Las **1501 URLs anteriores siguen intactas**. Evidencia en `verification.json` y `jobs/`.
+- ImageGen integrado por producto, estilo Mercadona 10699 y revisión visual de cada WebP final. Conservados **609 PNG nativos/versiones**, bit a bit iguales a sus originales, prompts exactos y recibos. Siete productos corregidos antes de publicar, con nueve versiones adicionales; 13 PNG recuperados sin regenerar. 58 actas de revisión con 600 aprobaciones únicas. Sin bloqueos pendientes.
+- JPG fuente y WebP procesados exclusivamente en `/private/tmp/lidl-20261015-600-03` y eliminados después de verificar cada subida. Referencia WebP temporal también eliminada. **Cero JPG/JPEG/WebP en assets/product-illustrations y en el temporal de esta tanda**; integridad y limpieza comprobadas en `filesystem-check.json`.
+- Se actualizó únicamente `lidl_product_master.illustration_url`, con guardas de publicado, tienda activa, foto intacta y campo vacío. Esta tanda no modifica el cliente ni el esquema. `npx tsc --noEmit` revalidado al cierre, sintaxis de los cuatro scripts y diff correctos. Sin commit/push de esta tanda.
+
+## Lidl: segunda tanda de 600 completada (2026-10-15)
+
+- Completados **600/600 productos únicos publicados adicionales**, seleccionados entre 2488 elegibles con foto real y sin ilustración previa. 43 fuentes inválidas y un rechazo de ImageGen sustituidos; 106 reservas restantes. Selección y **901 ilustraciones anteriores protegidas** en `assets/product-illustrations/lidl-20261015-600-02/manifest.json`.
+- Auditoría conjunta: **2026-10-15 19:15:27 UTC**, **600 publicados y verificados**, cero pendientes, fallos, incidencias visuales abiertas o cambios de catálogo; **34.918.082 bytes**. URL en BD, lectura pública, MIME WebP, SHA-256, bytes, dimensiones hasta 768 px, alfa y margen comprobados. Las **901 URLs anteriores siguen intactas**. Evidencia en `verification.json` y `jobs/`.
+- ImageGen integrado por producto, estilo Mercadona 10699 y revisión visual de los WebP finales. Conservados **607 PNG nativos/versiones**, bit a bit iguales a sus originales, prompts exactos y recibos. Siete correcciones resueltas antes de subir; tres PNG recuperados sin regenerar. Una petición de corrección sin respuesta se canceló y quedó resuelta con edición puntual a 650g; sin bloqueos pendientes.
+- JPG fuente y WebP procesados exclusivamente en `/private/tmp/lidl-20261015-600-02` y eliminados después de verificar cada subida. Referencia WebP temporal también eliminada. **Cero JPG/JPEG/WebP en assets/product-illustrations y en el temporal de esta tanda**, con 600 aprobaciones visuales únicas y ninguna incidencia abierta; comprobación en `filesystem-check.json`.
+- Se actualizó solo `lidl_product_master.illustration_url`, con guardas de publicado, tienda activa, foto intacta y campo vacío. Cliente/vista Lidl todavía no consume este campo; integración visual fuera de este encargo. `npx tsc --noEmit`, sintaxis de los tres scripts y diff correctos. Sin commit/push de esta tanda.
+
+## BonÀrea: rebajas oficiales en Ofertas (backend activo + cliente local, 2026-10-15)
+
+- Causa confirmada: bonÀrea no figuraba en `OFFER_STORES`, faltaban su consulta,
+  categorías y mapeo, y el RPC de búsqueda de feeds tenía `false` en las cuatro
+  ramas de Ofertas. El catálogo sí estaba actualizado (12-10): 3.154 publicados
+  y **114** con la insignia oficial `BAIXADA_PREU` en `raw.caracteristiques`.
+- Ofertas conecta esa señal tanto en bonÀrea como en «Todos». Conserva búsqueda
+  FTS/trigram ES/CA, faceta Descuento, categorías, rango de precio y paginación
+  por nombre/precio/precio unitario. Solo se proyecta el subárbol de insignias.
+  Etiquetas «Bajada precio»/«Baixada preu»; sin inventar precio anterior ni fin.
+  `discount` y variaciones históricas no certifican una oferta.
+- Migración local `20261015115457_bonarea_explicit_offers.sql`, aplicada en
+  producción como **20261015115729**. Sustituye únicamente los cuatro predicados
+  de Ofertas del RPC existente, con guarda de definición e idempotencia;
+  Novedades, firma, ACL y SECURITY INVOKER permanecen iguales. Sin columnas
+  nuevas, resync ni modificación de productos.
+- QA real con clave pública/rol anon, 15-10 11:58:36 UTC: 114/114 en cuatro
+  recorridos completos (precio asc/desc, precio unitario y nombre CA), sin
+  pérdidas/duplicados; 46 categorías. Búsqueda y filtros combinados ES/CA
+  verificados con las funciones reales del cliente. TypeScript, ESLint,
+  33/33 pruebas dirigidas y diff correctos; asesores sin hallazgos nuevos de
+  bonÀrea. Sin QA visual nativa ni publicación del cliente/commit/push.
+
+## Lidl: 600 ilustraciones adicionales completadas (2026-10-15)
+
+- Completados **600/600 productos únicos publicados**, con foto oficial real y sin ilustración anterior. Snapshot inicial: 3088 elegibles; 21 fuentes inválidas sustituidas antes de generar y 79 reservas restantes. Selección y 301 ilustraciones anteriores protegidas en `assets/product-illustrations/lidl-20261015-600/manifest.json`.
+- Auditoría conjunta: **2026-10-15 14:23:09 UTC**, **600 publicados y verificados**, cero pendientes, fallos, incidencias visuales abiertas o cambios de catálogo; **36.772.056 bytes**. URL en BD, lectura pública, MIME WebP, SHA-256, bytes, dimensiones hasta 768 px, alfa y margen comprobados. Las **301 ilustraciones anteriores siguen intactas**. Evidencia en `verification.json` y `jobs/`.
+- ImageGen integrado por producto, estilo Mercadona 10699 y revisión visual del WebP final. Conservados **621 PNG nativos/versiones**, prompts exactos y recibos. Correcciones de marcas, cantidades, encuadre y piezas resueltas; DYC se corrigió sustituyendo únicamente su propia URL anterior mediante compare-and-set, con historial conservado.
+- Los **600 JPG fuente y 600 WebP temporales** se procesaron exclusivamente en `/private/tmp/lidl-20261015-600` y se eliminaron después de verificar cada subida. Referencia WebP temporal también eliminada. **Cero JPG/JPEG/WebP en assets/product-illustrations y en el temporal de esta tanda**; comprobación en `filesystem-check.json`.
+- Se actualizó solo `lidl_product_master.illustration_url`, con guardas de publicado, tienda activa, foto intacta y valor anterior esperado. Cliente/vista Lidl todavía no consume este campo; integración visual fuera de este encargo. `npx tsc --noEmit`, sintaxis de los scripts y diff correctos. Sin commit/push de esta tanda.
+
+## Carrefour: carga de ofertas en App Store diagnosticada (2026-10-15)
+
+- El usuario confirma el bloqueo en la app de App Store. Los logs reales
+  siguen mostrando clientes iOS `QuFalta/57` recorriendo candidatos con
+  `raw->quefalta_offers.not.is.null`; el catálogo contiene ahora 33.615
+  productos publicados, sincronizados el 12-10. No es el catálogo obsoleto
+  del diagnóstico del 06-10: la carga antigua sigue descargando productos
+  sin ofertas antes de poder ordenar por precio y pintar la primera página.
+- La corrección del 06-10 ya está en el código actual y su RPC está activa en
+  producción, pero continúa pendiente distribuirla al cliente de App Store.
+  No confundir commit/push con publicación de build/OTA. No se ha publicado
+  ninguna actualización durante esta revisión ni se ha cambiado el catálogo.
+- Comparación de las funciones reales de `src/api/catalog.ts` de `f0f89506`
+  y del checkout actual contra REST pública, orden inicial ascendente:
+  Asturias, 44 peticiones/56.147.389 bytes/14.322 ms →
+  1 petición/32.919 bytes/1.714 ms; Cataluña,
+  35 peticiones/53.324.364 bytes/9.323 ms →
+  1 petición/32.903 bytes/1.409 ms. Coinciden exactamente los IDs, precios,
+  promociones principales y precios anteriores de las primeras 50 ofertas.
+  Son bytes JSON sin comprimir y tiempos de esta conexión, no una garantía
+  para cada móvil. Evidencia en `docs/carrefour-offers-investigation-20261015.json`.
+- Revalidados 11/11 tests de cliente, 69 comparaciones SQL con PGlite y
+  `npx tsc --noEmit`. No se requiere otra migración ni repetir el sync para
+  esta incidencia. Pendiente distribución del cliente y QA nativa/publicada.
+
+## Lidl: 300 ilustraciones adicionales completadas (2026-10-15)
+
+- Completados **300/300 productos únicos publicados**, con foto oficial real y sin ilustración anterior. Selección en `assets/product-illustrations/lidl-20261014-300/manifest.json`; 3108 elegibles al inicio, 30 reservas sin usar. La ilustración Leyma anterior permanece intacta: 301 ilustraciones Lidl tras esta tanda.
+- Auditoría conjunta: **2026-10-15 08:45:19 UTC**, 300 publicados y verificados, cero pendientes/fallos/cambios de catálogo; **19.667.520 bytes**. Lectura pública, URL en BD, MIME WebP, SHA-256, bytes, dimensiones de hasta 768 px, alfa y margen completo comprobados. Evidencia en `verification.json` y `jobs/`.
+- ImageGen integrado por producto, estilo Mercadona 10699, prompts exactos y revisión visual del WebP final. Conservados 310 PNG nativos/versiones. Correcciones de envases, marcas y texto resueltas antes de subir; un fallo de conexión resuelto con un reintento, sin bloqueos pendientes.
+- Los 300 JPG fuente y 300 WebP se procesaron exclusivamente en `/private/tmp/lidl-20261014-300` y se eliminaron después de verificar Storage/BD. **Cero JPG/JPEG/WebP en assets/product-illustrations**. El proyecto conserva PNG, prompts, manifiestos y recibos.
+- Se actualizó solo `lidl_product_master.illustration_url`, con guardas de publicado, tienda activa, foto intacta y campo vacío. Cliente/vista Lidl todavía no consume esta ilustración; integración visual fuera de este encargo. Typecheck `npx tsc --noEmit` correcto. Sin commit/push de esta tanda.
+
+## Despensa: ficha rediseñada y editable (local, 2026-10-14)
+
+- Acciones inferiores: botones de 50 pt redondeados, iconos circulares y texto
+  alineado. Carrito con acento, brillo suave y sombra; «Se ha terminado» con
+  fondo de tarjeta y borde. Pulsación con escala/opacidad y respeto a Reducir
+  movimiento; conserva carga, confirmación y bloqueo de dobles toques.
+  Espaciado ajustado para nombres de dos líneas y ambos botones completos.
+  QA visual iOS, TypeScript y ESLint correctos; comportamiento sin cambios.
+- Cantidad: botones circulares independientes de 46 pt, suma con acento sólido
+  y símbolo blanco, resta con borde suave y contador central de 24 pt.
+  Pulsación con opacidad/escala (solo opacidad con Reducir movimiento) y
+  límites desactivados visibles. El control pasa a otra fila en anchos menores
+  de 360 pt o texto grande. QA visual iOS, TypeScript y ESLint correctos.
+- Ajuste visual posterior: fondo con `expo-blur` (intensidad 65), fundido
+  sincronizado con apertura/cierre y `BlurTargetView` para el fondo en Android.
+  La ilustración aprovecha el espacio bajo el área segura y crece ~40 % en el
+  iPhone 15 Pro, sin reducir la tarjeta ni modificar tamaños guardados. El blur
+  permanece detrás del teclado, el producto y los controles. Verificado en iOS;
+  TypeScript, ESLint focalizado y las 65 pruebas de despensa correctos.
+- `PantryProductFocus` muestra la ilustración sola sobre el fondo desenfocado,
+  sin halo circular. La tarjeta conserva degradado sutil y sombra,
+  cabecera de producto y acciones con
+  distinta jerarquía. Conserva el zoom desde/hacia la balda y Reducir movimiento.
+- Cantidad, Ubicación y Notas aparecen siempre en columna: controles +/−
+  (1–999 unidades), selector de balda real y notas de hasta 100 caracteres.
+  Cambiar de balda busca un hueco sin mover vecinos; si no cabe, muestra un
+  error dentro del panel y conserva la ubicación. La Lista refleja la cantidad.
+- Cantidad/notas se guardan por instancia en el layout local por cuenta y
+  sección. Entradas antiguas siguen representando una unidad sin notas;
+  lectura compatible con v1, sin migración ni backend. Errores de guardado y
+  reintento accesibles también desde la ficha. Notas se guardan al escribir.
+- El teclado deja accesibles las notas y ofrece «Listo». Textos ES/CA,
+  superficies temadas y controles accesibles. Añadir al carrito mantiene una
+  unidad para reponer; «Se ha terminado» retira la instancia y su cantidad.
+- QA iPhone 15 Pro/iOS 26.5: claro/oscuro, teclado, cantidad, selector y notas
+  conservadas al cerrar/reabrir. Datos de prueba retirados desde la UI.
+  TypeScript, ESLint focalizado, 65/65 pruebas de despensa y diff correctos.
+  Sin publicación ni cambios remotos.
+
+## Alertas personalizadas: retirado el aviso de cuenta gratuita (2026-10-14)
+
+- La pantalla ya no muestra el recuadro «Tu cuenta gratuita incluye 1 alerta
+  personalizada…». El límite y las acciones de Plus permanecen sin cambios.
+- En el editor, «Nombre de la alerta» aparece al principio; «Palabras» queda
+  después de «Supermercados» y pasa a llamarse «Palabras que definen la alerta».
+  Su botón informativo explica que deben coincidir todos los términos y que no
+  se distinguen mayúsculas ni acentos; en novedades funciona igual, por ejemplo
+  «mantecado canela», y sigue siendo opcional. Migración `20261012192222`
+  comprobada en producción.
+- El acceso a alertas sale de Perfil y aparece bajo los accesos de Cambios de
+  precio y Favoritos en Inicio, a ancho completo, con línea discontinua y fondo
+  azul claro. El texto distingue cero alertas de las existentes; recuento
+  remoto actualizado al enfocar Inicio. Sin cambios de backend.
+- El icono de la alerta aparece a la derecha de «Nombre de la alerta». Al tocarlo,
+  se abre el mismo selector de iconos que usan los grupos; se reutiliza la
+  columna `emoji` existente, sin migración.
+- Los filtros de Novedades, Ofertas y cambios de precio adoptan el mismo marco
+  y cabecera del editor, con borde superior y botón X. Textos ES/CA incluidos.
+- Cliente y traducciones ES/CA actualizados. TypeScript y `git diff --check`
+  correctos; sin cambios de backend ni migraciones.
 
 ## Entrega conjunta a GitHub (2026-10-13)
 
@@ -560,6 +1195,38 @@ Sin reanudación automática. Los 876 anteriores y 124 pendientes conservan su e
   al solicitar detener reintentos), 12421 → 34170 (dos). Sustitutos publicados
   originalmente sin ilustración, fuera de las otras selecciones. Los productos
   excluidos no se publicaron; trazabilidad en `selection-replacements.json`.
+
+## Alcampo: catálogo Playwright y ofertas API (local, 2026-10-15)
+
+- `sync-alcampo-playwright.mjs` reserva Chromium para el catálogo y cierra el
+  navegador antes de recorrer directorios promocionales y detalles de campañas
+  con `AlcampoApi`. Mantiene las ramas de folletos/campañas, la cola dinámica y
+  la fusión de productos alimentarios; no hay fallback de ofertas al navegador.
+- Exige paginación completa, productos decorados, detalle de campaña válido y
+  coincidencia de región API/SSR/checkpoint. Conserva condiciones, rebajas,
+  €/unidad, exclusividad online y fechas estructuradas en `Europe/Madrid`.
+- Los nuevos marcadores `api:promotion:*` y `api:offer:*` impiden reutilizar como
+  completos los recorridos antiguos de navegador. Al reanudar un checkpoint
+  anterior conserva productos, pero revalida páginas y redescubre campañas.
+- Sin publicación ni migraciones. El checkpoint existente permanece intacto;
+  falta validar el barrido híbrido completo antes de un futuro `-Publish`.
+  Operación y límites en `scripts/README-alcampo-playwright.md`.
+- 55 pruebas dirigidas, TypeScript y sintaxis correctos. Piloto API de una
+  categoría y sus dos campañas: 864 productos únicos, sin expandir la cola más
+  allá de las campañas del directorio. Sin navegador ni escrituras de catálogo.
+
+## Carrefour: publicación parcial ante categorías fallidas (local, 2026-10-07)
+
+- El último intento del 05/10 falló antes de publicar: Sushi en Galicia/Murcia
+  redirige a la portada; Cuidado del cabello en Extremadura falló en offset 72.
+- El sync valida HTTP/URL final y acumula cada categoría solo tras validarla.
+  Una categoría fallida ya no cancela las restantes: publicación `OK PARCIAL`,
+  conservando sus filas y productos compartidos en todas las zonas. Sin limpieza
+  global ni avance de `catalog_sync_status` hasta un barrido completo.
+- Cambio local de scripts y documentación; sin sync real ni escrituras remotas.
+  37 pruebas focalizadas y TypeScript correctos. Lecturas reales confirman las
+  redirecciones y los 284 IDs protegidos (REST coincide con SQL).
+  Contrato, límites y pruebas en `scripts/README-carrefour-sync.md`.
 
 ## Verificación conjunta antes de subir a GitHub (2026-10-07)
 
@@ -1804,7 +2471,7 @@ Documento canónico de la integración: [HIPERCOR.md](HIPERCOR.md).
   se muestra en onboarding, catálogo, ofertas, novedades, cambios de precio y
   Preferencias sin duplicar recursos por pantalla.
 - BM entró en la comparativa v7 el 30-09 con resolución multizona por perfil.
-  El workflow de sync continúa manual; ampliar a otra provincia exige añadir su
+  El workflow de sync es semanal los lunes; ampliar a otra provincia exige añadir su
   CP de referencia al sync y a `retailerZones.ts`.
 - Producción verificada por REST anónima: las siete relaciones están habilitadas
   y preferentes, cada ubicación expone entre 7.103 y 8.420 productos publicados,

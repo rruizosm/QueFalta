@@ -513,6 +513,8 @@ function mirrorMercadonaProduct(r: any, ca: boolean): MercadonaProduct {
     id: String(r.id ?? raw?.id ?? ''),
     slug: String(r.slug ?? raw?.slug ?? ''),
     display_name,
+    glutenFreeByName: /sin gluten/i.test(r.display_name ?? raw?.display_name ?? '')
+      || /sense gluten/i.test(r.display_name_ca ?? ''),
     packaging: String(r.packaging ?? raw?.packaging ?? ''),
     thumbnail: String(r.thumbnail ?? raw?.thumbnail ?? ''),
     price_instructions: priceInstructions,
@@ -531,6 +533,26 @@ export async function searchProducts(query: string, region: RegionValue | null, 
     region, limit, offset, signal, order, language,
   });
   return rows.map((r: any) => mirrorMercadonaProduct(r, ca));
+}
+
+/** Productos de Mercadona cuyo nombre indica explícitamente «sin gluten» o
+ *  «sense gluten». Busca ambas columnas aunque la app esté en un solo idioma. */
+export async function fetchMercadonaGlutenFreeProducts(
+  region: RegionValue | null,
+  signal?: AbortSignal,
+): Promise<MercadonaProduct[]> {
+  const ca = getLanguage() === 'ca';
+  const query = filterRegionalAvailability(
+    supabase
+      .from('mercadona_products')
+      .select(MERCADONA_LIST_COLS)
+      .eq('published', true)
+      .or('display_name_norm.ilike.%sin gluten%,display_name_ca_norm.ilike.%sense gluten%'),
+    region,
+  ).order(ca ? 'display_name_ca_norm' : 'display_name_norm').limit(1000);
+  const { data, error } = await abortable(query, signal);
+  if (error) throw error;
+  return (data ?? []).map((r: any) => mirrorMercadonaProduct(r, ca));
 }
 
 /** Navegación alfabética del catálogo de Mercadona (sin búsqueda), paginada por
@@ -3455,11 +3477,16 @@ async function fetchPriceChangesUncached(
 /** Súpers con ofertas; OffersScreen monta su selector con
  *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
 export const OFFER_STORES: CatalogStore[] = [
-  'carrefour', 'esclat', 'consum', 'dia', 'sorli', 'eroski', 'caprabo',
+  'carrefour', 'esclat', 'bonarea', 'consum', 'dia', 'sorli', 'eroski', 'caprabo',
   'condis', 'ametller', 'aldi', 'lidl', 'bm', 'eljamon', 'hiperdino', 'alcampo', 'plusfresc', 'gadis', 'ahorramas',
 ];
 
 type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo' | 'gadis' | 'ahorramas' | 'eljamon';
+
+// Señal explícita «Bajada precio» / «Baixada preu» del retailer, ya conservada
+// por el sync. No equivale a una variación de precio entre dos sincronizaciones.
+const BONAREA_OFFER_SIGNAL = { caracteristiques: [{ descripcio: 'BAIXADA_PREU' }] };
+const BONAREA_OFFER_COLS = `${BONAREA_COLS}, offer_characteristics:raw->caracteristiques`;
 
 const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
   table: string;
@@ -3618,6 +3645,10 @@ export async function fetchOfferCategories(
       if (store === 'esclat') {
         q = supabase.from('bonpreu_products').select('id, category_name')
           .eq('published', true).not('promo_name', 'is', null).not('category_name', 'is', null);
+      } else if (store === 'bonarea') {
+        q = supabase.from('bonarea_products').select('id, category_name')
+          .eq('published', true).contains('raw', BONAREA_OFFER_SIGNAL)
+          .not('category_name', 'is', null);
       } else if (store === 'consum') {
         const zone = consumZoneFromPostalCode(postalCode);
         if (!zone) return null;
@@ -3887,6 +3918,34 @@ export async function fetchBonpreuOffers(
     prevPrice: null,
   }));
   return { items, nextCursor };
+}
+
+function mapBonareaOfferRows(rows: any[]): StoreOffer[] {
+  return rows.flatMap((row) => {
+    const badges = row.offer_characteristics;
+    if (!Array.isArray(badges) || !badges.some((badge) => badge?.descripcio === 'BAIXADA_PREU')) return [];
+    return [{
+      product: bonareaToUI(mapBonarea(row)),
+      promoName: getLanguage() === 'ca' ? 'Baixada preu' : 'Bajada precio',
+      promoEnd: null,
+      prevPrice: null,
+      promotionKinds: ['discount' as const],
+    }];
+  });
+}
+
+export async function fetchBonareaOffers(
+  cursor: BrowseCursor | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const normCol = getLanguage() === 'ca' ? 'display_name_ca_norm' : 'display_name_norm';
+  const { rows, nextCursor } = await keysetPage(
+    'bonarea_products', BONAREA_OFFER_COLS, offerOrderColumn(filters, normCol), cursor, limit,
+    (q) => applyOfferFilters(q.contains('raw', BONAREA_OFFER_SIGNAL), filters, normCol),
+    offerBrowseOrder(filters),
+  );
+  return { items: mapBonareaOfferRows(rows), nextCursor };
 }
 
 /** La API de Consum solo considera oferta una fila con OFFER_PRICE. La zona se
@@ -4288,6 +4347,7 @@ export async function fetchPlusfrescOffers(
 const offerSearchColumns = (store: CatalogStore): string => {
   if (store === 'carrefour') return CARREFOUR_COLS;
   if (store === 'esclat') return BONPREU_COLS;
+  if (store === 'bonarea') return BONAREA_OFFER_COLS;
   if (store === 'consum') return CONSUM_OFFER_COLS;
   if (store === 'dia') return DIA_OFFER_COLS;
   if (store === 'sorli') return SORLI_COLS;
@@ -4309,6 +4369,7 @@ function mapOfferSearchRows(
   region: RegionValue | null,
   postalCode: string | null,
 ): StoreOffer[] {
+  if (store === 'bonarea') return mapBonareaOfferRows(rows);
   if (store === 'carrefour') return rows.flatMap((row) => {
     const product = mapCarrefour(row, region);
     return product.promotions.length ? [{
@@ -4524,6 +4585,7 @@ function fetchStoreOfferPage(
   lidlStoreId: string | null = null,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
   if (store === 'esclat') return fetchBonpreuOffers(cursor, limit, filters);
+  if (store === 'bonarea') return fetchBonareaOffers(cursor, limit, filters);
   if (store === 'consum') return fetchConsumOffers(cursor, region, postalCode, limit, filters);
   if (store === 'dia') return fetchDiaOffers(cursor, region, limit, filters);
   if (store === 'sorli') return fetchSorliOffers(cursor, limit, filters);

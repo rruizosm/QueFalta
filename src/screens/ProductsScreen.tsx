@@ -42,6 +42,10 @@ export default function ProductsScreen() {
     () => products.map((p) => mercadonaToUI(p, categoryName)),
     [products, categoryName],
   );
+  const glutenFreeProductIds = useMemo(
+    () => new Set(products.filter((p) => p.glutenFreeByName).map((p) => p.id)),
+    [products],
+  );
 
   return (
     <View style={styles.container}>
@@ -53,13 +57,11 @@ export default function ProductsScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.title} numberOfLines={1}>{subcategoryName}</Text>
-          <Text style={styles.breadcrumb}>
-            {categoryName} <Text style={{ color: colors.inkFaint }}>›</Text> {subcategoryName}
-          </Text>
         </View>
       </View>
 
-      <StoreProductList products={uiProducts} pageSize={50} loading={loading} error={error} emoji={emoji} searchable roundedCards />
+      <StoreProductList products={uiProducts} glutenFreeProductIds={glutenFreeProductIds}
+        pageSize={50} loading={loading} error={error} emoji={emoji} searchable roundedCards />
     </View>
   );
 }
@@ -76,5 +78,4 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1, borderColor: colors.border,
   },
   title: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  breadcrumb: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 });

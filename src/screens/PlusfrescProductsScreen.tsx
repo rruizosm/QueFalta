@@ -49,10 +49,6 @@ export default function PlusfrescProductsScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.title} numberOfLines={1}>{categoryName}</Text>
-          <Text style={styles.breadcrumb} numberOfLines={1}>
-            {parentName ? <>{parentName} <Text style={{ color: colors.inkFaint }}>›</Text> </> : null}
-            {categoryName}
-          </Text>
         </View>
       </View>
 
@@ -82,5 +78,4 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1, borderColor: colors.border,
   },
   title: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  breadcrumb: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 });

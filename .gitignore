@@ -62,3 +62,6 @@ supabase/.temp/
 # vectores generados del piloto (reproducibles; ~7 MB y no necesarios en Git)
 supabase/experiments/comparator-embedding-pilot-vectors.jsonl
 supabase/experiments/comparator-embedding-pilot-vectors.jsonl.tmp
+
+# Generated product illustrations stay local, outside Git.
+/assets/product-illustrations/

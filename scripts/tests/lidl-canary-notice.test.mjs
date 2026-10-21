@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 const dropdown = read('src/components/StoreDropdown.tsx');
-const catalog = read('src/screens/CatalogScreen.tsx');
+const catalog = read('src/screens/CatalogScreen.tsx') + read('src/components/catalogBrowserStyles.ts');
 const allStoresModal = read('src/components/AllStoresInfoModal.tsx');
 const infoButton = read('src/components/StoreInfoButton.tsx');
 const cardActionButton = read('src/components/StoreCardActionButton.tsx');

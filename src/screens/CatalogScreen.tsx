@@ -3,15 +3,13 @@ import { assertCatalogSearchGeneration, getCatalogSearchGeneration } from '../li
 import { PagerNativeScrollView as ScrollView, PagerNativeFlatList as FlatList } from '../components/bottom-tabs-pager/PagerNativeScroll';
 import { loadBrowsePage, peekBrowsePage } from '../api/catalogBrowse';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { fonts } from '../constants/typography';
+import { catalogBrowserStyles as themedStyles } from '../components/catalogBrowserStyles';
 import {
   View,
   FlatList as NativeFlatList,
   Text,
   Image,
   TouchableOpacity,
-  TextInput,
-  StyleSheet,
   StatusBar,
   ActivityIndicator,
   Modal,
@@ -34,7 +32,7 @@ import {
   type MercadonaProduct,
 } from '../api/mercadona';
 import {
-  searchProducts, searchBonpreuProducts, fetchBonpreuCategoryTree,
+  searchProducts, fetchMercadonaGlutenFreeProducts, searchBonpreuProducts, fetchBonpreuCategoryTree,
   searchCarrefourProducts, fetchCarrefourCategoryTree,
   searchBonareaProducts, fetchBonareaCategoryTree,
   searchConsumProducts, fetchConsumCategoryTree,
@@ -96,7 +94,10 @@ import ActionSheet from '../components/ActionSheet';
 import StoreProductList, { type ProductSelection } from '../components/StoreProductList';
 import { type ViewMode } from '../components/ViewModeToggle';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import SlidingSegments, { type Segment } from '../components/SlidingSegments';
+import SlidingSegments from '../components/SlidingSegments';
+import CatalogSearchField from '../components/CatalogSearchField';
+import CatalogTabSelector from '../components/CatalogTabSelector';
+import CatalogFilterSheet from '../components/CatalogFilterSheet';
 import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import { useCatalogStore } from '../context/CatalogStoreContext';
 import PaywallModal from '../components/PaywallModal';
@@ -476,6 +477,12 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const [prodResults, setProdResults] = useState<MercadonaProduct[]>([]);
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState(false);
+  const [glutenOnly, setGlutenOnly] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [glutenResults, setGlutenResults] = useState<MercadonaProduct[]>([]);
+  const [glutenLoading, setGlutenLoading] = useState(false);
+  const [glutenError, setGlutenError] = useState(false);
+  const [glutenReload, setGlutenReload] = useState(0);
 
   // BÃºsqueda conjunta cuando el selector estÃ¡ en "Todos".
   const [allSearch, setAllSearch] = useState('');
@@ -815,7 +822,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     browseMoreController.current?.abort();
     browseInitialController.current = null;
     browseMoreController.current = null;
-    if (!browseMode) {
+    if (!browseMode || (store === 'mercadona' && glutenOnly)) {
       setBrowseMore(false);
       return;
     }
@@ -902,7 +909,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     };
   }, [
     store, browseMode, lang, region, postalCode, lidlStoreId, activeBrowseKey, browseOrder,
-    compareActiveProducts, accessibleStores,
+    compareActiveProducts, accessibleStores, glutenOnly,
   ]);
 
   // Siguiente página keyset al llegar al final de la lista.
@@ -963,9 +970,26 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Mercadona: búsqueda server-side con debounce (antes barría ~100 subcategorías).
   useEffect(() => {
-    if (store !== 'mercadona') return;
+    if (store !== 'mercadona' || glutenOnly) return;
     return startProductSearch(prodSearch, (q, signal) => searchProducts(q, region, 50, signal, 0, productSearchOrder), setProdResults, setProdLoading, setProdError);
-  }, [searchGeneration, store, prodSearch, lang, region, productSearchOrder]);
+  }, [searchGeneration, store, prodSearch, lang, region, productSearchOrder, glutenOnly]);
+
+  useEffect(() => {
+    if (store !== 'mercadona' || !glutenOnly || productSelection) return;
+    const controller = new AbortController();
+    let cancelled = false;
+    setGlutenResults([]);
+    setGlutenLoading(true);
+    setGlutenError(false);
+    fetchMercadonaGlutenFreeProducts(region, controller.signal)
+      .then((items) => { if (!cancelled) setGlutenResults(items); })
+      .catch(() => { if (!cancelled) setGlutenError(true); })
+      .finally(() => { if (!cancelled) setGlutenLoading(false); });
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [store, glutenOnly, glutenReload, region, lang, productSelection]);
 
   // BonpreuEsclat: búsqueda server-side con debounce.
   useEffect(() => {
@@ -1527,6 +1551,52 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     if (store === 'lidl' && !lidlStoreId) {
       return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.lidlStoreRequired')}</Text></View>;
     }
+    if (store === 'mercadona' && glutenOnly && !productSelection) {
+      const queryWords = query.trim().length >= 2
+        ? query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).filter(Boolean)
+        : [];
+      const matchingGlutenProducts = glutenResults
+        .map((product) => mercadonaToUI(product))
+        .filter((product) => {
+          if (queryWords.length === 0) return true;
+          const normalizedName = product.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          return queryWords.every((word) => normalizedName.includes(word));
+        });
+      const orderedGlutenProducts = query.trim().length >= 2
+        ? productSearchOrder === 'relevance'
+          ? [...matchingGlutenProducts].sort((a, b) => {
+            const scoreDifference = relevanceScore(b.name, query) - relevanceScore(a.name, query);
+            return scoreDifference || compareByName(a.name, b.name);
+          })
+          : [...matchingGlutenProducts].sort(compareSearchProducts!)
+        : [...matchingGlutenProducts].sort(compareActiveProducts);
+
+      if (glutenLoading) {
+        return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />;
+      }
+      if (glutenError) {
+        return (
+          <View style={styles.centerBox}>
+            <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Mercadona' })}</Text>
+            <TouchableOpacity onPress={() => setGlutenReload((value) => value + 1)}>
+              <Text style={styles.retryText}>{t('common.retry')}</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      }
+      if (orderedGlutenProducts.length === 0) {
+        return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.noResults')}</Text></View>;
+      }
+      return (
+        <StoreProductList
+          selection={productSelection}
+          products={orderedGlutenProducts}
+          hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+          roundedCards keepOrder topInset={glassInset}
+          onScrollBeginDrag={handleProductScrollBegin}
+        />
+      );
+    }
     const extraItems = store !== 'all' && storeSearchExtra.key === activeStoreSearchKey
       ? storeSearchExtra.items
       : [];
@@ -1579,26 +1649,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   };
 
   const searchBar = (placeholder: string, value: string, onChange: (s: string) => void) => (
-    <View style={styles.searchBar}>
-      <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
-      <TextInput
-        style={styles.searchInput}
-        placeholder={placeholder}
-        placeholderTextColor={colors.inkFaint}
-        value={value}
-        onChangeText={onChange}
-        returnKeyType="search"
-      />
-      {value.length > 0 && (
-        <TouchableOpacity
-          onPress={() => onChange('')}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.clear')}
-        >
-          <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-        </TouchableOpacity>
-      )}
-    </View>
+    <CatalogSearchField placeholder={placeholder} value={value} onChange={onChange} />
   );
 
   const lockedUnitPriceSortButton = (direction: ProductSortDirection) => {
@@ -1664,51 +1715,12 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const productSearchRow = (placeholder: string, value: string, onChange: (s: string) => void) => (
     <View style={styles.prodSearchBlock}>
       <View style={styles.prodSearchRow}>
-        <View
-          style={[
-            styles.searchBar,
-            styles.prodSearchBox,
-            glassAvailable ? styles.prodSearchBoxGlass : styles.prodSearchBoxFallback,
-            productSearchExpanded
-              ? styles.prodSearchBoxExpanded
-              : styles.prodSearchBoxCollapsed,
-          ]}
-        >
-          <Ionicons name="search-outline" size={20} color={colors.inkSoft} />
-          {productSearchExpanded ? (
-            <>
-              <TextInput
-                style={styles.searchInput}
-                placeholder={placeholder}
-                placeholderTextColor={colors.inkFaint}
-                value={value}
-                onChangeText={onChange}
-                onFocus={() => setProductSearchFocus(true)}
-                onBlur={() => setProductSearchFocus(false)}
-                returnKeyType="search"
-                autoCorrect={false}
-                autoFocus
-              />
-              {value.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => onChange('')}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('common.clear')}
-                >
-                  <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-                </TouchableOpacity>
-              )}
-            </>
-          ) : (
-            <TouchableOpacity
-              style={styles.prodSearchActivator}
-              onPress={() => setProductSearchFocus(true)}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel={placeholder}
-            />
-          )}
-        </View>
+        <CatalogSearchField
+          product expanded={productSearchExpanded}
+          placeholder={placeholder} value={value} onChange={onChange}
+          onFocus={() => setProductSearchFocus(true)}
+          onBlur={() => setProductSearchFocus(false)}
+        />
         {!productSearchExpanded && (
           <View style={styles.prodSortGroup}>
           {unitPriceSortLocked ? (
@@ -1782,6 +1794,27 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
             </View>
           )}
           </View>
+        )}
+        {store === 'mercadona' && !productSelection && !productSearchExpanded && (
+          glassAvailable || Platform.OS === 'android' ? (
+            <SlidingSegments
+              compact dense emphasized allowReselect transparentTrack={Platform.OS === 'android'}
+              segments={[{ key: 'filters', icon: 'options-outline', accessibilityLabel: t('catalog.filterA11y') }]}
+              value={glutenOnly ? 'filters' : null}
+              onChange={() => setFilterOpen(true)}
+            />
+          ) : (
+            <TouchableOpacity
+              style={[styles.filterBtn, glutenOnly && styles.filterBtnOn]}
+              onPress={() => setFilterOpen(true)}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={t('catalog.filterA11y')}
+              accessibilityState={{ selected: glutenOnly }}
+            >
+              <Ionicons name="options-outline" size={20} color={glutenOnly ? colors.white : colors.inkSoft} />
+            </TouchableOpacity>
+          )
         )}
         {store === 'lidl' && lidlStoreId && !productSearchExpanded ? (
           glassAvailable || Platform.OS === 'android' ? (
@@ -1868,13 +1901,6 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       onOpenChange={setStoreMenuOpen}
     />
   );
-  const tabSegments: Segment<'productos' | 'categorias'>[] = [
-    { key: 'productos', label: t('catalog.tabProducts'), icon: 'cube-outline' },
-  ];
-  if (!isAllStores) {
-    tabSegments.push({ key: 'categorias', label: t('catalog.tabCategories'), icon: 'grid-outline' });
-  }
-
   // Chrome de la pantalla (cabecera + fila de pestañas/selector + buscador),
   // rediseñado según el panel de Claude Design (segmentado de pastilla blanca,
   // chip redondo de súper, buscador y toggle redondeados). Es idéntico en ambos
@@ -1900,10 +1926,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
         ) : storeSelectorBlock}
       </View>
 
-      {/* Fila única: pestañas Productos/Categorías (flex) + selector de súper
-          como bloque aparte a la derecha. En iOS glass y Android, píldora de
-          acento deslizante (SlidingSegments); Android elimina la pista de fondo.
-          El resto del fallback conserva el segmentado estático. */}
+      {/* Selector de supermercado en ingredientes y pestañas en el catálogo. */}
       {productSelection ? (
         <ScrollView
           horizontal
@@ -1951,37 +1974,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
           ))}
         </ScrollView>
       ) : <View style={styles.controlsRow}>
-        {glassAvailable || Platform.OS === 'android' ? (
-          <SlidingSegments
-            style={{ flex: 1 }}
-            emphasized
-            transparentTrack={Platform.OS === 'android'}
-            segments={tabSegments}
-            value={tab}
-            onChange={setTab}
-          />
-        ) : (
-          <View style={styles.seg}>
-            <TouchableOpacity
-              style={[styles.segBtn, tab === 'productos' && styles.segBtnOn]}
-              onPress={() => setTab('productos')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="cube-outline" size={16} color={tab === 'productos' ? colors.accent : colors.inkSoft} />
-              <Text style={[styles.segTxt, tab === 'productos' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabProducts')}</Text>
-            </TouchableOpacity>
-            {!isAllStores && (
-              <TouchableOpacity
-                style={[styles.segBtn, tab === 'categorias' && styles.segBtnOn]}
-                onPress={() => setTab('categorias')}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="grid-outline" size={16} color={tab === 'categorias' ? colors.accent : colors.inkSoft} />
-                <Text style={[styles.segTxt, tab === 'categorias' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabCategories')}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+        <CatalogTabSelector value={tab} onChange={setTab} includeCategories={!isAllStores} />
       </View>}
 
       {/* Buscador de la pestaña activa (categorías compartido; productos por súper). */}
@@ -2629,16 +2622,18 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
           se refracta al pasar por debajo (topInset = altura medida del chrome).
-          El selector sigue dentro: el cristal arranca en y=0 y su onLayout mide
-          en pantalla (measureInWindow) para anclar el menú. */}
+          El fondo es hermano de los controles para evitar cristal anidado. */}
       {glassAvailable && (
         <View
-          style={styles.chrome}
+          style={[styles.chrome, styles.chromeGlass]}
           onLayout={(e) => setChromeH(e.nativeEvent.layout.height)}
         >
-          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
-            {chrome}
-          </GlassSurface>
+          <GlassSurface
+            style={styles.chromeBackdrop}
+            fallbackColor={colors.paper}
+            pointerEvents="none"
+          />
+          {chrome}
         </View>
       )}
 
@@ -2804,6 +2799,13 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
         onClose={() => setPaywallVisible(false)}
       />
 
+      <CatalogFilterSheet
+        visible={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        glutenOnly={glutenOnly}
+        onGlutenOnlyChange={setGlutenOnly}
+      />
+
       {sheetCat && (
         <ActionSheet
           visible
@@ -2822,326 +2824,3 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     </View>
   );
 }
-
-const themedStyles = () => StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.paper },
-  pickerClose: {
-    width: 44, height: 44, borderRadius: 22,
-    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt,
-  },
-  pickerStores: { paddingHorizontal: 16, paddingBottom: 12, gap: 8 },
-  pickerStore: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    minHeight: 46, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16,
-    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
-  },
-  pickerStoreActive: { backgroundColor: colors.accentLight, borderColor: colors.accentMid },
-  pickerStoreLocked: { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
-  pickerStoreLogo: { width: 28, height: 28, borderRadius: 8 },
-  lidlStoreLogo: { borderRadius: 0 },
-  pickerStoreName: { fontSize: 12, fontFamily: fonts.semibold, color: colors.inkSoft },
-  pickerStoreNameActive: { color: colors.accent },
-
-  headerArea: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 10,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  titleWrap: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  titleIcon: {
-    width: 28, height: 28, borderRadius: 14,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  title: {
-    flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
-  },
-
-  // ── Store selector (avatar redondo con logo, sin anillo) ───────
-  selector: {
-    width: 48, height: 48, borderRadius: 24, overflow: 'hidden',
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  selectorLogo: { width: '100%', height: '100%' },
-
-  // ── Panel de tiendas: rejilla a pantalla completa (2 columnas) ─
-  storeSheet: { flex: 1, backgroundColor: colors.paper },
-  storeSheetHeader: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: colors.border,
-  },
-  storeSheetTitle: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  storeCloseBtn: {
-    width: 38, height: 38, borderRadius: 19,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.surfaceAlt,
-  },
-  storeGrid: { padding: 16 },
-  storeGridRow: { gap: 12, marginBottom: 12 },
-  storeAllCardBackground: {
-    height: 78,
-    marginBottom: 12,
-  },
-  storeAllInfoButton: {
-    position: 'absolute', left: 8, bottom: 4,
-    zIndex: 1,
-  },
-  storeAllCard: {
-    flex: 1,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-    paddingHorizontal: 16,
-    backgroundColor: 'transparent',
-    borderRadius: 20,
-  },
-  storeAllCardSelected: { backgroundColor: colors.accentLight, borderColor: colors.accent },
-  storeAllCardLocked: { backgroundColor: colors.surfaceAlt },
-  storeAllCardUnlocked: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  storeAllCardUnlockedSelected: {
-    backgroundColor: colors.accentLight,
-    borderColor: colors.accent,
-  },
-  storeAllIconWrap: {
-    width: 42, height: 42, borderRadius: 21,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  storeCard: {
-    flex: 1,
-    alignItems: 'center', justifyContent: 'center', gap: 10,
-    paddingHorizontal: 10,
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  storeCardBackground: { flex: 1, aspectRatio: 1 },
-  storeCardPlaceholder: { flex: 1, aspectRatio: 1 },
-  storeCardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
-  storeCardLocked: { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
-  storeCardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
-  storeCardLock: {
-    position: 'absolute', top: 8, right: 8,
-    width: 22, height: 22, borderRadius: 11,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.paper,
-  },
-  storeCardCheck: {
-    position: 'absolute', top: 8, right: 8,
-    width: 22, height: 22, borderRadius: 11,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accent,
-  },
-  storeCardLogoWrap: {
-    width: 56, height: 56, borderRadius: 28, overflow: 'hidden',
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.white,
-  },
-  lidlStoreLogoWrap: { borderRadius: 0, overflow: 'visible' },
-  storeCardLogo: { width: '100%', height: '100%' },
-  storeCardName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, textAlign: 'center' },
-  storeCardNameActive: { color: colors.accent },
-  storeLidlInfoButton: {
-    position: 'absolute', left: 4, bottom: 4,
-    zIndex: 1,
-  },
-  storeFavoriteButton: {
-    position: 'absolute', right: 4, bottom: 4,
-    zIndex: 1,
-  },
-  // ── Fila de pestañas + selector de súper (un bloque aparte) ───
-  controlsRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginHorizontal: 16, marginBottom: 12,
-  },
-
-  // ── Segmentado Productos/Categorías (pastilla blanca, Claude Design) ─
-  seg: {
-    flex: 1, flexDirection: 'row',
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: 16, padding: 5, gap: 6,
-  },
-  segBtn: {
-    flex: 1, flexDirection: 'row',
-    alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 11, borderRadius: 12,
-  },
-  segBtnOn: {
-    backgroundColor: colors.white,
-    shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  segTxt: { fontSize: 14 },
-  segTxtOn: { fontFamily: fonts.bold, color: colors.accent },
-  segTxtOff: { fontFamily: fonts.semibold, color: colors.inkSoft },
-
-  // ── Toggle lista/cuadrícula (pastilla redondeada, Claude Design) ─
-  viewToggle: {
-    flexDirection: 'row', gap: 5,
-    backgroundColor: colors.surfaceAlt,
-    padding: 5, borderRadius: 14,
-  },
-  viewBtn: {
-    width: 40, height: 40, borderRadius: 10,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  viewBtnOn: {
-    backgroundColor: colors.accent,
-    shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-
-  // ── Search ────────────────────────────────────────────────────
-  searchBar: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.white,
-    marginHorizontal: 16, marginBottom: 8,
-    paddingHorizontal: 16, paddingVertical: 13,
-    gap: 11,
-    borderRadius: 16,
-    borderWidth: 1, borderColor: colors.border,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
-  },
-  searchInput: {
-    flex: 1, fontSize: 14, color: colors.ink, padding: 0,
-    fontFamily: fonts.medium,
-  },
-  // Bloque de búsqueda: la consulta activa aparece bajo la lupa al desplazar.
-  prodSearchBlock: {
-    marginHorizontal: 16, marginBottom: 8,
-  },
-  // Fila de búsqueda de productos: barra (flex) + orden + lista/cuadrícula.
-  prodSearchRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-  },
-  prodSearchQueryClip: { overflow: 'hidden' },
-  prodSearchQuery: {
-    marginTop: 4,
-    fontSize: 13, lineHeight: 20,
-    fontFamily: fonts.medium, fontStyle: 'italic',
-    color: colors.inkSoft,
-  },
-  // La barra dentro de la fila no lleva márgenes propios (los pone la fila).
-  prodSearchBox: {
-    marginHorizontal: 0, marginBottom: 0, minWidth: 0,
-    // La altura debe coincidir con los controles contraídos: si se deja que
-    // padding + tipografía la calculen, el chrome crece al abrir el buscador.
-    paddingVertical: 0,
-    borderRadius: 999,
-  },
-  prodSearchBoxExpanded: { flex: 1 },
-  prodSearchBoxCollapsed: {
-    width: 40, height: 40,
-    paddingHorizontal: 0,
-    gap: 0,
-    justifyContent: 'center',
-  },
-  prodSearchBoxGlass: { height: 40 },
-  prodSearchBoxFallback: { height: 44 },
-  prodSearchActivator: { ...StyleSheet.absoluteFill },
-  prodSortGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  prodViewGroup: { alignItems: 'center', justifyContent: 'center' },
-  prodToggleDense: { padding: 3, gap: 3, borderRadius: 12 },
-  prodViewBtn: { width: 32, height: 38, borderRadius: 9 },
-  prodUnitSortText: { fontSize: 10, fontFamily: fonts.bold },
-  prodUnitSortLockedBackgroundGlass: {
-    width: 72, height: 40, borderRadius: 20,
-    borderWidth: 1,
-    shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 }, elevation: 3,
-  },
-  prodUnitSortLockedBackgroundGlassLight: {
-    backgroundColor: 'rgba(255,255,255,0.38)',
-    borderColor: 'rgba(43,37,33,0.10)',
-  },
-  prodUnitSortLockedBackgroundGlassDark: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderColor: 'rgba(255,255,255,0.20)',
-  },
-  prodUnitSortLockedHighlight: {
-    position: 'absolute', top: 1, left: 10, right: 10,
-    height: 1, borderRadius: 1,
-    backgroundColor: 'rgba(255,255,255,0.58)',
-  },
-  prodUnitSortLockedBackgroundFallback: {
-    width: 73, height: 44, borderRadius: 12,
-    borderWidth: 1, borderColor: colors.border,
-    backgroundColor: colors.surfaceAlt,
-  },
-  prodUnitSortLockedBackgroundAndroid: {
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-  },
-  prodUnitSortLockedButtons: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-  },
-  prodUnitSortLockedButtonsGlass: { padding: 3 },
-  prodUnitSortLockedButtonsFallback: { padding: 3, gap: 3 },
-  prodUnitSortLockedBtn: {
-    width: 32, alignItems: 'center', justifyContent: 'center',
-    position: 'relative',
-  },
-  prodUnitSortLockedBtnGlass: { height: 32 },
-  prodUnitSortLockedBtnFallback: { height: 38, borderRadius: 9 },
-  prodUnitSortLockedBtnFirst: { borderTopLeftRadius: 17, borderBottomLeftRadius: 17 },
-  prodUnitSortLockedBtnLast: { borderTopRightRadius: 17, borderBottomRightRadius: 17 },
-  prodUnitSortLockedTextWrap: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  prodUnitSortLockedText: {
-    fontSize: 10, lineHeight: 12, fontFamily: fonts.bold,
-    color: colors.accent, textAlign: 'center', includeFontPadding: false,
-  },
-
-  // ── Category rows ─────────────────────────────────────────────
-  list: { paddingHorizontal: 16, paddingBottom: 20, paddingTop: 4 },
-  row: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: 11, gap: 12,
-    borderWidth: 1, borderColor: colors.border,
-    borderRadius: 18,
-    overflow: 'hidden',
-  },
-  categoryStoreRow: {
-    minHeight: 64,
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 12, paddingVertical: 10,
-    backgroundColor: colors.white,
-    borderWidth: 1, borderColor: colors.border,
-    borderRadius: 18,
-  },
-  categoryStoreLogoWrap: {
-    width: 42, height: 42, borderRadius: 21, overflow: 'hidden',
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  categoryStoreLogo: { width: '100%', height: '100%' },
-  categoryStoreName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
-  rowBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  moreBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt },
-  thumbnail: {
-    width: 42, height: 42,
-    borderRadius: 14,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  thumbnailEmoji: { fontSize: 21 },
-  rowContent: { flex: 1 },
-  rowName: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink },
-  rowSub: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
-  favStar: { marginRight: 4 },
-
-  // ── States ────────────────────────────────────────────────────
-  centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  errorText: { fontSize: 15, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
-  retryText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
-
-  // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
-  chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
-  chromeGlass: { paddingBottom: 2 },
-});

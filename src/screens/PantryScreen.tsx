@@ -1,4 +1,5 @@
-import { memo, useCallback, useContext, useMemo, useState, type RefObject } from 'react';
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { BlurTargetView } from 'expo-blur';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, FlatList, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,7 +7,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { PagerGestureContext } from '../components/bottom-tabs-pager/PagerGestureContext';
 import PantryProductPicker from '../components/PantryProductPicker';
 import PantryShelf from '../components/PantryShelf';
-import { fetchProductMirror } from '../api/catalog';
+import { fetchLidlProduct, fetchProductMirror } from '../api/catalog';
 import { fetchProduct } from '../api/mercadona';
 import { useCart } from '../context/CartContext';
 import PantryProductFocus from '../components/PantryProductFocus';
@@ -19,11 +20,18 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useProfile } from '../context/ProfileContext';
 import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { usePantryLayout } from '../hooks/usePantryLayout';
-import { arrangePantryItems, clampPantryPlacement, findPantryPlacement, pantryShelfIndex,
-  type PantryItem, type PantryPlacement, type PantryProduct, type PantrySection } from '../lib/pantryLayout';
+import { syncPantryExpiryNotifications } from '../lib/pantryExpiryNotifications';
+import { arrangePantryItems, clampPantryPlacement, defaultPantryPlacement, findPantryPlacement,
+  findPantryPlacementOnAnyShelf, pantryQuantity, PANTRY_MAX_NOTES_LENGTH, PANTRY_MAX_LOCATION_LENGTH,
+  type PantryItem, type PantryPlacement, type PantryProduct, type PantryPurchaseProduct, type PantrySection, type PantryShelfLabel } from '../lib/pantryLayout';
+
+const PANTRY_ACTION_TOUCH_SIZE = 44;
+const PANTRY_ACTION_VISUAL_SIZE = 34.32;
+const PANTRY_ACTION_NAV_GAP = 10;
 
 export default function PantryScreen() {
   const { session } = useAuth();
@@ -36,23 +44,34 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
   const styles = useThemedStyles(themedStyles);
   const { scheme } = useTheme();
   const { t } = useTranslation();
+  const backgroundRef = useRef<View>(null);
   const { activeCart, addToActiveCart } = useCart();
+  const { profile } = useProfile();
   const insets = useSafeAreaInsets();
   const bottomPadding = useTabBarBottomPadding(16);
+  const tabBarOffset = useTabBarBottomPadding(0);
   // Stable, independent stores: switching tabs never rehydrates one section into the other.
   const pantry = usePantryLayout(userId, 'pantry');
   const fridge = usePantryLayout(userId, 'fridge');
+  useEffect(() => {
+    if (!userId || !pantry.ready || !fridge.ready) return;
+    void syncPantryExpiryNotifications(userId);
+  }, [userId, pantry.ready, pantry.items, fridge.ready, fridge.items]);
+  const { setShelfLabel } = pantry;
   const [section, setSection] = useState<PantrySection>('pantry');
   const { items, shelfCount, ready, loadError, saveError, update, retryLoad, retrySave } = section === 'pantry' ? pantry : fridge;
   const [fridgeVisited, setFridgeVisited] = useState(false);
   const [view, setView] = useState<'cupboard' | 'list'>('cupboard');
   const [listVisited, setListVisited] = useState(false);
+  const [editingLabels, setEditingLabels] = useState(false);
+  const editingLabelsRef = useRef(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [addAt, setAddAt] = useState<{ section: PantrySection; placement: PantryPlacement } | null>(null);
+  const [addAt, setAddAt] = useState<{ section: PantrySection; placement: PantryPlacement | null } | null>(null);
   const [selection, setSelection] = useState<{ section: PantrySection; id: string; sourceRef?: RefObject<View | null> } | null>(null);
   const [sourceHidden, setSourceHidden] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const select = useCallback((id: string, sourceRef?: RefObject<View | null>) => {
+    if (editingLabelsRef.current) return;
     setSourceHidden(false);
     setSelection({ section: 'pantry', id, sourceRef });
   }, []);
@@ -66,7 +85,7 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
   const pantryScene = useMemo(() => arrangePantryItems(pantry.items, pantry.shelfCount), [pantry.items, pantry.shelfCount]);
   const fridgeScene = useMemo(() => arrangePantryItems(fridge.items, fridge.shelfCount), [fridge.items, fridge.shelfCount]);
   const { placed, unplaced } = section === 'pantry' ? pantryScene : fridgeScene;
-  const place = usePlaceProduct(pantry, 'pantry', setNoSpace);
+  const place = usePlaceProduct(pantry, 'pantry', setNoSpace, editingLabelsRef);
   const placeFridge = usePlaceProduct(fridge, 'fridge', setNoSpace);
   const pager = useContext(PagerGestureContext);
   const scrollGesture = useMemo(() => {
@@ -78,19 +97,40 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
     return pager ? native.requireExternalGestureToFail(pager) : native;
   }, [pager]);
   const listItems = useMemo(() => [...pantryScene.placed, ...pantryScene.unplaced], [pantryScene]);
-  const pantryPlacedIds = useMemo(() => new Set(pantryScene.placed.map((item) => item.instanceId)), [pantryScene.placed]);
   const placedIds = useMemo(() => new Set(placed.map((item) => item.instanceId)), [placed]);
+  const kitchenLocationOptions = useMemo(() => {
+    const activeLayout = section === 'pantry' ? pantry : fridge;
+    return activeLayout.kitchenLocations ?? Array.from({ length: 3 }, (_, index) =>
+      t('pantry.defaultKitchenLocation', { number: index + 1 }));
+  }, [section, pantry.kitchenLocations, fridge.kitchenLocations, t]);
+  const updateKitchenLocationOptions = section === 'pantry' ? pantry.setKitchenLocations : fridge.setKitchenLocations;
+  const setKitchenLocationOptions = useCallback((options: string[], removedIndex?: number) =>
+    updateKitchenLocationOptions(options, kitchenLocationOptions, removedIndex), [updateKitchenLocationOptions, kitchenLocationOptions]);
   const changeView = useCallback((next: 'cupboard' | 'list') => {
     closeFocus();
     if (next === 'list') setListVisited(true);
     setView(next);
   }, [closeFocus]);
   const renderListItem = useCallback(({ item }: { item: PantryItem }) => <PantryListRow
-    item={item} onSelect={select}
-    location={pantryPlacedIds.has(item.instanceId)
-      ? t('pantry.shelfLocation', { number: pantryShelfIndex(item, pantry.shelfCount) + 1 })
-      : t('pantry.pendingLocation')} />, [pantryPlacedIds, pantry.shelfCount, select, t]);
+    item={item} onSelect={select} disabled={editingLabels} />, [select, editingLabels]);
   const selected = selection?.section === section ? items.find((item) => item.instanceId === selection.id) : undefined;
+  const editSelected = (patch: { quantity?: number; notes?: string; kitchenLocation?: string; expiryDate?: string | null }) => {
+    if (!selected) return;
+    update((previous) => previous.map((item) => {
+      if (item.instanceId !== selected.instanceId) return item;
+      const next: PantryItem = {
+        ...item,
+        ...(patch.quantity !== undefined ? { quantity: pantryQuantity(patch.quantity) } : {}),
+        ...(patch.notes !== undefined ? { notes: patch.notes.slice(0, PANTRY_MAX_NOTES_LENGTH) } : {}),
+        ...(patch.kitchenLocation !== undefined ? { kitchenLocation: patch.kitchenLocation.slice(0, PANTRY_MAX_LOCATION_LENGTH) } : {}),
+      };
+      if (patch.expiryDate !== undefined) {
+        if (patch.expiryDate === null) delete next.expiryDate;
+        else next.expiryDate = patch.expiryDate;
+      }
+      return next;
+    }));
+  };
   const finishSelected = () => {
     if (!selected) return;
     update((previous) => previous.filter((item) => item.instanceId !== selected.instanceId));
@@ -101,6 +141,17 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
     if (!selected) return;
     if (!activeCart) throw new Error(t('product.noCartMsg'));
     try {
+      if (selected.product.store === 'lidl') {
+        const product = await fetchLidlProduct(selected.product.id, profile?.lidlStoreId ?? null);
+        if (!product) throw new Error('Product unavailable');
+        await addToActiveCart([{
+          storeKey: 'lidl', productName: product.displayName, quantity: 1, unit: 'ud',
+          categoryName: product.categoryName, unitPrice: product.unitPrice,
+          imageUrl: product.thumbnail ?? selected.product.illustrationUrl,
+          storeProductId: product.id,
+        }]);
+        return;
+      }
       const mirror = await fetchProductMirror(selected.product.id);
       const product = await fetchProduct(selected.product.id, mirror.wh ?? undefined);
       const price = Number.parseFloat(product.price_instructions?.unit_price ?? '');
@@ -115,8 +166,9 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
       throw new Error(t('product.addErrorSingle'));
     }
   };
-  const openSearch = useCallback((placement: PantryPlacement) => {
-    setAddAt({ section: 'pantry', placement });
+  const openPantrySearch = useCallback(() => {
+    if (editingLabelsRef.current) return;
+    setAddAt({ section: 'pantry', placement: null });
     setNoSpace(null);
     setSearchOpen(true);
   }, []);
@@ -126,11 +178,13 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
     setSearchOpen(true);
   }, []);
   const add = (product: PantryProduct) => {
-    if (!addAt || addAt.section !== section) return;
+    if (!addAt || addAt.section !== section || (section === 'pantry' && editingLabelsRef.current)) return;
     const instanceId = `${product.id}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
     update((previous) => {
       const { placed: shelf, unplaced: pending } = arrangePantryItems(previous, shelfCount);
-      const placement = findPantryPlacement(addAt.placement, shelf, shelfCount);
+      const placement = addAt.placement
+        ? findPantryPlacement(addAt.placement, shelf, shelfCount)
+        : findPantryPlacementOnAnyShelf(defaultPantryPlacement(0, shelfCount), shelf, shelfCount);
       setNoSpace(placement ? null : section);
       if (!placement) return previous;
       return [...shelf, { instanceId, product, ...placement }, ...pending];
@@ -139,6 +193,45 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
     setAddAt(null);
     Keyboard.dismiss();
   };
+  const addPurchase = (products: readonly PantryPurchaseProduct[]): boolean => {
+    if (!products.length || !addAt || addAt.section !== 'pantry' || section !== 'pantry'
+      || editingLabelsRef.current || !pantry.ready) return false;
+    let added = false;
+    update((previous) => {
+      const { placed, unplaced } = arrangePantryItems(previous, shelfCount);
+      const next = [...placed];
+      for (const [index, { product, quantity }] of products.entries()) {
+        const placement = findPantryPlacementOnAnyShelf(defaultPantryPlacement(0, shelfCount), next, shelfCount);
+        if (!placement) { setNoSpace('pantry'); return previous; }
+        next.push({ instanceId: `${product.id}-${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 9)}`,
+          product, quantity: pantryQuantity(quantity), ...placement });
+      }
+      added = true;
+      setNoSpace(null);
+      return [...next, ...unplaced];
+    });
+    if (added) {
+      setSearchOpen(false);
+      setAddAt(null);
+      Keyboard.dismiss();
+    }
+    return added;
+  };
+  const toggleLabelEditing = () => {
+    if (!pantry.ready) return;
+    const next = !editingLabelsRef.current;
+    editingLabelsRef.current = next;
+    setEditingLabels(next);
+    closeFocus();
+    setSearchOpen(false);
+    setAddAt(null);
+    setNoSpace(null);
+    Keyboard.dismiss();
+    if (next) setView('cupboard');
+  };
+  const changeShelfLabel = useCallback((index: number, label: PantryShelfLabel | null) => {
+    if (editingLabelsRef.current) setShelfLabel(index, label);
+  }, [setShelfLabel]);
   const viewSelector = <SlidingSegments style={styles.viewSelector} compact emphasized transparentTrack={Platform.OS === 'android'}
       segments={[
         { key: 'cupboard', accessibilityLabel: t('pantry.cupboardView'), icon: 'file-tray-stacked-outline' },
@@ -158,6 +251,7 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
   const pendingProducts = unplaced.length > 0 && <View style={styles.error} testID={`${section}-unplaced`}>
     <Text style={styles.info}>{t('pantry.unplacedHint')}</Text>
     {unplaced.map((item) => <Pressable key={item.instanceId} accessibilityRole="button"
+      disabled={section === 'pantry' && editingLabels} accessibilityState={{ disabled: section === 'pantry' && editingLabels }}
       accessibilityLabel={t('pantry.editUnplaced', { name: item.product.name })}
       onPress={() => { (section === 'pantry' ? select : selectFridge)(item.instanceId); setNoSpace(null); }} style={styles.pendingProduct}>
       <Text style={styles.pendingProductName}>{item.product.name}</Text>
@@ -173,12 +267,14 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
       borderBottomColor: scheme === 'dark' ? '#66503E' : '#CEB698' };
   return (
     <View testID="pantry-screen" style={styles.container}>
+      <BlurTargetView ref={backgroundRef} style={styles.body}>
       <View testID="pantry-header" style={[styles.header, { paddingTop: insets.top + 4,
         ...headerColors }]}>
         <View style={styles.headerControls}>
           <SlidingSegments
             style={styles.sectionSelector}
             emphasized
+            height={40}
             opaqueSelection={section === 'fridge' && scheme === 'dark'}
             transparentTrack={Platform.OS === 'android'}
             segments={[
@@ -191,6 +287,9 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
               setSearchOpen(false);
               setAddAt(null);
               setNoSpace(null);
+              editingLabelsRef.current = false;
+              setEditingLabels(false);
+              Keyboard.dismiss();
               if (next === 'fridge') setFridgeVisited(true);
               setSection(next);
             }}
@@ -205,17 +304,19 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
           importantForAccessibility={cupboardVisible ? 'auto' : 'no-hide-descendants'}>
           <PantryWoodBackground />
           <GestureDetector gesture={scrollGesture}><ScrollView style={styles.body}
+            keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[styles.content, { paddingBottom: bottomPadding + 16 }]}>
+            contentContainerStyle={[styles.content, { paddingBottom: bottomPadding + 88 }]}>
             <PantryShelf items={pantryScene.placed} shelfCount={pantry.shelfCount}
               selectedId={selection?.section === 'pantry' ? selection.id : null}
               hiddenId={sourceHidden && selection?.section === 'pantry' ? selection.id : null} onSelect={select} onPlace={place}
-              onAddAt={openSearch} canAdd={pantry.ready} scrollGesture={scrollGesture} />
-            <Pressable disabled={!pantry.ready} testID="pantry-add-shelf"
+              editingLabels={editingLabels} shelfLabels={pantry.shelfLabels} onChangeShelfLabel={changeShelfLabel}
+              showAddSlots={false} canAdd={pantry.ready} scrollGesture={scrollGesture} />
+            <Pressable disabled={!pantry.ready || editingLabels} testID="pantry-add-shelf"
               accessibilityRole="button" accessibilityLabel={t('pantry.addShelf')}
-              accessibilityState={{ disabled: !pantry.ready }}
-              onPress={() => { pantry.addShelf(); setNoSpace(null); }}
-              style={({ pressed }) => [styles.addShelfButton, (!pantry.ready || pressed) && styles.pressed]}>
+              accessibilityState={{ disabled: !pantry.ready || editingLabels }}
+              onPress={() => { if (!editingLabelsRef.current) { pantry.addShelf(); setNoSpace(null); } }}
+              style={({ pressed }) => [styles.addShelfButton, (!pantry.ready || editingLabels || pressed) && styles.pressed]}>
               <Ionicons name="add" size={22} color="#FFF4E3" />
               <Text style={styles.addShelfLabel}>{t('pantry.addShelf')}</Text>
             </Pressable>
@@ -229,7 +330,7 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
             data={listItems} keyExtractor={pantryItemKey} renderItem={renderListItem}
             initialNumToRender={10} maxToRenderPerBatch={8} windowSize={5}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[styles.content, styles.productList, { paddingBottom: bottomPadding + 16 }]}
+            contentContainerStyle={[styles.content, styles.productList, { paddingBottom: bottomPadding + 88 }]}
             ListFooterComponent={section === 'pantry' ? status : null}
             ListEmptyComponent={pantry.ready ? <Text style={styles.emptyList}>{t('pantry.emptyList')}</Text> : null} />
           </GestureDetector>
@@ -244,19 +345,44 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
             onAddShelf={() => { fridge.addShelf(); setNoSpace(null); }}
             footer={section === 'fridge' ? <>{status}{pendingProducts}</> : null} />
         </View>}
+        {section === 'pantry' && !selected && !searchOpen && <View testID="pantry-floating-actions" pointerEvents="box-none"
+          style={[styles.floatingActions, {
+            bottom: tabBarOffset + PANTRY_ACTION_NAV_GAP - (PANTRY_ACTION_TOUCH_SIZE - PANTRY_ACTION_VISUAL_SIZE) / 2,
+            right: Math.max(16, insets.right + 8),
+          }]}>
+          <Pressable testID="pantry-add-product" disabled={!pantry.ready || editingLabels} onPress={openPantrySearch}
+            accessibilityRole="button" accessibilityLabel={t('pantry.addProduct')}
+            accessibilityState={{ disabled: !pantry.ready || editingLabels }}
+            style={({ pressed }) => [styles.floatingAction, (!pantry.ready || editingLabels || pressed) && styles.pressed]}>
+            <View style={styles.floatingActionFace}>
+              <Ionicons name="nutrition-outline" size={16.5} color="#FFF4E3" />
+            </View>
+          </Pressable>
+          <Pressable testID="pantry-edit" disabled={!pantry.ready} onPress={toggleLabelEditing} accessibilityRole="button"
+            accessibilityLabel={t(editingLabels ? 'pantry.finishShelfEditing' : 'pantry.editPantry')}
+            accessibilityState={{ disabled: !pantry.ready, selected: editingLabels }}
+            style={({ pressed }) => [styles.floatingAction, (!pantry.ready || pressed) && styles.pressed]}>
+            <View style={[styles.floatingActionFace, editingLabels && styles.floatingActionSelected]}>
+              <Ionicons name={editingLabels ? 'checkmark' : 'pencil-outline'} size={15.4} color="#FFF4E3" />
+            </View>
+          </Pressable>
+        </View>}
       </View>
+      </BlurTargetView>
       {selected && !searchOpen && <PantryProductFocus key={selected.instanceId}
-        product={selected.product} sourceRef={selection?.sourceRef}
+        product={selected.product} sourceRef={selection?.sourceRef} backgroundRef={backgroundRef}
         section={section}
-        location={placedIds.has(selected.instanceId)
-          ? t('pantry.shelfLocation', { number: pantryShelfIndex(selected, shelfCount) + 1 })
-          : t('pantry.pendingLocation')}
+        quantity={pantryQuantity(selected.quantity)} notes={selected.notes ?? ''}
+        kitchenLocation={selected.kitchenLocation ?? ''} kitchenLocationOptions={kitchenLocationOptions}
+        onKitchenLocationOptionsChange={setKitchenLocationOptions}
+        expiryDate={selected.expiryDate ?? null}
+        onEdit={editSelected} saveError={saveError} onRetrySave={retrySave}
         onFinish={finishSelected} onAddToCart={addSelectedToCart} onShowDetails={() => setDetailOpen(true)}
         onReady={hideSource} onClose={closeFocus} />}
       <StoreProductModal target={detailOpen && selected
-        ? { store: 'mercadona', id: selected.product.id }
+        ? { store: selected.product.store ?? 'mercadona', id: selected.product.id }
         : null} onClose={() => setDetailOpen(false)} />
-      {searchOpen && <PantryProductPicker section={section} onSelect={add} onClose={() => {
+      {searchOpen && <PantryProductPicker section={section} onSelect={add} onAddPurchase={addPurchase} onClose={() => {
         setSearchOpen(false);
         setAddAt(null);
       }} />}
@@ -266,8 +392,9 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
 
 /** Bind late gesture commits to their original inventory, even after a section change. */
 function usePlaceProduct({ update, shelfCount }: ReturnType<typeof usePantryLayout>, section: PantrySection,
-  setNoSpace: (section: PantrySection | null) => void) {
+  setNoSpace: (section: PantrySection | null) => void, locked?: RefObject<boolean>) {
   return useCallback((instanceId: string, placement: PantryPlacement) => {
+    if (locked?.current) return;
     update((previous) => {
       const { placed: shelf, unplaced: pending } = arrangePantryItems(previous, shelfCount);
       if (!previous.some((item) => item.instanceId === instanceId)) return previous;
@@ -281,28 +408,33 @@ function usePlaceProduct({ update, shelfCount }: ReturnType<typeof usePantryLayo
       }
       return [...shelf, ...pending].map((item) => item.instanceId === instanceId ? { ...item, ...next } : item);
     });
-  }, [update, shelfCount, section, setNoSpace]);
+  }, [update, shelfCount, section, setNoSpace, locked]);
 }
 
 const pantryItemKey = (item: PantryItem) => item.instanceId;
 
-const PantryListRow = memo(function PantryListRow({ item, location, onSelect }: {
+const PantryListRow = memo(function PantryListRow({ item, onSelect, disabled }: {
   item: PantryItem;
-  location: string;
   onSelect: (id: string) => void;
+  disabled: boolean;
 }) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
+  const quantity = pantryQuantity(item.quantity);
+  const quantityLabel = t(quantity === 1 ? 'pantry.oneUnit' : 'pantry.units', { count: quantity });
+  const kitchenLocation = item.kitchenLocation?.trim();
+  const productMeta = kitchenLocation ? `${quantityLabel} · ${kitchenLocation}` : quantityLabel;
   return <Pressable testID={`pantry-list-item-${item.instanceId}`}
-    accessibilityRole="button" accessibilityLabel={`${item.product.name}. ${t('pantry.oneUnit')}. ${location}`}
+    disabled={disabled} accessibilityState={{ disabled }}
+    accessibilityRole="button" accessibilityLabel={`${item.product.name}. ${productMeta}`}
     onPress={() => onSelect(item.instanceId)}
     style={({ pressed }) => [styles.productRow, pressed && styles.pressed]}>
     <ProductImage uri={item.product.illustrationUrl} style={styles.productImage} />
     <View style={styles.productText}>
       <Text style={styles.productName}>{item.product.name}</Text>
-      <Text style={styles.productMeta}>{t('pantry.oneUnit')} · {location}</Text>
+      <Text style={styles.productMeta}>{productMeta}</Text>
     </View>
-    <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+    {!disabled && <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />}
   </Pressable>;
 });
 
@@ -319,6 +451,16 @@ const themedStyles = () => StyleSheet.create({
   // Keep both scroll viewports measured, including their offsets and image sizes.
   viewLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   hiddenView: { opacity: 0 },
+  floatingActions: { position: 'absolute', flexDirection: 'row', gap: 0, zIndex: 2 },
+  floatingAction: { width: PANTRY_ACTION_TOUCH_SIZE, height: PANTRY_ACTION_TOUCH_SIZE,
+    alignItems: 'center', justifyContent: 'center' },
+  floatingActionFace: { width: PANTRY_ACTION_VISUAL_SIZE, height: PANTRY_ACTION_VISUAL_SIZE,
+    borderRadius: PANTRY_ACTION_VISUAL_SIZE / 2,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(61, 36, 19, 0.94)', borderWidth: 1, borderColor: 'rgba(255, 240, 212, 0.55)',
+    shadowColor: '#25150C', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.22, shadowRadius: 4,
+    elevation: 3 },
+  floatingActionSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
   pressed: { opacity: 0.65 },
   content: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12, gap: 8 },
   productList: { gap: 10 },

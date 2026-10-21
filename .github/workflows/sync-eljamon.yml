@@ -1,6 +1,8 @@
 name: Sync El Jamón catalog
 
 on:
+  schedule:
+    - cron: '35 14 * * 1' # lunes 14:35 UTC, semanal
   workflow_dispatch: {}
 
 concurrency:

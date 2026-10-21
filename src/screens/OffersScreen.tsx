@@ -74,7 +74,8 @@ function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | nul
  * Cambios de precios). Lista las ofertas vivas del súper: promos de lote ("3x2",
  * "2ª unidad -70%"…) y descuentos directos ("Antes X €"), en la línea secundaria
  * de cada fila. La exponen los súpers de OFFER_STORES (Carrefour vía badges de
- * promo; BonpreuEsclat vía su categoría "Ofertas"; Consum solo cuando su API
+ * promo; BonpreuEsclat vía su categoría "Ofertas"; bonÀrea vía BAIXADA_PREU;
+ * Consum solo cuando su API
  * marca explícitamente OFFER_PRICE; DIA vía CLUB/online y precio tachado por
  * CCAA; Sorli vía sus tipos estructurados y vigencia; Plusfresc vía sus copias
  * Oferta2; HiperDino vía su precio regular tachado; Aldi vía precio tachado y
@@ -87,7 +88,8 @@ function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | nul
  * usa otro súper también puede querer ver ofertas. A diferencia de Novedades
  * (~100 filas), aquí hay miles → paginación keyset de servidor (onEndReached),
  * todas alcanzables. Requiere las migraciones carrefour_offers.sql /
- * bonpreu_offers.sql / consum_offers.sql / plusfresc_offers.sql /
+ * bonpreu_offers.sql / 20261015115457_bonarea_explicit_offers.sql /
+ * consum_offers.sql / plusfresc_offers.sql /
  * hiperdino_offers.sql / aldi_offers.sql /
  * 20260904122841_lidl_offers.sql /
  * 20260726200544_retailer_offers_condis_ametller_alcampo_eroski_caprabo.sql /

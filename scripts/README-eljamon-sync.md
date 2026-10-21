@@ -104,8 +104,9 @@ Las tablas `eljamon_categories` y `eljamon_products` están creadas en Supabase
 mediante `20260923141000_eljamon_catalog.sql`. El modo de publicación incluye
 despublicación de filas no vistas y registro en `catalog_sync_status`.
 
-El workflow manual `.github/workflows/sync-eljamon.yml` permite lanzar la carga
-desde GitHub Actions mediante **Run workflow**. Instala Chromium, usa el centro
+El workflow `.github/workflows/sync-eljamon.yml` se ejecuta cada lunes a las
+14:35 UTC y también permite lanzar la carga manualmente mediante **Run workflow**.
+Instala Chromium, usa el centro
 de referencia 268 y exige al menos 6.000 productos antes de publicar.
 
 Además de exigir credenciales de servicio, la publicación se bloquea cuando la

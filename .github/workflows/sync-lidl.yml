@@ -1,8 +1,7 @@
-name: Sync Lidl catalog fleet
+name: Sync Lidl catalog fleet (manual)
 
 on:
-  schedule:
-    - cron: '20 11 * * 1' # lunes 11:20 UTC
+  # El barrido semanal se ejecuta en Windows con run-lidl-fleet.ps1.
   workflow_dispatch:
     inputs:
       mode:
@@ -24,7 +23,6 @@ permissions:
 
 jobs:
   schedule:
-    if: github.event_name == 'workflow_dispatch' || vars.LIDL_SYNC_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -43,7 +41,8 @@ jobs:
           case "$MODE" in
             weekly)
               test -z "$STORE_IDS" || { echo 'weekly no admite filtros'; exit 1; }
-              echo 'workers=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]' >> "$GITHUB_OUTPUT"
+              # Ocho workers x 100 tiendas cubren el censo actual (~720) y hasta 800.
+              echo 'workers=[1,2,3,4,5,6,7,8]' >> "$GITHUB_OUTPUT"
               ;;
             recover) echo 'workers=[1,2,3,4,5,6,7,8]' >> "$GITHUB_OUTPUT" ;;
             canary)
@@ -81,11 +80,12 @@ jobs:
           LIDL_FLEET_STORE_IDS: ${{ inputs.store_ids }}
           LIDL_FLEET_WORKER_INDEX: ${{ matrix.worker }}
           LIDL_FLEET_JOB_LIMIT: ${{ inputs.mode == 'canary' && '5' || '100' }}
-          LIDL_FLEET_IDLE_MINUTES: ${{ inputs.mode == 'canary' && '0' || '35' }}
+          # Sin reintentos automáticos no hay trabajos diferidos que esperar.
+          LIDL_FLEET_IDLE_MINUTES: '0'
           LIDL_FLEET_WORK_MINUTES: '300'
           LIDL_FLEET_LEASE_MINUTES: '45'
           LIDL_FLEET_STORE_TIMEOUT_MINUTES: '35'
-          LIDL_FLEET_MAX_ATTEMPTS: '3'
+          LIDL_FLEET_MAX_ATTEMPTS: '1'
           CONCURRENCY: '2'
           REQUEST_DELAY_MS: '250'
           PAGE_SIZE: '100'

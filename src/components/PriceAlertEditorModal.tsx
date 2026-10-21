@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
@@ -35,6 +36,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import GroupIconPickerSheet from './GroupIconPickerSheet';
 
 interface ExactTarget {
   store: CatalogStore;
@@ -91,6 +93,8 @@ export default function PriceAlertEditorModal({
   );
 
   const [label, setLabel] = useState('');
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [query, setQuery] = useState('');
   const [stores, setStores] = useState<CatalogStore[]>([]);
   const [priceDrop, setPriceDrop] = useState(true);
@@ -105,6 +109,8 @@ export default function PriceAlertEditorModal({
   useEffect(() => {
     if (!visible) return;
     setLabel(initialRule?.label ?? '');
+    setSelectedEmoji(initialRule?.emoji ?? null);
+    setIconPickerVisible(false);
     const isNewArrival = initialRule?.kind === 'new_arrival';
     setQuery(initialRule?.query ?? '');
     setStores(initialRule
@@ -190,10 +196,11 @@ export default function PriceAlertEditorModal({
     }
   };
 
-  const emoji = useMemo(
+  const automaticEmoji = useMemo(
     () => newArrival ? '🆕' : priceAlertEmoji(label, query, preview[0]?.categoryName),
     [newArrival, label, query, preview],
   );
+  const emoji = selectedEmoji ?? automaticEmoji;
 
   const save = async () => {
     const userId = session?.user.id;
@@ -254,9 +261,6 @@ export default function PriceAlertEditorModal({
         <View style={styles.sheet} accessibilityViewIsModal>
           <View style={styles.grabber} />
           <View style={styles.header}>
-            <View style={styles.headerIcon}>
-              <Text style={styles.headerEmoji}>{emoji}</Text>
-            </View>
             <View style={styles.headerCopy}>
               <Text style={styles.title}>{t(kind === 'exact' ? 'priceAlerts.exactTitle' : 'priceAlerts.newTitle')}</Text>
               <Text style={styles.subtitle}>{t('priceAlerts.editorSubtitle')}</Text>
@@ -272,23 +276,30 @@ export default function PriceAlertEditorModal({
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
-            {kind === 'keyword' ? (
-              <>
-                <Text style={styles.label}>{t('priceAlerts.words')}</Text>
+            <View style={styles.nameInputRow}>
+              <View style={styles.nameInputCopy}>
+                <Text style={styles.label}>{t('priceAlerts.name')}</Text>
                 <TextInput
-                  value={query}
-                  onChangeText={setQuery}
-                  placeholder={t('priceAlerts.wordsPlaceholder')}
+                  value={label}
+                  onChangeText={setLabel}
+                  placeholder={t('priceAlerts.namePlaceholder')}
                   placeholderTextColor={colors.inkFaint}
                   style={styles.input}
-                  autoCapitalize="none"
-                  returnKeyType="search"
+                  maxLength={100}
                 />
-                {newArrival ? (
-                  <Text style={styles.fieldHint}>{t('priceAlerts.newArrivalWordsHint')}</Text>
-                ) : null}
-              </>
-            ) : null}
+              </View>
+              <TouchableOpacity
+                onPress={() => setIconPickerVisible(true)}
+                style={styles.nameIconButton}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel={t('priceAlerts.changeIcon')}
+                accessibilityHint={t('priceAlerts.chooseIcon')}
+              >
+                <Text style={styles.nameIconEmoji}>{emoji}</Text>
+                <Ionicons name="chevron-down" size={14} color={colors.accent} />
+              </TouchableOpacity>
+            </View>
 
             {kind === 'keyword' ? (
               <>
@@ -326,15 +337,36 @@ export default function PriceAlertEditorModal({
               </>
             ) : null}
 
-            <Text style={styles.label}>{t('priceAlerts.name')}</Text>
-            <TextInput
-              value={label}
-              onChangeText={setLabel}
-              placeholder={t('priceAlerts.namePlaceholder')}
-              placeholderTextColor={colors.inkFaint}
-              style={styles.input}
-              maxLength={100}
-            />
+            {kind === 'keyword' ? (
+              <>
+                <View style={styles.fieldHeader}>
+                  <Text style={[styles.label, styles.inlineLabel]}>{t('priceAlerts.words')}</Text>
+                  <TouchableOpacity
+                    onPress={() => Alert.alert(
+                      t('priceAlerts.wordsInfoTitle'),
+                      t('priceAlerts.wordsInfoBody'),
+                    )}
+                    style={styles.fieldInfoButton}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('priceAlerts.wordsInfoTitle')}
+                  >
+                    <Text style={styles.fieldInfoText}>i</Text>
+                  </TouchableOpacity>
+                </View>
+                <TextInput
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder={t('priceAlerts.wordsPlaceholder')}
+                  placeholderTextColor={colors.inkFaint}
+                  style={styles.input}
+                  autoCapitalize="none"
+                  returnKeyType="search"
+                />
+                {newArrival ? (
+                  <Text style={styles.fieldHint}>{t('priceAlerts.newArrivalWordsHint')}</Text>
+                ) : null}
+              </>
+            ) : null}
 
             <Text style={styles.label}>{t('priceAlerts.triggers')}</Text>
             <View style={styles.optionsCard}>
@@ -446,6 +478,16 @@ export default function PriceAlertEditorModal({
             </TouchableOpacity>
           </View>
         </View>
+        <GroupIconPickerSheet
+          visible={iconPickerVisible}
+          selectedIcon={selectedEmoji ?? automaticEmoji}
+          busy={false}
+          titleText={t('priceAlerts.iconPickerTitle')}
+          subtitleText={t('priceAlerts.iconPickerSubtitle')}
+          optionAccessibilityLabel={t('priceAlerts.iconOption')}
+          onSave={(icon) => { setSelectedEmoji(icon); setIconPickerVisible(false); }}
+          onClose={() => setIconPickerVisible(false)}
+        />
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -456,14 +498,20 @@ const themedStyles = () => StyleSheet.create({
   sheet: { maxHeight: '94%', backgroundColor: colors.paper, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   grabber: { width: 38, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginTop: 8 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
-  headerIcon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight },
-  headerEmoji: { fontSize: 21 },
   headerCopy: { flex: 1 },
   title: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
   subtitle: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
   closeBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   content: { padding: 16, paddingBottom: 28 },
+  nameInputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  nameInputCopy: { flex: 1, minWidth: 0 },
+  nameIconButton: { width: 58, height: 48, marginBottom: 0, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2, backgroundColor: colors.accentLight, borderWidth: 1, borderColor: colors.accentMid },
+  nameIconEmoji: { fontSize: 23, lineHeight: 30 },
   label: { fontSize: 12, fontFamily: fonts.bold, color: colors.inkSoft, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 14, marginBottom: 7 },
+  fieldHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, marginBottom: 7 },
+  inlineLabel: { flexShrink: 1, marginTop: 0, marginBottom: 0 },
+  fieldInfoButton: { width: 25, height: 25, borderRadius: 13, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
+  fieldInfoText: { fontSize: 14, lineHeight: 18, fontFamily: fonts.bold, color: colors.accent },
   input: { minHeight: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, color: colors.ink, paddingHorizontal: 13, fontFamily: fonts.medium, fontSize: 14 },
   fieldHint: { fontSize: 11.5, lineHeight: 16, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },

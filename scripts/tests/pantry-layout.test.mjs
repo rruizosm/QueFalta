@@ -22,6 +22,28 @@ const product = { id: '10699', name: 'Leche entera sin lactosa Hacendado', illus
 const item = (overrides = {}) => ({ instanceId: 'milk-1', product,
   ...layout.clampPantryPlacement({ x: 0.3, y: 0, size: 0.28 }), ...overrides });
 
+test('shelf names and emojis round-trip without touching products or requiring a new layout version', () => {
+  const saved = { items: [item()], shelfCount: 4 };
+  const labeled = layout.updatePantryShelfLabel(saved, 0, { name: 'Desayunos y café', emoji: '☕️' });
+  assert.equal(labeled.items, saved.items);
+  const extra = layout.updatePantryShelfLabel(labeled, 3, { name: '', emoji: '🥣' });
+  assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(extra)), extra);
+  const removed = layout.updatePantryShelfLabel(extra, 0, null);
+  assert.deepEqual(removed.shelfLabels, { 3: { name: '', emoji: '🥣' } });
+  assert.deepEqual(saved, { items: [item()], shelfCount: 4 });
+  for (const index of [-1, 4, NaN, 1.2]) assert.equal(layout.updatePantryShelfLabel(saved, index, null), saved);
+});
+
+test('damaged shelf labels do not prevent recovering the inventory', () => {
+  const raw = { version: 1, items: [item()], shelfCount: 3, shelfLabels: {
+    0: { name: 'a'.repeat(90), emoji: null }, 1: { name: 'Conservas', emoji: {} },
+    2: null, 4: { name: 'Out of bounds' }, '-1': { name: 'Invalid' }, '01': { name: 'Ambiguous' },
+  } };
+  const restored = layout.decodePantryLayout(JSON.stringify(raw));
+  assert.deepEqual(restored.items, raw.items);
+  assert.deepEqual(restored.shelfLabels, { 0: { name: 'a'.repeat(40), emoji: null }, 1: { name: 'Conservas', emoji: null } });
+});
+
 test('extra shelves and their products survive storage, including empty shelves and legacy layouts', () => {
   assert.deepEqual(layout.decodePantryLayout(null), { items: [], shelfCount: 3 });
   assert.deepEqual(layout.decodePantryLayout(JSON.stringify({ version: 1, items: [item()] })),
@@ -323,16 +345,22 @@ function queryDatabase(rows) {
   };
 }
 const row = (id, extras = {}) => ({ id, published: true, display_name: 'Leche entera', display_name_ca: 'Llet sencera',
-  display_name_norm: 'leche entera', display_name_ca_norm: 'llet sencera', illustration_url: product.illustrationUrl, ...extras });
+  display_name_norm: 'leche entera', display_name_ca_norm: 'llet sencera',
+  thumbnail: 'https://prod-mercadona.imgix.net/milk.jpg', unit_price: 1.25, price_per_unit: 1.25, price_per_unit_unit: 'l', illustration_url: product.illustrationUrl, ...extras });
 
 test('only published illustrated products are paginated, even after many unillustrated matches', async () => {
   const rows = [...Array.from({ length: 40 }, (_, i) => row(`none-${i}`, { illustration_url: null })),
     row('empty', { illustration_url: '' }), row('retired', { published: false }),
     ...Array.from({ length: 31 }, (_, i) => row(String(i)))];
-  const api = load('api/pantry', { '../lib/supabase': { supabase: queryDatabase(rows) }, '../lib/pantryLayout': layout });
+  const api = load('api/pantry', { '../lib/supabase': { supabase: queryDatabase(rows) }, '../lib/pantryLayout': layout, '../constants/regions': { REGION_ALL: 'ALL', REGION_MERCADONA_NAME: {} } });
   const first = await api.searchPantryProducts('léche %', 'es');
   assert.equal(first.products.length, 30);
   assert.equal(first.products[0].id, '0');
+  assert.equal(first.products[0].imageUrl, row('').thumbnail);
+  assert.equal(first.products[0].illustrationUrl, product.illustrationUrl);
+  assert.equal(first.products[0].priceLabel, '');
+  assert.equal(first.products[0].unitPrice, null);
+  assert.equal(first.products[0].pricePerUnitLabel, null);
   assert.equal(first.hasMore, true);
   const second = await api.searchPantryProducts('', 'es', 30);
   assert.deepEqual(second.products.map((p) => p.id), ['30']);
@@ -436,4 +464,34 @@ test('a corrupt fridge does not prevent reading the cupboard and failed saves ca
   await storage.writePantryLayout('alice', fridge, 'fridge');
   assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), fridge);
   assert.deepEqual(await storage.readPantryLayout('alice'), pantry);
+});
+
+test('editable stock and notes survive storage without migrating legacy entries or merging copies', () => {
+  const original = item();
+  const edited = item({ instanceId: 'milk-2', ...layout.defaultPantryPlacement(3), quantity: 7, notes: 'Abierto\nReservar para mañana' });
+  const saved = { shelfCount: 3, items: [original, edited] };
+  assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(saved)), saved);
+  assert.equal(layout.pantryQuantity(original.quantity), 1);
+  assert.equal('quantity' in layout.decodePantryLayout(layout.encodePantryLayout(saved)).items[0], false);
+  const malformed = JSON.stringify({ version: 1, items: [{ ...edited, quantity: -4, notes: 'a'.repeat(600) }] });
+  const recovered = layout.decodePantryLayout(malformed).items[0];
+  assert.equal(recovered.quantity, 1);
+  assert.equal(recovered.notes.length, 500);
+  for (const [input, expected] of [[NaN, 1], [Infinity, 1], [2.5, 2], [1000, 999], ['8', 1]]) {
+    assert.equal(layout.pantryQuantity(input), expected);
+  }
+});
+
+
+test('Lidl products and legacy Mercadona copies survive persistence without confusing their store', () => {
+  const lidl = item({ instanceId: 'lidl-copy', product: { ...product, id: '8806215264107_ES', store: 'lidl' },
+    ...layout.defaultPantryPlacement(1) });
+  const legacy = item({ ...layout.defaultPantryPlacement(0) });
+  const explicitMercadona = item({ instanceId: 'mercadona-copy', product: { ...product, store: 'mercadona' },
+    ...layout.defaultPantryPlacement(2) });
+  assert.deepEqual(decodeItems(encodeItems([legacy, lidl, explicitMercadona])), [legacy, lidl, explicitMercadona]);
+  for (const invalid of [{ ...product, store: 'carrefour' }, { ...product, id: '8806215264107_ES' },
+    { ...product, id: '../bad', store: 'lidl' }]) {
+    assert.deepEqual(decodeItems(JSON.stringify({ version: 1, items: [item({ product: invalid })] })), []);
+  }
 });

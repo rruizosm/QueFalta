@@ -27,6 +27,7 @@ import { useTranslation } from '../context/LanguageContext';
 import type { GroupItem } from '../api/groups';
 import { fetchListItems } from '../api/lists';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
+import { fetchPriceAlerts } from '../api/priceAlerts';
 import ProgressBar from '../components/ProgressBar';
 import HardShadow from '../components/HardShadow';
 import UserAvatar from '../components/UserAvatar';
@@ -106,10 +107,12 @@ export default function HomeScreen() {
     purchaseCacheKey ? !hasStartupCache(purchaseCacheKey) : true,
   );
   const [repeating, setRepeating] = useState(false);
+  const [priceAlertSummary, setPriceAlertSummary] = useState<{ userId: string; count: number } | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
   const sponsorMetrics = useSponsorMetrics(userId, campaign?.id ?? null,
     notifOpen || paywallVisible || entryCoverVisible, headerH || headerTop + 52, bottomPad);
   const cartRequestIdRef = useRef(0);
+  const priceAlertRequestIdRef = useRef(0);
 
   const load = useCallback(() => {
     const purchasesP = fetchPurchases()
@@ -122,6 +125,16 @@ export default function HomeScreen() {
       .finally(() => setPurchaseLoading(false));
 
     let cartP: Promise<unknown> = Promise.resolve();
+    const priceAlertRequestId = ++priceAlertRequestIdRef.current;
+    const priceAlertsP: Promise<unknown> = userId
+      ? fetchPriceAlerts(userId)
+        .then((rules) => {
+          if (priceAlertRequestId === priceAlertRequestIdRef.current) {
+            setPriceAlertSummary({ userId, count: rules.length });
+          }
+        })
+        .catch(() => {})
+      : Promise.resolve();
     const cartRequestId = ++cartRequestIdRef.current;
     if (activeCart) {
       const { groupId, listId } = activeCart;
@@ -142,7 +155,7 @@ export default function HomeScreen() {
       loadedGroupRef.current = null;
       setLoadedGroup(null);
     }
-    return Promise.all([cartP, purchasesP]);
+    return Promise.all([cartP, purchasesP, priceAlertsP]);
   }, [activeCart, userId]);
 
   useFocusEffect(useCallback(() => {
@@ -210,6 +223,14 @@ export default function HomeScreen() {
   const remaining = totalItems - doneItems;
   const progress = totalItems > 0 ? doneItems / totalItems : 0;
   const cartReady = totalItems > 0 || loadedGroup === activeCart?.groupId;
+  const priceAlertCount = priceAlertSummary?.userId === userId
+    ? priceAlertSummary.count
+    : null;
+  const priceAlertsLabel = priceAlertCount === 0
+    ? t('home.createFirstSavingsAlert')
+    : priceAlertCount === null
+      ? t('home.savingsAlerts')
+      : t('home.manageSavingsAlerts');
 
   const navigateToCart = () => {
     if (!activeCart) return;
@@ -445,6 +466,20 @@ export default function HomeScreen() {
           ))}
         </View>
 
+        {userId ? (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('PriceAlerts')}
+            style={styles.priceAlertButton}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={priceAlertsLabel}
+          >
+            <Ionicons name="notifications-outline" size={19} color={colors.blue} />
+            <Text style={styles.priceAlertButtonText}>{priceAlertsLabel}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.blue} />
+          </TouchableOpacity>
+        ) : null}
+
         {campaign && <ResponsivePromotionCard
           key={`${campaign.id}:${campaign.updated_at}`}
           source={{ uri: promotionImageUrl(campaign.image_path) }}
@@ -662,6 +697,14 @@ const themedStyles = () => StyleSheet.create({
     color: colors.accent, opacity: 0.1, filter: [{ blur: 1.8 }],
     transform: [{ rotate: '-8deg' }],
   },
+  priceAlertButton: {
+    alignSelf: 'stretch', minHeight: 56,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    paddingHorizontal: 15, marginTop: -8, marginBottom: 20,
+    borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(47,108,181,0.5)',
+    borderRadius: 16, backgroundColor: 'rgba(47,108,181,0.09)',
+  },
+  priceAlertButtonText: { flex: 1, fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
 
   // ── Sections ──────────────────────────────────────────────────
   sectionWrap: { marginTop: 20, marginBottom: 20 },

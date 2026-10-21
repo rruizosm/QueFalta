@@ -29,6 +29,7 @@ import {
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { syncPantryExpiryNotifications } from '../lib/pantryExpiryNotifications';
 
 const NOTIFICATION_TYPES: {
   icon: keyof typeof Ionicons.glyphMap;
@@ -39,6 +40,7 @@ const NOTIFICATION_TYPES: {
   { icon: 'person-add-outline', titleKey: 'notifications.types.friendTitle', bodyKey: 'notifications.types.friendBody' },
   { icon: 'people-outline', titleKey: 'notifications.types.groupTitle', bodyKey: 'notifications.types.groupBody' },
   { icon: 'pricetag-outline', titleKey: 'notifications.types.priceAlertTitle', bodyKey: 'notifications.types.priceAlertBody' },
+  { icon: 'calendar-outline', titleKey: 'notifications.types.expiryTitle', bodyKey: 'notifications.types.expiryBody' },
 ];
 
 export default function NotificationsScreen() {
@@ -80,6 +82,7 @@ export default function NotificationsScreen() {
     try {
       if (!nextEnabled) {
         await setNotificationsEnabled(userId, false);
+        await syncPantryExpiryNotifications(userId);
         setEnabled(false);
         await unregisterPushNotificationsAsync(userId);
         Haptics.selectionAsync();
@@ -89,6 +92,7 @@ export default function NotificationsScreen() {
       const permitted = (await hasPermission()) || (await requestPermission());
       if (!permitted) {
         await setNotificationsEnabled(userId, false);
+        await syncPantryExpiryNotifications(userId);
         setEnabled(false);
         await unregisterPushNotificationsAsync(userId);
         Alert.alert(
@@ -106,6 +110,7 @@ export default function NotificationsScreen() {
       }
 
       await setNotificationsEnabled(userId, true);
+      await syncPantryExpiryNotifications(userId);
       setEnabled(true);
       await registerForPushNotificationsAsync(userId);
       sendTestNotification().catch(() => {});

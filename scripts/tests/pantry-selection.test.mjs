@@ -25,12 +25,18 @@ function harness(initialItems = [item], options = {}) {
   const state = [];
   let cursor = 0;
   let memoCursor = 0;
+  let refCursor = 0;
+  const refs = [];
   const memos = [];
   const stock = {
     pantry: { items: initialItems, shelfCount: 3, writes: 0 },
     fridge: { items: options.fridgeItems ?? [], shelfCount: 3, writes: 0 },
   };
   const actions = Object.fromEntries(Object.entries(stock).map(([section, store]) => [section, {
+    setShelfLabel: (index, label) => {
+      store.shelfLabels = layout.updatePantryShelfLabel(store, index, label).shelfLabels;
+      store.writes++;
+    },
     addShelf: () => { store.shelfCount++; store.items = layout.normalizePantryItems(store.items, store.shelfCount); store.writes++; },
     update: (fn) => {
       const changed = fn(store.items);
@@ -45,7 +51,8 @@ function harness(initialItems = [item], options = {}) {
   const { PantryScreenContent } = load('../../src/screens/PantryScreen.tsx', {
     'react/jsx-runtime': { jsx, jsxs },
     react: {
-      memo: (fn) => fn, useContext: () => null, useCallback: (fn) => fn,
+      memo: (fn) => fn, useContext: () => null, useCallback: (fn) => fn, useEffect: () => {},
+      useRef: (initial) => { const index = refCursor++; return refs[index] ??= { current: initial }; },
       useMemo: (fn, deps) => {
         const index = memoCursor++;
         if (!memos[index] || deps.some((dep, i) => !Object.is(dep, memos[index].deps[i]))) {
@@ -61,6 +68,7 @@ function harness(initialItems = [item], options = {}) {
     },
     '@react-navigation/native': { useNavigation: () => ({ navigate() {} }) },
     '@expo/vector-icons/Ionicons': 'Icon',
+    'expo-blur': { BlurTargetView: 'View' },
     'react-native': { ActivityIndicator: 'ActivityIndicator', Keyboard: { dismiss() {} }, Platform: { OS: 'ios' },
       Pressable: 'Pressable', ScrollView: 'ScrollView', FlatList: 'FlatList', Text: 'Text', View: 'View',
       StyleSheet: { create: (styles) => styles }, useWindowDimensions: () => ({ fontScale: 1 }) },
@@ -78,13 +86,18 @@ function harness(initialItems = [item], options = {}) {
     '../constants/colors': { colors: { white: '#fff', paper: '#fbf6ee' } },
     '../constants/typography': { fonts: {} },
     '../context/LanguageContext': { useTranslation: () => ({ t: (key) => key }) },
-    '../api/catalog': { fetchProductMirror: async () => ({ wh: 'bcn1', categoryName: 'Lácteos' }) },
+    '../api/catalog': { fetchLidlProduct: async (id, storeId) => {
+      productRequests.push({ id, storeId });
+      if (options.fetchError) throw new Error('offline');
+      return { id, displayName: 'Leche Lidl', thumbnail: 'https://example.com/lidl.jpg', unitPrice: 1.5, categoryName: 'Lácteos' };
+    }, fetchProductMirror: async () => ({ wh: 'bcn1', categoryName: 'Lácteos' }) },
     '../api/mercadona': { fetchProduct: async (id, wh) => {
       productRequests.push({ id, wh });
       if (options.fetchError) throw new Error('offline');
       return { id, display_name: milk.name, thumbnail: 'https://example.com/photo.jpg',
         price_instructions: { unit_price: '1.25' }, categories: [{ name: 'Leche y huevos' }] };
     } },
+    '../context/ProfileContext': { useProfile: () => ({ profile: { lidlStoreId: 'ES3572' } }) },
     '../context/CartContext': { useCart: () => ({ activeCart: options.noCart ? null : { groupName: 'Casa' },
       addToActiveCart: async (items) => {
         if (options.cartError) throw new Error('cart failure');
@@ -92,13 +105,14 @@ function harness(initialItems = [item], options = {}) {
       } }) },
     '../context/AuthContext': { useAuth: () => ({ session: null }) },
     '../context/ThemeContext': { useThemedStyles: (factory) => factory(), useTheme: () => ({ scheme: 'light' }) },
-    '../hooks/useTabBarBottomPadding': { useTabBarBottomPadding: () => 100 },
+    '../hooks/useTabBarBottomPadding': { useTabBarBottomPadding: (designPadding) => designPadding + 84 },
     '../hooks/usePantryLayout': { usePantryLayout: (_userId, section = 'pantry') => ({ ...stock[section],
       ready: !options.unready?.includes(section), loadError: options.loadErrors?.includes(section),
       saveError: options.saveErrors?.includes(section), ...actions[section] }) },
     '../lib/pantryLayout': layout,
+    '../lib/pantryExpiryNotifications': { syncPantryExpiryNotifications: async () => {} },
   });
-  return { render: () => { cursor = 0; memoCursor = 0; return PantryScreenContent({ userId: 'test-user' }); },
+  return { render: () => { cursor = 0; memoCursor = 0; refCursor = 0; return PantryScreenContent({ userId: 'test-user' }); },
     saved: (section = 'pantry') => stock[section].items,
     writes: (section = 'pantry') => stock[section].writes,
     shelfCount: (section = 'pantry') => stock[section].shelfCount, cartWrites, productRequests };
@@ -156,6 +170,82 @@ test('Despensa and Nevera have separate content without changing saved pantry pr
   assert.equal(h.writes(), 0);
 });
 
+test('pantry shows food and edit buttons at the lower right in both views', () => {
+  const h = harness();
+  const cupboard = h.render();
+  const add = byId(cupboard, 'pantry-add-product');
+  const edit = byId(cupboard, 'pantry-edit');
+  assert.equal(add.props.accessibilityLabel, 'pantry.addProduct');
+  assert.equal(edit.props.accessibilityLabel, 'pantry.editPantry');
+  assert.equal(edit.props.disabled, false);
+  assert.equal(typeof edit.props.onPress, 'function');
+  assert.equal(add.props.style({ pressed: false })[0].width, 44);
+  assert.equal(edit.props.style({ pressed: false })[0].width, 44);
+  assert.equal(add.props.children.props.style.width, 34.32);
+  assert.equal(edit.props.children.props.style[0].width, 34.32);
+  assert.equal(add.props.children.props.children.props.size, 16.5);
+  assert.equal(edit.props.children.props.children.props.size, 15.4);
+  const actionRow = byId(cupboard, 'pantry-floating-actions');
+  assert.ok(Math.abs(actionRow.props.style[1].bottom + (44 - 34.32) / 2 - 84 - 10) < 1e-9);
+  assert.equal(byType(cupboard, 'PantryShelf').props.showAddSlots, false);
+  selectorFor(cupboard, 'cupboard').props.onChange('list');
+  assert.ok(byId(h.render(), 'pantry-add-product'));
+  byId(h.render(), 'pantry-add-product').props.onPress();
+  assert.equal(byId(h.render(), 'pantry-add-product'), undefined);
+  byType(h.render(), 'PantryProductPicker').props.onClose();
+  selectorFor(h.render(), 'fridge').props.onChange('fridge');
+  assert.equal(byId(h.render(), 'pantry-edit'), undefined);
+  assert.equal(byId(h.render(), 'pantry-add-product'), undefined);
+  assert.equal(typeof byType(h.render(), 'PantryFridge').props.onAddAt, 'function');
+});
+
+test('pencil locks products, stale gesture callbacks and adding in cupboard and list until done', () => {
+  const h = harness();
+  const initial = h.render();
+  const staleShelf = byType(initial, 'PantryShelf');
+  const staleAdd = byId(initial, 'pantry-add-product');
+  byId(initial, 'pantry-edit').props.onPress();
+  const editing = h.render();
+  assert.equal(byType(editing, 'PantryShelf').props.editingLabels, true);
+  assert.equal(byId(editing, 'pantry-add-product').props.disabled, true);
+  assert.equal(byId(editing, 'pantry-add-shelf').props.disabled, true);
+  assert.equal(byId(editing, 'pantry-edit').props.accessibilityState.selected, true);
+  staleShelf.props.onSelect(item.instanceId);
+  staleShelf.props.onPlace(item.instanceId, layout.pantrySlotPlacement(3, 1));
+  staleAdd.props.onPress();
+  assert.equal(byType(h.render(), 'PantryProductFocus'), undefined);
+  assert.equal(byType(h.render(), 'PantryProductPicker'), undefined);
+  selectorFor(h.render(), 'cupboard').props.onChange('list');
+  const row = byId(h.render(), 'pantry-list-item-milk-1');
+  assert.equal(row.props.disabled, true);
+  row.props.onPress();
+  assert.equal(byType(h.render(), 'PantryProductFocus'), undefined);
+  assert.equal(h.writes(), 0);
+  assert.deepEqual(h.saved(), [item]);
+  byId(h.render(), 'pantry-edit').props.onPress();
+  byId(h.render(), 'pantry-list-item-milk-1').props.onPress();
+  assert.ok(byType(h.render(), 'PantryProductFocus'));
+});
+
+test('shelf labels stay independent from products and appear in list locations', () => {
+  const h = harness();
+  selectorFor(h.render(), 'cupboard').props.onChange('list');
+  byId(h.render(), 'pantry-edit').props.onPress();
+  const shelf = byType(h.render(), 'PantryShelf');
+  assert.ok(shelf, 'starting from list opens the cupboard editor');
+  shelf.props.onChangeShelfLabel(0, { name: 'Desayunos', emoji: '🥣' });
+  assert.deepEqual(h.saved(), [item]);
+  assert.equal(h.writes(), 1);
+  byId(h.render(), 'pantry-edit').props.onPress();
+  assert.deepEqual(byType(h.render(), 'PantryShelf').props.shelfLabels, { 0: { name: 'Desayunos', emoji: '🥣' } });
+  selectorFor(h.render(), 'cupboard').props.onChange('list');
+  assert.match(byId(h.render(), 'pantry-list-item-milk-1').props.accessibilityLabel, /🥣 Desayunos/);
+  selectorFor(h.render(), 'fridge').props.onChange('fridge');
+  assert.equal(h.writes('fridge'), 0);
+  selectorFor(h.render(), 'fridge').props.onChange('pantry');
+  assert.equal(byId(h.render(), 'pantry-add-product').props.disabled, false);
+});
+
 test('the button below the shelves adds successive usable shelves without moving existing items', () => {
   const h = harness();
   const initial = h.render();
@@ -166,9 +256,11 @@ test('the button below the shelves adds successive usable shelves without moving
     const shelf = byType(h.render(), 'PantryShelf');
     assert.equal(shelf.props.shelfCount, shelfCount);
     assert.deepEqual(h.saved()[0], item);
-    shelf.props.onAddAt(layout.pantrySlotPlacement(2, shelfCount - 1, shelfCount));
+    assert.equal(shelf.props.showAddSlots, false);
+    assert.equal(shelf.props.onAddAt, undefined);
+    byId(h.render(), 'pantry-add-product').props.onPress();
     byType(h.render(), 'PantryProductPicker').props.onSelect(milk);
-    assert.equal(h.saved().at(-1).shelfIndex, shelfCount - 1);
+    assert.equal(h.saved().at(-1).shelfIndex, 0);
   }
   assert.equal(h.saved().length, 3);
 });
@@ -217,7 +309,7 @@ test('the pantry product information button opens its Mercadona detail without c
 
 test('the focused product panel shows the supermarket above the name and an information control beside it', () => {
   const source = readFileSync(new URL('../../src/components/PantryProductFocus.tsx', import.meta.url), 'utf8');
-  assert.match(source, /styles\.storeRow[\s\S]*STORE_META\.mercadona\.name[\s\S]*STORE_META\.mercadona\.icon/);
+  assert.match(source, /styles\.storeRow[\s\S]*STORE_META\[product\.store \?\? 'mercadona'\]\.name[\s\S]*STORE_META\[product\.store \?\? 'mercadona'\]\.icon/);
   assert.match(source, /styles\.nameRow[\s\S]*styles\.name[\s\S]*testID="pantry-focus-details"/);
   assert.match(source, /name="information-circle-outline"/);
 });
@@ -226,12 +318,12 @@ test('adding a product preserves the existing scene and opens no selection toolb
   const h = harness();
   const initial = h.render();
   const padding = byType(initial, 'ScrollView').props.contentContainerStyle;
-  byType(initial, 'PantryShelf').props.onAddAt({ ...layout.pantrySlotPlacement(3, 1), x: 0.7 });
+  byId(initial, 'pantry-add-product').props.onPress();
   const picker = byType(h.render(), 'PantryProductPicker');
   picker.props.onSelect(milk);
   const added = h.render();
   assert.equal(h.saved().length, 2);
-  assert.equal(h.saved()[1].shelfIndex, 1);
+  assert.equal(h.saved()[1].shelfIndex, 0);
   assert.deepEqual(h.saved()[0], item);
   assert.deepEqual(byType(added, 'ScrollView').props.contentContainerStyle, padding);
   assert.equal(byId(added, 'pantry-remove'), undefined);
@@ -239,14 +331,14 @@ test('adding a product preserves the existing scene and opens no selection toolb
   assert.equal(byType(added, 'PantryProductFocus'), undefined);
 });
 
-test('shelf slots add the sixth and eleventh products to the extra shelves', () => {
+test('the food button adds the sixth and eleventh products to the next shelf', () => {
   for (const count of [5, 10]) {
     const existing = Array.from({ length: count }, (_, i) => ({
       instanceId: `milk-${i}`, product: milk, ...layout.defaultPantryPlacement(i),
     }));
     const h = harness(existing);
     const initial = h.render();
-    byType(initial, 'PantryShelf').props.onAddAt(layout.pantrySlotPlacement(0, count / 5));
+    byId(initial, 'pantry-add-product').props.onPress();
     byType(h.render(), 'PantryProductPicker').props.onSelect(milk);
     assert.equal(h.saved().length, count + 1);
     assert.deepEqual(h.saved().slice(0, count), existing);
@@ -255,22 +347,63 @@ test('shelf slots add the sixth and eleventh products to the extra shelves', () 
   }
 });
 
-test('explicit bottom slot remains on the chosen shelf even while the top has room', () => {
+test('the food button uses a free shelf and reports when all shelves are full', () => {
   const h = harness();
-  const target = layout.pantrySlotPlacement(4, 2);
-  byType(h.render(), 'PantryShelf').props.onAddAt(target);
+  byId(h.render(), 'pantry-add-product').props.onPress();
   byType(h.render(), 'PantryProductPicker').props.onSelect(milk);
-  assert.deepEqual(h.saved()[1], { ...h.saved()[1], ...target });
+  assert.equal(h.saved()[1].shelfIndex, 0);
   const allFull = Array.from({ length: 15 }, (_, i) => ({
     instanceId: `full-${i}`, product: milk, ...layout.defaultPantryPlacement(i),
   }));
   const full = harness(allFull);
-  byType(full.render(), 'PantryShelf').props.onAddAt(target);
+  byId(full.render(), 'pantry-add-product').props.onPress();
   byType(full.render(), 'PantryProductPicker').props.onSelect(milk);
   assert.deepEqual(full.saved(), allFull);
   assert.ok(byId(full.render(), 'pantry-no-space'));
 });
 
+
+test('adding a purchase preserves quantities and existing stock in one write', () => {
+  const h = harness();
+  byId(h.render(), 'pantry-add-product').props.onPress();
+  const picker = byType(h.render(), 'PantryProductPicker');
+  const lidl = { id: '123_ES', store: 'lidl', name: 'Leche Lidl', illustrationUrl: 'https://example.com/lidl.webp' };
+  assert.equal(picker.props.onAddPurchase([{ product: milk, quantity: 3 }, { product: lidl, quantity: 2 }]), true);
+  assert.deepEqual(h.saved()[0], item);
+  assert.deepEqual(h.saved().slice(1).map(it => [it.product, it.quantity]), [[milk, 3], [lidl, 2]]);
+  assert.equal(new Set(h.saved().map(it => it.instanceId)).size, 3);
+  assert.equal(h.writes(), 1);
+  assert.equal(byType(h.render(), 'PantryProductPicker'), undefined);
+  assert.deepEqual(h.saved('fridge'), []);
+});
+
+test('a purchase that does not fit is not partially saved and can be retried', () => {
+  const existing = Array.from({ length: 14 }, (_, i) => ({ instanceId: `full-${i}`, product: milk, ...layout.defaultPantryPlacement(i) }));
+  const h = harness(existing);
+  byId(h.render(), 'pantry-add-product').props.onPress();
+  let picker = byType(h.render(), 'PantryProductPicker');
+  assert.equal(picker.props.onAddPurchase([{ product: milk, quantity: 2 }, { product: milk, quantity: 4 }]), false);
+  assert.deepEqual(h.saved(), existing);
+  assert.equal(h.writes(), 0);
+  picker = byType(h.render(), 'PantryProductPicker');
+  assert.ok(picker);
+  assert.equal(picker.props.onAddPurchase([{ product: milk, quantity: 2 }]), true);
+  assert.equal(h.saved().length, 15);
+  assert.equal(h.saved().at(-1).quantity, 2);
+  assert.equal(h.writes(), 1);
+});
+
+test('empty purchases leave stock unchanged and allow closing the picker', () => {
+  const h = harness();
+  byId(h.render(), 'pantry-add-product').props.onPress();
+  const picker = byType(h.render(), 'PantryProductPicker');
+  assert.equal(picker.props.onAddPurchase([]), false);
+  picker.props.onClose();
+  h.render();
+  assert.equal(byType(h.render(), 'PantryProductPicker'), undefined);
+  assert.deepEqual(h.saved(), [item]);
+  assert.equal(h.writes(), 0);
+});
 
 test('finished removes only the selected instance, preserving other copies and placements', () => {
   const other = { ...item, ...layout.defaultPantryPlacement(1), instanceId: 'milk-2' };
@@ -410,7 +543,7 @@ test('late drag callbacks and identical instance IDs still target their original
 test('switching sections dismisses the picker and preserves both mounted inventories', () => {
   const fridgeItem = { ...item, instanceId: 'fridge-copy' };
   const h = harness([item], { fridgeItems: [fridgeItem] });
-  byType(h.render(), 'PantryShelf').props.onAddAt(layout.pantrySlotPlacement(2));
+  byId(h.render(), 'pantry-add-product').props.onPress();
   selectorFor(h.render(), 'fridge').props.onChange('fridge');
   assert.equal(byType(h.render(), 'PantryProductPicker'), undefined);
   const hiddenCupboard = nodes(h.render(), true).find((node) => node.props.testID === 'pantry-cupboard');
@@ -447,4 +580,77 @@ test('adding from the fridge to the cart preserves both inventories and includes
   assert.equal(h.saved('fridge').length, 1);
   assert.equal(h.writes(), 0);
   assert.equal(h.writes('fridge'), 0);
+});
+
+test('editing a selected copy preserves its neighbours, updates the list and survives reopening', () => {
+  const neighbour = { ...item, instanceId: 'milk-2', ...layout.defaultPantryPlacement(1) };
+  const h = harness([item, neighbour], { fridgeItems: [item] });
+  byType(h.render(), 'PantryShelf').props.onSelect(item.instanceId);
+  const focus = byType(h.render(), 'PantryProductFocus');
+  assert.equal(focus.props.quantity, 1);
+  assert.equal(focus.props.notes, '');
+  focus.props.onEdit({ quantity: 4 });
+  byType(h.render(), 'PantryProductFocus').props.onEdit({ notes: 'Reservar\npara el desayuno' });
+  byType(h.render(), 'PantryProductFocus').props.onClose();
+  byType(h.render(), 'PantryShelf').props.onSelect(item.instanceId);
+  const reopened = byType(h.render(), 'PantryProductFocus');
+  assert.equal(reopened.props.quantity, 4);
+  assert.equal(reopened.props.notes, 'Reservar\npara el desayuno');
+  assert.deepEqual(h.saved()[1], neighbour);
+  assert.deepEqual(h.saved('fridge'), [item]);
+  reopened.props.onClose();
+  selectorFor(h.render(), 'cupboard').props.onChange('list');
+  assert.match(byId(h.render(), `pantry-list-item-${item.instanceId}`).props.accessibilityLabel, /pantry.units/);
+  assert.equal(h.writes('fridge'), 0);
+});
+
+test('location edits move only the selected copy, reject a full shelf and keep notes and quantity', () => {
+  const edited = { ...item, quantity: 3, notes: 'Abierto' };
+  const crowded = Array.from({ length: 5 }, (_, i) => ({ ...item, instanceId: `full-${i}`,
+    ...layout.pantrySlotPlacement(i, 1) }));
+  const h = harness([edited, ...crowded]);
+  byType(h.render(), 'PantryShelf').props.onSelect(item.instanceId);
+  const focus = byType(h.render(), 'PantryProductFocus');
+  assert.equal(focus.props.onMove(1), false);
+  assert.equal(focus.props.onMove(99), false);
+  assert.equal(focus.props.onMove(-1), false);
+  assert.equal(h.writes(), 0);
+  assert.equal(focus.props.onMove(2), true);
+  assert.equal(h.saved()[0].shelfIndex, 2);
+  assert.equal(h.saved()[0].quantity, 3);
+  assert.equal(h.saved()[0].notes, 'Abierto');
+  assert.deepEqual(h.saved().slice(1), crowded);
+  assert.equal(byType(h.render(), 'PantryProductFocus').props.shelfIndex, 2);
+});
+
+test('late detail edits remain bound to their inventory and clamp quantities and notes', () => {
+  const h = harness([item], { fridgeItems: [item] });
+  byType(h.render(), 'PantryShelf').props.onSelect(item.instanceId);
+  const editPantry = byType(h.render(), 'PantryProductFocus').props.onEdit;
+  selectorFor(h.render(), 'fridge').props.onChange('fridge');
+  editPantry({ quantity: 10000, notes: 'x'.repeat(900) });
+  assert.equal(h.saved()[0].quantity, 999);
+  assert.equal(h.saved()[0].notes.length, 500);
+  byType(h.render(), 'PantryFridge').props.onSelect(item.instanceId);
+  byType(h.render(), 'PantryProductFocus').props.onEdit({ quantity: 0, notes: 'Frío' });
+  assert.equal(h.saved('fridge')[0].quantity, 1);
+  assert.equal(h.saved('fridge')[0].notes, 'Frío');
+  assert.equal(h.saved()[0].quantity, 999);
+});
+
+
+test('a Lidl pantry copy opens Lidl details and replenishes Lidl with its category', async () => {
+  const lidl = { ...item, product: { ...milk, store: 'lidl', id: '8806215264107_ES' } };
+  const h = harness([lidl]);
+  byType(h.render(), 'PantryShelf').props.onSelect(lidl.instanceId);
+  const focus = byType(h.render(), 'PantryProductFocus');
+  focus.props.onShowDetails();
+  assert.deepEqual(byType(h.render(), 'StoreProductModal').props.target, { store: 'lidl', id: lidl.product.id });
+  await focus.props.onAddToCart();
+  assert.deepEqual(h.productRequests, [{ id: lidl.product.id, storeId: 'ES3572' }]);
+  assert.equal(h.cartWrites[0].storeKey, 'lidl');
+  assert.equal(h.cartWrites[0].storeProductId, lidl.product.id);
+  assert.equal(h.cartWrites[0].categoryName, 'Lácteos');
+  assert.equal(h.cartWrites[0].mercadonaProductId, undefined);
+  assert.deepEqual(h.saved(), [lidl]);
 });

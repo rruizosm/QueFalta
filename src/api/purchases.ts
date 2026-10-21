@@ -123,11 +123,14 @@ export async function fetchGeneralPurchaseStatistics(): Promise<GeneralPurchaseS
 }
 
 /** The products of an archived purchase, shaped for re-adding to a cart. */
-export async function fetchPurchaseItems(purchaseId: string): Promise<NewListItem[]> {
-  const { data, error } = await supabase
+export async function fetchPurchaseItems(purchaseId: string, signal?: AbortSignal): Promise<NewListItem[]> {
+  let request = supabase
     .from('purchase_items')
     .select('product_name, quantity, unit, category_emoji, category_name, mercadona_product_id, store_product_id, store_key, unit_price, image_url, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price')
     .eq('purchase_id', purchaseId);
+
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
 
   if (error) throw error;
 

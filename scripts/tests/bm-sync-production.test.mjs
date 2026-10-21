@@ -28,9 +28,9 @@ test('el sincronizador publica las cinco relaciones del modelo multizona', () =>
   assert.match(sync, /recordCatalogSync\(\{[\s\S]*store: 'bm'/m);
 });
 
-test('el workflow queda manual hasta desplegar y validar la migracion', () => {
+test('el workflow de BM se programa cada lunes y conserva el disparo manual', () => {
   assert.match(workflow, /workflow_dispatch/);
-  assert.doesNotMatch(workflow, /schedule:/);
+  assert.match(workflow, /schedule:\s*\n\s*- cron: '15 12 \* \* 1'/);
   assert.match(workflow, /node-version: 22/);
   assert.match(workflow, /timeout-minutes: 120/);
 });

@@ -20,7 +20,7 @@ export default function AhorramasProductsScreen() {
   const items = useMemo(() => products.map(ahorramasToUI), [products]);
   return <View style={[styles.screen, { paddingTop: insets.top }]}>
     <ProfileSubscreenHeader title={categoryName} icon="pricetags-outline" headerTop={0} />
-    {loading ? <ActivityIndicator style={styles.center} color={colors.accent} size="large" /> : error ? <Text style={styles.message}>No se pudieron cargar los productos.</Text> : <StoreProductList products={items} />}
+    {loading ? <ActivityIndicator style={styles.center} color={colors.accent} size="large" /> : error ? <Text style={styles.message}>No se pudieron cargar los productos.</Text> : <StoreProductList products={items} pageSize={50} searchable roundedCards />}
   </View>;
 }
 const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: colors.paper }, center: { flex: 1 }, message: { margin: 24, fontFamily: fonts.regular, color: colors.inkSoft, textAlign: 'center' } });

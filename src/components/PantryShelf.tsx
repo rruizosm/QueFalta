@@ -10,9 +10,26 @@ import { useTranslation } from '../context/LanguageContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { availablePantrySlots, clampPantryPlacement, findPantryPlacement, pantryProductWidth,
   pantryShelfIndex, pantryShelfIndexAtY, pantryShelfSurfaceY, pantryCanvasHeightRatio, PANTRY_SLOT_COUNT,
-  PANTRY_ASPECT_RATIO, PANTRY_DEFAULT_SIZE, PANTRY_DEFAULT_SHELF_COUNT, type PantryItem, type PantryPlacement } from '../lib/pantryLayout';
+  PANTRY_ASPECT_RATIO, PANTRY_DEFAULT_SIZE, PANTRY_DEFAULT_SHELF_COUNT, type PantryItem, type PantryPlacement,
+  type PantryShelfLabel as ShelfLabel } from '../lib/pantryLayout';
 import { PagerGestureContext } from './bottom-tabs-pager/PagerGestureContext';
 import PantryWoodShelf, { PANTRY_SHELF_WIDTH_RATIO } from './PantryWoodShelf';
+import PantryShelfLabel from './PantryShelfLabel';
+
+const LABEL_ROW_HEIGHT = 52;
+
+/** The saved coordinates stay unchanged; labels add a visual row above each shelf. */
+function shelfAtVisualY(y: number, height: number, count: number, shelfOffsets: readonly number[]): number {
+  'worklet';
+  if (!shelfOffsets.some((offset) => offset > 0)) return pantryShelfIndexAtY(y / height, count);
+  let index = 0;
+  for (let next = 1; next < count; next++) {
+    const previousY = pantryShelfSurfaceY(next - 1) * height + shelfOffsets[next - 1];
+    const nextY = pantryShelfSurfaceY(next) * height + shelfOffsets[next];
+    if (y >= (previousY + nextY) / 2) index = next;
+  }
+  return index;
+}
 
 type Positions = Record<string, PantryPlacement>;
 type ItemProps = {
@@ -27,14 +44,18 @@ type ItemProps = {
   positions: SharedValue<Positions>;
   scrollGesture: NativeGesture;
   testIDPrefix: string;
+  interactionsDisabled: boolean;
+  shelfOffsets: readonly number[];
 };
 
-const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, width, height, shelfCount, onSelect, onPlace, positions, scrollGesture, testIDPrefix }: ItemProps) {
+const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, width, height, shelfCount, onSelect, onPlace, positions, scrollGesture, testIDPrefix, interactionsDisabled, shelfOffsets }: ItemProps) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const pager = useContext(PagerGestureContext);
   const imageRef = useRef<View>(null);
-  const select = useCallback(() => onSelect(item.instanceId, imageRef), [item.instanceId, onSelect]);
+  const select = useCallback(() => {
+    if (!interactionsDisabled) onSelect(item.instanceId, imageRef);
+  }, [item.instanceId, onSelect, interactionsDisabled]);
   const [imageError, setImageError] = useState(false);
   // Capture geometry only in worklets, never product names/remote image URLs.
   const initial = useMemo(() => clampPantryPlacement(item, shelfCount), [item, shelfCount]);
@@ -71,19 +92,19 @@ const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, widt
       const entry = current();
       if (entry) runOnJS(onPlace)(instanceId, entry);
     };
-    const pan = Gesture.Pan().minDistance(8).maxPointers(1)
+    const pan = Gesture.Pan().enabled(!interactionsDisabled).minDistance(8).maxPointers(1)
       .onStart(() => {
         const entry = current();
         if (!entry) return;
         dragging.value = true;
         startX.value = entry.x;
-        startY.value = entry.y;
+        startY.value = entry.y * height + shelfOffsets[pantryShelfIndex(entry, shelfCount)];
       })
       .onUpdate((event) => {
         const entry = current();
         if (entry && dragging.value) preview({
           x: startX.value + event.translationX / width, y: 0, size: entry.size,
-          shelfIndex: pantryShelfIndexAtY(startY.value + event.translationY / height + entry.size * PANTRY_ASPECT_RATIO / 2, shelfCount),
+          shelfIndex: shelfAtVisualY(startY.value + event.translationY + entry.size * width / 2, height, shelfCount, shelfOffsets),
         });
       })
       .onFinalize((_event, success) => {
@@ -91,7 +112,7 @@ const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, widt
         dragging.value = false;
         if (success) commit();
       });
-    const tap = Gesture.Tap().maxDistance(8).onEnd((_event, success) => {
+    const tap = Gesture.Tap().enabled(!interactionsDisabled).maxDistance(8).onEnd((_event, success) => {
       if (success) runOnJS(select)();
     });
     pan.blocksExternalGesture(scrollGesture);
@@ -101,7 +122,7 @@ const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, widt
       tap.blocksExternalGesture(pager);
     }
     return Gesture.Race(pan, tap);
-  }, [pager, scrollGesture, width, height, shelfCount, select, onPlace, instanceId, positions, startX, startY, dragging]);
+  }, [pager, scrollGesture, width, height, shelfCount, select, onPlace, instanceId, positions, startX, startY, dragging, interactionsDisabled, shelfOffsets]);
 
   const placement = useAnimatedStyle(() => {
     const current = positions.value[instanceId];
@@ -112,7 +133,8 @@ const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, widt
     const imageSide = next.size * width;
     return {
       // Translate the fixed frame; moving left/top would run native layout on every drag frame.
-      transform: [{ translateX: next.x * width - frameWidth / 2 }, { translateY: next.y * height - imageSide / 2 }],
+      transform: [{ translateX: next.x * width - frameWidth / 2 },
+        { translateY: next.y * height - imageSide / 2 + shelfOffsets[pantryShelfIndex(next, shelfCount)] }],
     };
   });
   // Dragging never resizes art. This inner frame needs no UI-thread mapper.
@@ -124,9 +146,10 @@ const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, widt
   return <GestureDetector gesture={gesture}>
     <Animated.View style={[styles.product, productFrame, placement, selected && styles.selected]} collapsable={false} hitSlop={8}
       testID={`${testIDPrefix}-item-${instanceId}`} accessible accessibilityRole="button"
-      accessibilityLabel={item.product.name} accessibilityState={{ selected }}
-      accessibilityHint={t('pantry.productAccessibilityHint', { shelf: pantryShelfIndex(item, shelfCount) + 1 })}
-      accessibilityActions={[
+      pointerEvents={interactionsDisabled ? 'none' : 'auto'}
+      accessibilityLabel={item.product.name} accessibilityState={{ selected, disabled: interactionsDisabled }}
+      accessibilityHint={interactionsDisabled ? undefined : t('pantry.productAccessibilityHint', { shelf: pantryShelfIndex(item, shelfCount) + 1 })}
+      accessibilityActions={interactionsDisabled ? [] : [
         { name: 'activate', label: t('pantry.selectProduct') },
         { name: 'left', label: t('pantry.moveLeft') }, { name: 'right', label: t('pantry.moveRight') },
         ...(pantryShelfIndex(item, shelfCount) > 0 ? [{ name: 'shelfUp', label: t('pantry.moveShelfUp') }] : []),
@@ -134,6 +157,7 @@ const PlacedProduct = memo(function PlacedProduct({ item, selected, hidden, widt
           ? [{ name: 'shelfDown', label: t('pantry.moveShelfDown') }] : []),
       ]}
       onAccessibilityAction={({ nativeEvent }) => {
+        if (interactionsDisabled) return;
         const action = nativeEvent.actionName;
         if (action === 'activate') { select(); return; }
         if (!['left', 'right', 'shelfUp', 'shelfDown'].includes(action)) return;
@@ -164,16 +188,21 @@ export type PantryShelfProps = {
   hiddenId?: string | null;
   onSelect: ItemProps['onSelect'];
   onPlace: ItemProps['onPlace'];
-  onAddAt: (placement: PantryPlacement) => void;
+  onAddAt?: (placement: PantryPlacement) => void;
   canAdd: boolean;
+  showAddSlots?: boolean;
   scrollGesture: NativeGesture;
   finish?: 'wood' | 'ice';
   dark?: boolean;
   testIDPrefix?: string;
+  editingLabels?: boolean;
+  shelfLabels?: Record<string, ShelfLabel>;
+  onChangeShelfLabel?: (index: number, label: ShelfLabel | null) => void;
 };
 
 function PantryShelf({ items, shelfCount = PANTRY_DEFAULT_SHELF_COUNT, selectedId, hiddenId, onSelect, onPlace,
-  onAddAt, canAdd, scrollGesture, finish = 'wood', dark = false, testIDPrefix = 'pantry' }: PantryShelfProps) {
+  onAddAt, canAdd, showAddSlots = true, scrollGesture, finish = 'wood', dark = false, testIDPrefix = 'pantry',
+  editingLabels = false, shelfLabels, onChangeShelfLabel }: PantryShelfProps) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   // A common UI-thread snapshot also prevents two simultaneous product gestures
@@ -181,30 +210,56 @@ function PantryShelf({ items, shelfCount = PANTRY_DEFAULT_SHELF_COUNT, selectedI
   const snapshot = useMemo(() => Object.fromEntries(items.map((item) =>
     [item.instanceId, clampPantryPlacement(item, shelfCount)])), [items, shelfCount]);
   const positions = useSharedValue<Positions>(snapshot);
-  useEffect(() => { positions.value = snapshot; }, [snapshot, positions]);
+  useEffect(() => { positions.value = snapshot; }, [snapshot, positions, editingLabels]);
   const [frame, setFrame] = useState({ width: 0 });
   // Scale only with available WIDTH. Editing, alerts and viewport height must
   // never shrink products or move shelves; small screens scroll vertically.
   const width = frame.width / PANTRY_SHELF_WIDTH_RATIO;
   const height = width / PANTRY_ASPECT_RATIO;
+  // Only shelves with a saved label reserve a row. In edit mode, empty-shelf
+  // plus buttons overlay the scene and do not change its layout.
+  const labelIndices = new Set(Object.keys(shelfLabels ?? {}).map(Number));
+  const shelfOffsets = useMemo(() => {
+    let offset = 0;
+    return Array.from({ length: shelfCount }, (_, index) => {
+      if (labelIndices.has(index)) offset += LABEL_ROW_HEIGHT;
+      return offset;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shelfCount, shelfLabels]);
+  const totalLabelSpace = shelfOffsets[shelfCount - 1] ?? 0;
   const heightRatio = pantryCanvasHeightRatio(shelfCount);
   const topShelfSize = useMemo(() => Object.values(snapshot).reduce((size, placement) =>
     pantryShelfIndex(placement, shelfCount) === 0 ? Math.max(size, placement.size) : size,
   PANTRY_DEFAULT_SIZE), [snapshot, shelfCount]);
   // Remove only unused headroom, retaining 8 pt above the tallest top-shelf
-  // illustration (or add target). Keep saved coordinates and drag geometry intact.
+  // illustration. Keep saved coordinates and drag geometry intact.
   const topTrim = Math.max(0, pantryShelfSurfaceY(0) * height - topShelfSize * width - 8);
-  const visibleHeightRatio = heightRatio - (height > 0 ? topTrim / height : 0);
-  const slots = useMemo(() => availablePantrySlots(items, shelfCount), [items, shelfCount]);
+  const visibleHeightRatio = heightRatio + (height > 0 ? (totalLabelSpace - topTrim) / height : 0);
+  const slots = useMemo(() => !editingLabels && showAddSlots && onAddAt ? availablePantrySlots(items, shelfCount) : [],
+    [items, shelfCount, showAddSlots, onAddAt, editingLabels]);
   return <View style={[styles.frame, { aspectRatio: PANTRY_ASPECT_RATIO * PANTRY_SHELF_WIDTH_RATIO / visibleHeightRatio }]} testID={`${testIDPrefix}-shelf-frame`} onLayout={({ nativeEvent: { layout } }) => {
     // Ignore transient zero layouts when an ancestor is hidden/detached.
     if (layout.width <= 0) return;
     setFrame((previous) => previous.width === layout.width ? previous : { width: layout.width });
   }}>
-    {width > 0 && <View testID={`${testIDPrefix}-canvas`} style={{ position: 'absolute', width, height: height * heightRatio,
+    {width > 0 && <View testID={`${testIDPrefix}-canvas`} style={{ position: 'absolute', width, height: height * heightRatio + totalLabelSpace,
       left: (frame.width - width) / 2, top: -topTrim }}>
       {Array.from({ length: shelfCount }, (_, index) => <PantryWoodShelf key={index}
-        width={width} surfaceY={height * pantryShelfSurfaceY(index)} finish={finish} dark={dark} />)}
+        width={width} surfaceY={height * pantryShelfSurfaceY(index) + shelfOffsets[index]} finish={finish} dark={dark} />)}
+      {onChangeShelfLabel && (editingLabels || labelIndices.size > 0) && Array.from({ length: shelfCount }, (_, index) => {
+        const previousOffset = index > 0 ? shelfOffsets[index - 1] : 0;
+        const hasLabel = labelIndices.has(index);
+        const labelTop = hasLabel
+          ? index === 0 ? topTrim : height * (pantryShelfSurfaceY(index - 1) + 0.04) + previousOffset
+          : height * (pantryShelfSurfaceY(index) + 0.04) + shelfOffsets[index];
+        return <View key={`label-${index}`} style={{ position: 'absolute', left: 4, right: 4, height: LABEL_ROW_HEIGHT, zIndex: 2,
+          top: labelTop }}>
+          {hasLabel || editingLabels
+            ? <PantryShelfLabel index={index} label={shelfLabels?.[index]} editing={editingLabels} onChange={onChangeShelfLabel} />
+            : null}
+        </View>;
+      })}
       {slots.map(({ index, placement }) => {
         const imageSide = placement.size * width;
         const slotWidth = pantryProductWidth(placement.size) * width;
@@ -212,10 +267,10 @@ function PantryShelf({ items, shelfCount = PANTRY_DEFAULT_SHELF_COUNT, selectedI
           accessibilityRole="button" accessibilityLabel={t('pantry.addAtSlot', {
             number: index % PANTRY_SLOT_COUNT + 1, shelf: pantryShelfIndex(placement, shelfCount) + 1,
           })}
-          onPress={() => onAddAt(placement)} hitSlop={4}
+          onPress={() => onAddAt?.(placement)} hitSlop={4}
           style={({ pressed }) => [styles.slot, {
             left: placement.x * width - slotWidth / 2,
-            top: placement.y * height - imageSide / 2,
+            top: placement.y * height - imageSide / 2 + shelfOffsets[pantryShelfIndex(placement, shelfCount)],
             width: slotWidth,
             height: imageSide,
           }, (!canAdd || pressed) && styles.slotPressed]}>
@@ -226,7 +281,8 @@ function PantryShelf({ items, shelfCount = PANTRY_DEFAULT_SHELF_COUNT, selectedI
       })}
       {items.map((item) => <PlacedProduct key={item.instanceId} item={item} selected={item.instanceId === selectedId} hidden={item.instanceId === hiddenId}
         width={width} height={height} shelfCount={shelfCount} onSelect={onSelect} onPlace={onPlace}
-        positions={positions} scrollGesture={scrollGesture} testIDPrefix={testIDPrefix} />)}
+        positions={positions} scrollGesture={scrollGesture} testIDPrefix={testIDPrefix}
+        interactionsDisabled={editingLabels} shelfOffsets={shelfOffsets} />)}
     </View>}
   </View>;
 }

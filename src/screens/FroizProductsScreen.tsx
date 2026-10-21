@@ -45,7 +45,7 @@ export default function FroizProductsScreen() {
       ) : error ? (
         <Text style={styles.message}>{t('catalog.loadErrorStore', { store: 'Froiz' })}</Text>
       ) : (
-        <StoreProductList products={items} />
+        <StoreProductList products={items} pageSize={50} searchable roundedCards />
       )}
     </View>
   );

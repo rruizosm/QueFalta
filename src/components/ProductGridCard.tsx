@@ -1,10 +1,11 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Pressable, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import ProductImage from './ProductImage';
 import GlassSurface from './GlassSurface';
+import ProductSelectionIndicator from './ProductSelectionIndicator';
 
 export default function ProductGridCard({
   width,
@@ -19,6 +20,7 @@ export default function ProductGridCard({
   storeLogo,
   onPress,
   selectionState,
+  selectionActionAppearance,
   accessibilityLabel,
 }: {
   width: number;
@@ -36,78 +38,87 @@ export default function ProductGridCard({
   storeLogo?: number | null;
   onPress: () => void;
   selectionState?: 'available' | 'selected';
+  selectionActionAppearance?: 'glass';
   accessibilityLabel?: string;
 }) {
   const styles = useThemedStyles(themedStyles);
   const hasStoreLogo = storeLogo != null;
-  return (
-    <TouchableOpacity
-      style={[styles.card, rounded && styles.cardRounded, selectionState === 'selected' && styles.cardSelected, { width }]}
-      activeOpacity={0.7}
-      onPress={onPress}
-      disabled={selectionState === 'selected'}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={selectionState ? { selected: selectionState === 'selected', disabled: selectionState === 'selected' } : undefined}
+  const cardStyle = [styles.card, rounded && styles.cardRounded, selectionState === 'selected' && styles.cardSelected, { width }];
+  const content = (pressed = false) => <>
+    {hasStoreLogo ? (
+      <View style={styles.storeLogoBadge} pointerEvents="none">
+        <Image source={storeLogo} style={styles.storeLogo} resizeMode="contain" />
+      </View>
+    ) : null}
+    <GlassSurface
+      style={[styles.imgWrap, rounded && styles.imgWrapRounded]}
+      fallbackColor={colors.white}
     >
-      {hasStoreLogo ? (
-        <View style={styles.storeLogoBadge} pointerEvents="none">
-          <Image source={storeLogo} style={styles.storeLogo} resizeMode="contain" />
+      {uri ? (
+        <ProductImage uri={uri} style={styles.img} />
+      ) : emoji ? (
+        <Text style={styles.placeholderEmoji}>{emoji}</Text>
+      ) : (
+        <Ionicons name="image-outline" size={22} color={colors.inkFaint} />
+      )}
+      {badgeLabel ? (
+        <View style={[styles.badge, hasStoreLogo && styles.badgeBelowStoreLogo]}>
+          <Text style={styles.badgeText}>{badgeLabel}</Text>
         </View>
       ) : null}
-      <GlassSurface
-        style={[styles.imgWrap, rounded && styles.imgWrapRounded]}
-        fallbackColor={colors.white}
-      >
-        {uri ? (
-          <ProductImage uri={uri} style={styles.img} />
-        ) : emoji ? (
-          <Text style={styles.placeholderEmoji}>{emoji}</Text>
-        ) : (
-          <Ionicons name="image-outline" size={22} color={colors.inkFaint} />
-        )}
-        {badgeLabel ? (
-          <View style={[styles.badge, hasStoreLogo && styles.badgeBelowStoreLogo]}>
-            <Text style={styles.badgeText}>{badgeLabel}</Text>
-          </View>
-        ) : null}
-        {offerTag ? (
-          <View style={[
-            styles.offerTag,
-            (badgeLabel || hasStoreLogo) && styles.offerTagBelowBadge,
-            hasStoreLogo && !badgeLabel && styles.offerTagBelowStoreLogo,
-            badgeLabel && hasStoreLogo && styles.offerTagBelowBadgeAndStoreLogo,
-          ]}>
-            <Ionicons name="pricetag" size={8} color={colors.white} />
-            <Text style={styles.offerTagText} numberOfLines={1}>{offerTag}</Text>
-          </View>
-        ) : null}
-      </GlassSurface>
-      {selectionState ? (
-        <View style={styles.selectionBadge} pointerEvents="none">
-          <Ionicons name={selectionState === 'selected' ? 'checkmark' : 'add'} size={19} color={colors.accent} />
+      {offerTag ? (
+        <View style={[
+          styles.offerTag,
+          (badgeLabel || hasStoreLogo) && styles.offerTagBelowBadge,
+          hasStoreLogo && !badgeLabel && styles.offerTagBelowStoreLogo,
+          badgeLabel && hasStoreLogo && styles.offerTagBelowBadgeAndStoreLogo,
+        ]}>
+          <Ionicons name="pricetag" size={8} color={colors.white} />
+          <Text style={styles.offerTagText} numberOfLines={1}>{offerTag}</Text>
         </View>
       ) : null}
-      <Text style={styles.name} numberOfLines={2}>{name}</Text>
-      {priceChange ? (
-        <View style={styles.changeRow}>
-          <Text style={styles.previousPrice}>{priceChange.prevLabel}</Text>
-          <Text
-            style={[
-              styles.changedPrice,
-              { color: priceChange.direction === 'down' ? colors.ok : colors.red },
-            ]}
-          >
-            {price}
-          </Text>
-        </View>
-      ) : price ? <Text style={styles.price}>{price}</Text> : null}
-    </TouchableOpacity>
-  );
+    </GlassSurface>
+    {selectionState && selectionActionAppearance === 'glass' ? (
+      <View style={styles.glassSelectionBadge} pointerEvents="none">
+        <ProductSelectionIndicator compact pressed={pressed} selected={selectionState === 'selected'} />
+      </View>
+    ) : selectionState ? (
+      <View style={styles.selectionBadge} pointerEvents="none">
+        <Ionicons name={selectionState === 'selected' ? 'checkmark' : 'add'} size={19} color={colors.accent} />
+      </View>
+    ) : null}
+    <Text style={styles.name} numberOfLines={2}>{name}</Text>
+    {priceChange ? (
+      <View style={styles.changeRow}>
+        <Text style={styles.previousPrice}>{priceChange.prevLabel}</Text>
+        <Text
+          style={[
+            styles.changedPrice,
+            { color: priceChange.direction === 'down' ? colors.ok : colors.red },
+          ]}
+        >
+          {price}
+        </Text>
+      </View>
+    ) : price ? <Text style={styles.price}>{price}</Text> : null}
+    </>;
+  if (selectionState && selectionActionAppearance === 'glass') {
+    return <Pressable style={cardStyle} onPress={onPress} disabled={selectionState === 'selected'}
+      accessibilityRole="button" accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ selected: selectionState === 'selected', disabled: selectionState === 'selected' }}>
+      {({ pressed }) => content(pressed)}
+    </Pressable>;
+  }
+  return <TouchableOpacity style={cardStyle} activeOpacity={0.7} onPress={onPress}
+    disabled={selectionState === 'selected'} accessibilityRole="button" accessibilityLabel={accessibilityLabel}
+    accessibilityState={selectionState ? { selected: selectionState === 'selected', disabled: selectionState === 'selected' } : undefined}>
+    {content()}
+  </TouchableOpacity>;
 }
 
 const themedStyles = () => StyleSheet.create({
   card: { position: 'relative' },
+  glassSelectionBadge: { position: 'absolute', right: 12, top: 12 },
   cardSelected: { borderColor: colors.accentMid, backgroundColor: colors.accentLight },
   selectionBadge: {
     position: 'absolute', right: 12, top: 12, width: 30, height: 30, borderRadius: 15,

@@ -25,9 +25,21 @@ interface Props {
   busy: boolean;
   onSave: (icon: string) => void;
   onClose: () => void;
+  titleText?: string;
+  subtitleText?: string;
+  optionAccessibilityLabel?: string;
 }
 
-export default function GroupIconPickerSheet({ visible, selectedIcon, busy, onSave, onClose }: Props) {
+export default function GroupIconPickerSheet({
+  visible,
+  selectedIcon,
+  busy,
+  onSave,
+  onClose,
+  titleText,
+  subtitleText,
+  optionAccessibilityLabel,
+}: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
@@ -56,8 +68,8 @@ export default function GroupIconPickerSheet({ visible, selectedIcon, busy, onSa
               <Text style={styles.titleEmoji}>{draft}</Text>
             </View>
             <View style={styles.titleCopy}>
-              <Text style={styles.title}>{t('group.iconTitle')}</Text>
-              <Text style={styles.subtitle}>{t('group.iconSubtitle')}</Text>
+              <Text style={styles.title}>{titleText ?? t('group.iconTitle')}</Text>
+              <Text style={styles.subtitle}>{subtitleText ?? t('group.iconSubtitle')}</Text>
             </View>
             <TouchableOpacity
               onPress={onClose}
@@ -87,7 +99,7 @@ export default function GroupIconPickerSheet({ visible, selectedIcon, busy, onSa
                   activeOpacity={0.72}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: selected }}
-                  accessibilityLabel={t('group.iconOption')}
+                  accessibilityLabel={optionAccessibilityLabel ?? t('group.iconOption')}
                 >
                   <Text style={styles.iconEmoji}>{item}</Text>
                 </TouchableOpacity>

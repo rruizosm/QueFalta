@@ -1,6 +1,6 @@
 # Notificaciones — Estado y hoja de ruta
 
-> Última actualización: 2026-10-12
+> Última actualización: 2026-10-19
 > SDK actual: **Expo SDK 57** · Push real requiere **dev/prod build** (no Expo Go)
 
 Documento de seguimiento para las notificaciones de la app. Resume qué está
@@ -104,12 +104,20 @@ Funciona y es testeable en Expo Go ahora mismo.
   Perfil → Notificaciones:
   - La tarjeta del interruptor muestra solo «Avisos en el dispositivo», sin
     texto explicativo debajo; el detalle permanece en la tarjeta informativa.
-  - Explica los avisos de carrito compartido, amistad, grupo y alertas personalizadas, y remite la
-    bandeja interna a la campana de Inicio sin duplicarla dentro de esta pantalla.
+  - Explica los avisos de carrito compartido, amistad, grupo, alertas
+    personalizadas y caducidad; remite la bandeja interna a la campana de Inicio
+    sin duplicarla dentro de esta pantalla.
   - Al montar refleja la preferencia guardada **y** el permiso real del OS.
   - Activar → pide permiso → guarda preferencia → notificación de prueba.
   - Si el permiso está denegado → ofrece abrir ajustes del sistema.
   - Desactivar → guarda la preferencia en off y elimina el token del dispositivo.
+- **Avisos de caducidad de Despensa/Nevera** — la fecha de cada producto se
+  guarda en el layout local por usuario y sección. Con la preferencia activa en
+  Perfil y permiso del sistema, `src/lib/pantryExpiryNotifications.ts` programa
+  un aviso local único a las 09:00 tres días antes; si el producto ya está
+  dentro de ese plazo, avisa de inmediato que está próximo a caducar. Al cambiar
+  o quitar la fecha, retirar el producto o apagar los avisos, reconcilia o
+  cancela la programación. No añade tablas ni requiere migración SQL.
 - **`src/context/AuthContext.tsx`** — al iniciar sesión reconcilia el token con
   la preferencia: registra si está activa y elimina un token anterior si está
   apagada.

@@ -1,5 +1,50 @@
 # Sync Lidl
 
+## Barrido semanal en Windows (preparado, pendiente de instalar)
+
+El barrido completo pasa a `scripts/run-lidl-fleet.ps1`, como los syncs locales
+de Carrefour y Dia. La tarea prevista corre los lunes a las **13:00, hora local
+del PC**. El workflow de GitHub conserva solo el disparo manual para diagnóstico
+o recuperación; ya no tiene cron. El directorio de tiendas
+(`sync-lidl-stores.yml`) continúa en GitHub los lunes a las 04:35 UTC.
+
+El lanzador lee `SUPABASE_URL` (o `EXPO_PUBLIC_SUPABASE_URL`) y
+`SUPABASE_SERVICE_ROLE` de `.env.local`, que no viaja con Git. Requiere Node 22.
+Programa el censo completo y ejecuta tres workers locales en paralelo, con
+capacidad de 900 tiendas. Cada uno usa un intento por tienda, hasta 300
+reclamos y un máximo de 300 minutos de trabajo. Después verifica toda la cola
+y materializa una sola vez los catálogos publicados en el comparador, incluso
+si alguna tienda falla. El código de salida es distinto de cero si falla un
+worker, el informe o el comparador. Los logs se guardan en
+`scripts/logs/lidl-fleet-<fecha>.log` y se conservan los 14 últimos.
+
+Desde la raíz del checkout de Windows, después de actualizarlo:
+
+```powershell
+# Ejecución completa, con escrituras en Supabase:
+& '.\scripts\run-lidl-fleet.ps1'
+
+# Continuar una cola interrumpida sin volver a programar las tiendas completadas:
+& '.\scripts\run-lidl-fleet.ps1' -Recover
+```
+
+Para crear la tarea en ese equipo (no se puede instalar desde este checkout):
+
+```powershell
+$ps1 = (Resolve-Path '.\scripts\run-lidl-fleet.ps1').Path
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$ps1`""
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 1:00pm
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 6) -MultipleInstances IgnoreNew
+Register-ScheduledTask -TaskName 'QueFalta - Sync Lidl' -Action $action -Trigger $trigger -Settings $settings -Description 'Sincroniza la flota Lidl a Supabase' -Force
+Get-ScheduledTaskInfo -TaskName 'QueFalta - Sync Lidl'
+```
+
+La tarea necesita el PC encendido, con red y Node disponible en `PATH`.
+`StartWhenAvailable` la lanza al volver a encenderlo si perdió la hora prevista.
+No instalarla antes de actualizar el checkout con estos cambios: el cron de
+GitHub debe estar retirado para evitar un doble barrido. Si una tienda queda
+en `dead`, revisar la causa y reabrir solo su ID; `-Recover` no reabre `dead`.
+
 ## Incidencia revisada el 2026-10-13
 
 El barrido `38303318853` dejó 661/719 tiendas completadas y 58 en `dead`.
@@ -125,8 +170,8 @@ programa para consumidores privados y excluyen la participación comercial.
    vez. El sync valida y despublica solo dentro de esa tienda; únicamente
    `ES3572` actualiza también `lidl_products` para clientes legacy. La tienda
    elegida por el usuario no altera el planificador.
-5. La variable de repositorio `LIDL_SYNC_ENABLED=true` está activa. El barrido
-   queda programado cada lunes a las 11:20 UTC. El primer dispatch manual falló
+5. El barrido semanal anterior en GitHub se sustituyó por el lanzador local
+   descrito arriba; `LIDL_SYNC_ENABLED` ya no controla un cron. El primer dispatch manual falló
    antes de llamar a Supabase porque el nombre local `URL` ocultaba al
    constructor global; el orquestador usa ahora `SUPABASE_URL` y una prueba de
    proceso cubre su arranque completo. El segundo llegó a la RPC pero falló
@@ -134,8 +179,9 @@ programa para consumidores privados y excluyen la participación comercial.
    aplicada y una ejecución transaccional como `service_role` programó las 721
    tiendas antes de hacer `ROLLBACK` y dejar la cola vacía.
 
-La cola usa `pending → running → succeeded`, con `retry` exponencial y `dead`
-tras tres intentos. Cada claim tiene un lease de 45 minutos y usa
+La cola admite `retry` exponencial, pero la operación normal usa un solo intento:
+`pending → running → succeeded/dead`. Una tienda fallida queda en `dead` para
+diagnóstico y recuperación explícita por ID. Cada claim tiene un lease de 45 minutos y usa
 `FOR UPDATE SKIP LOCKED`, por lo que los workers no se bloquean ni procesan la
 misma tienda a la vez. Las RPC de programación/claim/cierre solo conceden
 `EXECUTE` a `service_role`.
@@ -146,7 +192,7 @@ vuelve a ejecutar la tienda con `ES3572`
 como fuente. También obtiene de la maestra el feed de ofertas y la región de
 las campañas web. El fallback no cubre 403/429, red, JSON truncado, catálogos
 parciales ni incumplimientos de cobertura. Si falla también la maestra, el
-trabajo conserva ambos errores y sigue el ciclo normal de `retry`/`dead`.
+trabajo conserva ambos errores y queda en `dead` con la configuración normal.
 
 Lidl está integrado en el comparador mediante
 `20260905175806_lidl_comparator_multistore.sql`. El materializador consulta
@@ -188,10 +234,10 @@ Prueba SQL local con datos ficticios (módulo PGlite temporal externo al proyect
 | `LIDL_CAMPAIGNS_DISABLED=1` | omite expresamente el complemento de campañas web |
 | `LIDL_CAMPAIGNS_REQUIRED=1` | convierte un fallo de campañas en fallo del sync; por defecto conserva el catálogo/feed |
 | `LIDL_OFFER_REGION=26` | región explícita solo para DRY_RUN sin conexión a `lidl_stores` |
-| `LIDL_FLEET_JOB_LIMIT=10` | máximo por worker; el workflow semanal lo fija en `32` |
+| `LIDL_FLEET_JOB_LIMIT=10` | máximo por worker; el runner local lo fija en `300` y el workflow manual en `100` |
 | `LIDL_FLEET_LEASE_MINUTES=45` | reserva recuperable de una tienda por worker |
 | `LIDL_FLEET_STORE_TIMEOUT_MINUTES=35` | tope por tienda; debe ser menor que el lease |
-| `LIDL_FLEET_MAX_ATTEMPTS=3` | intentos antes de dejar el trabajo en `dead` |
+| `LIDL_FLEET_MAX_ATTEMPTS=1` | un intento automático por tienda; después queda en `dead` para revisión |
 | `LIDL_COUNTRY=ES`, `LIDL_LANGUAGE=es` | país e idioma de la API |
 | `DRY_RUN=1` | descarga y valida sin escribir |
 | `MAX_LEAVES=N` | limita ramas solo en DRY_RUN |
@@ -247,11 +293,12 @@ ramas alimentarias antes de barrer las restantes; no se publica nada.
 - La migración `20260904210752_lidl_fleet_recovery.sql` está aplicada. Añade claim
   filtrado, informe y recuperación explícita de `dead`, con `SECURITY INVOKER`
   y `EXECUTE` exclusivo de `service_role`. No reinicializa trabajos al desplegar.
-- El workflow manual tiene modo `recover` por defecto (ocho workers, capacidad
+- El workflow de GitHub queda manual, con modo `recover` por defecto (ocho workers, capacidad
   para 800 trabajos por ejecución), `canary`
-  (un worker, máximo cinco intentos, IDs obligatorios) y `weekly` (censo completo).
-  El cron sigue siendo semanal. Cada worker admite hasta 100 intentos y espera
-  hasta 35 minutos a reintentos diferidos, con un tope total de 300 minutos.
+  (un worker, máximo cinco tiendas, IDs obligatorios) y `weekly` (censo completo).
+  El cron semanal de GitHub se ha retirado. Cada worker de GitHub admite hasta 100 tiendas y sale
+  cuando no quedan trabajos reclamables; no espera reintentos diferidos ni
+  repite automáticamente una tienda fallida. Tiene un tope total de 300 minutos.
   Se reduce la concurrencia a tres workers semanales, dos peticiones por tienda
   y 250 ms entre descargas. Un informe final se ejecuta incluso si falla un worker
   y deja el run fallido si quedan pendientes, running, retry, dead o IDs ausentes.

@@ -5,6 +5,7 @@ import {
   LayoutAnimation, Platform, UIManager,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
@@ -22,6 +23,8 @@ import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
 import PaywallModal from '../components/PaywallModal';
 import { GroupCartLimitError } from '../lib/groupCartLimit';
+import type { PantryPurchaseProduct } from '../lib/pantryLayout';
+import PantryPurchaseProducts from '../components/PantryPurchaseProducts';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -30,11 +33,20 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-export default function HistoryScreen() {
+interface HistoryScreenProps {
+  /** Present the history inside a product picker, returning to that picker. */
+  onBack?: () => void;
+  onAddPantryPurchase?: (products: readonly PantryPurchaseProduct[]) => boolean;
+}
+
+export default function HistoryScreen({ onBack, onAddPantryPurchase }: HistoryScreenProps = {}) {
   const styles = useThemedStyles(themedStyles);
   const reducedMotion = useReducedMotion();
-  const headerTop = useHeaderTopPadding(52);
-  const bottomPad = useTabBarBottomPadding(40);
+  const screenHeaderTop = useHeaderTopPadding(52);
+  const screenBottomPad = useTabBarBottomPadding(40);
+  const insets = useSafeAreaInsets();
+  const headerTop = onBack ? 14 : screenHeaderTop;
+  const bottomPad = onBack ? insets.bottom + 24 : screenBottomPad;
   const { t, lang } = useTranslation();
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
   const navigation = useNavigation<any>();
@@ -70,6 +82,7 @@ export default function HistoryScreen() {
     if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     if (expandedId === p.id) { setExpandedId(null); return; }
     setExpandedId(p.id);
+    if (onAddPantryPurchase) return;
     if (!itemsCache[p.id]) {
       setItemsLoadingId(p.id);
       try {
@@ -129,7 +142,8 @@ export default function HistoryScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <ProfileSubscreenHeader title={t('profile.purchaseHistory')} icon="receipt-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
+      <ProfileSubscreenHeader title={t(onBack ? 'pantry.myPurchases' : 'profile.purchaseHistory')} icon="receipt-outline"
+        headerTop={headerTop} onBack={onBack} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: glassInset + 60 }} />
@@ -164,6 +178,10 @@ export default function HistoryScreen() {
                         style={[styles.row, showBorder && styles.rowBorder]}
                         activeOpacity={0.7}
                         onPress={() => toggleExpand(p)}
+                        accessibilityRole="button"
+                        accessibilityState={{ expanded }}
+                        accessibilityLabel={`${p.groupName ?? t('history.groupFallback')}. ${new Date(p.completedAt).toLocaleDateString(locale)}. ${p.itemCount} ${t('history.items')}`}
+                        testID={`history-purchase-${p.id}`}
                       >
                         <View style={styles.rowIcon}>
                           <Ionicons name="cart-outline" size={18} color={colors.accent} />
@@ -185,7 +203,9 @@ export default function HistoryScreen() {
 
                       {expanded && (
                         <View style={[styles.expanded, showBorder && styles.rowBorder]}>
-                          {itemsLoadingId === p.id ? (
+                          {onAddPantryPurchase ? (
+                            <PantryPurchaseProducts key={p.id} purchaseId={p.id} onAddPurchase={onAddPantryPurchase} />
+                          ) : itemsLoadingId === p.id ? (
                             <ActivityIndicator size="small" color={colors.accent} style={{ paddingVertical: 16 }} />
                           ) : prods && prods.length > 0 ? (
                             <>

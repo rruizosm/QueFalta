@@ -98,6 +98,8 @@ const themedStyles = () => StyleSheet.create({
   sheetRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
   sheet: {
     backgroundColor: colors.paper,
+    borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    overflow: 'hidden',
     borderTopWidth: 1, borderTopColor: colors.border,
     // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },

@@ -15,13 +15,14 @@ interface Props {
   titleFontSize?: number;
   onLayout?: (event: LayoutChangeEvent) => void;
   right?: React.ReactNode;
+  onBack?: () => void;
 }
 
 /**
  * Cabecera compartida de los destinos de Perfil. En iOS con Liquid Glass se
  * superpone al contenido; en el resto conserva una cabecera opaca en flujo.
  */
-export default function ProfileSubscreenHeader({ title, icon, headerTop, titleFontSize, onLayout, right }: Props) {
+export default function ProfileSubscreenHeader({ title, icon, headerTop, titleFontSize, onLayout, right, onBack }: Props) {
   const navigation = useNavigation<any>();
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ export default function ProfileSubscreenHeader({ title, icon, headerTop, titleFo
   const content = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
       <TouchableOpacity
-        onPress={() => navigation.goBack()}
+        onPress={onBack ?? (() => navigation.goBack())}
         style={[styles.backBtn, glassAvailable && styles.backBtnGlass]}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         accessibilityRole="button"

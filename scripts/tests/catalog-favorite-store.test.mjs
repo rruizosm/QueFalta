@@ -6,7 +6,7 @@ const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), '
 const storage = read('src/lib/catalogFavoriteStore.ts');
 const context = read('src/context/CatalogStoreContext.tsx');
 const dropdown = read('src/components/StoreDropdown.tsx');
-const catalog = read('src/screens/CatalogScreen.tsx');
+const catalog = read('src/screens/CatalogScreen.tsx') + read('src/components/catalogBrowserStyles.ts');
 const favorites = read('src/screens/FavoritesScreen.tsx');
 const infoButton = read('src/components/StoreInfoButton.tsx');
 const favoriteButton = read('src/components/StoreFavoriteButton.tsx');
@@ -36,7 +36,7 @@ test('favorite actions are bottom-right and only the active one remains visible'
     assert.match(source, /<StoreFavoriteButton/);
     assert.match(source, /favorite \? 'storePicker\.removeFavorite' : 'storePicker\.markFavorite'/);
     assert.match(source, /position: 'absolute', right: 4, bottom: 4/);
-    assert.match(source, /!visibleFavoriteStore \|\| favorite \?/);
+    assert.match(source, /!visibleFavoriteStore \|\| favorite/);
   }
   assert.match(dropdown, /stores\.some\(\(item\) => item\.key === favoriteStore\)/);
   assert.match(catalog, /visibleStores\.some\(\(item\) => item\.key === sharedStore\.favoriteStore\)/);

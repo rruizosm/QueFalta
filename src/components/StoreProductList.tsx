@@ -5,7 +5,7 @@ import { prepareProductImages } from '../lib/prefetchProductImages';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PagerGestureContext } from './bottom-tabs-pager/PagerGestureContext';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Image, useWindowDimensions,
+  View, Text, TouchableOpacity, Pressable, StyleSheet, ActivityIndicator, Alert, Image, useWindowDimensions,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -15,16 +15,20 @@ import { fonts } from '../constants/typography';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES } from '../constants/stores';
-import { sortByName, sortByRelevance } from '../lib/sort';
+import { compareByName, sortByName, sortByRelevance } from '../lib/sort';
+import { limitsApply } from '../constants/limits';
+import CategoryProductToolbar, { type CategoryProductSort } from './CategoryProductToolbar';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
 import ViewModeToggle, { type ViewMode } from './ViewModeToggle';
 import ProductGridCard from './ProductGridCard';
+import ProductSelectionIndicator from './ProductSelectionIndicator';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
 import ActiveCartIcon from './ActiveCartIcon';
 import GlassSurface from './GlassSurface';
@@ -37,12 +41,28 @@ const INITIAL_IMAGE_PREPARE_TIMEOUT_MS = 1200;
 const stripAccents = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
+const compareCategoryProducts = (sort: Exclude<CategoryProductSort, 'relevance'>) =>
+  (a: UIProduct, b: UIProduct): number => {
+    const field = sort.startsWith('pricePerUnit') ? 'pricePerUnit' : 'unitPrice';
+    const aPrice = a[field];
+    const bPrice = b[field];
+    const aValid = typeof aPrice === 'number' && Number.isFinite(aPrice);
+    const bValid = typeof bPrice === 'number' && Number.isFinite(bPrice);
+    if (aValid !== bValid) return aValid ? -1 : 1;
+    if (aValid && bValid && aPrice !== bPrice) {
+      return (aPrice! - bPrice!) * (sort.endsWith('Desc') ? -1 : 1);
+    }
+    return compareByName(a.name, b.name) || a.id.localeCompare(b.id);
+  };
+
 /** Selección para otro formulario; no modifica la cesta ni los favoritos. */
 export interface ProductSelection {
   onSelect: (product: UIProduct) => void;
   selectedKeys: ReadonlySet<string>;
   accessibilityLabel: (product: UIProduct) => string;
   bottomInset: number;
+  /** Glass add control with press feedback, used by the pantry picker. */
+  actionAppearance?: 'glass';
 }
 
 interface Props {
@@ -54,9 +74,11 @@ interface Props {
   errorText?: string;
   /** Emoji de la categoría (placeholder de imagen + categoría al añadir al carrito). */
   emoji?: string;
-  /** Muestra un buscador por texto en la barra superior que filtra la lista
-   *  localmente por nombre (insensible a acentos). Para vistas de subcategoría. */
+  /** Muestra los controles de Catálogo para subcategorías: búsqueda local,
+   *  orden por precio y selector de vista. */
   searchable?: boolean;
+  /** Coincidencias ES/CA del espejo Mercadona; si se omite, se usa el nombre visible. */
+  glutenFreeProductIds?: ReadonlySet<string>;
   /** Texto de búsqueda EXTERNO (catálogo): el padre busca en el servidor y pasa
    *  aquí la consulta para que los resultados (ya filtrados) se ordenen por
    *  RELEVANCIA respecto a ella en vez de alfabéticamente. La búsqueda interna
@@ -97,6 +119,7 @@ interface Props {
   onScrollBeginDrag?: () => void;
   showStoreLogo?: boolean;
   selection?: ProductSelection;
+  compactSelection?: boolean;
 }
 
 /** Lista de productos reutilizable (subcategorías y búsqueda): imagen, stepper +
@@ -105,11 +128,11 @@ interface Props {
 export default function StoreProductList({
   products, loading = false, error = false,
   emptyText, errorText,
-  emoji, searchable = false, searchQuery,
+  emoji, searchable = false, glutenFreeProductIds, searchQuery,
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
   pageSize, onEndReached, loadingMore = false, keepOrder = false,
   topInset = 0, roundedCards = false, badgeLabel, onScrollBeginDrag,
-  showStoreLogo = false, selection,
+  showStoreLogo = false, selection, compactSelection = false,
 }: Props) {
   const pagerGesture = useContext(PagerGestureContext);
   const pagerRef = useMemo(() => ({ current: pagerGesture }), [pagerGesture]);
@@ -127,6 +150,8 @@ export default function StoreProductList({
   const tabBarOffsetStyle = useTabBarScrollOffsetStyle();
   const bottomPad = selection ? selection.bottomInset + 24 : 110 + tabBarOffset;
   const { t } = useTranslation();
+  const { isPremium, loading: profileLoading } = useProfile();
+  const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
   const emptyLabel = emptyText ?? t('product.emptyDefault');
   const errorLabel = errorText ?? t('product.errorDefault');
   const { activeCart, addToActiveCart } = useCart();
@@ -145,6 +170,23 @@ export default function StoreProductList({
   const setViewMode = onViewModeChange ?? setInternalViewMode;
   const [detail, setDetail] = useState<ProductRef | null>(null);
   const [query, setQuery] = useState('');
+  const [browseSort, setBrowseSort] = useState<CategoryProductSort>('priceAsc');
+  const [searchSort, setSearchSort] = useState<CategoryProductSort>('relevance');
+  const [glutenOnly, setGlutenOnly] = useState(false);
+  const categorySort = query.trim().length >= 2 ? searchSort : browseSort;
+  const localGlutenFreeProductIds = useMemo(
+    () => searchable && !glutenFreeProductIds
+      ? new Set(products.filter((p) => /(?:sin|sense) gluten/i.test(p.name)).map((p) => p.id))
+      : undefined,
+    [products, searchable, glutenFreeProductIds],
+  );
+  const matchingGlutenFreeProductIds = glutenFreeProductIds ?? localGlutenFreeProductIds;
+
+  useEffect(() => {
+    if (!unitPriceSortLocked) return;
+    if (browseSort.startsWith('pricePerUnit')) setBrowseSort('priceAsc');
+    if (searchSort.startsWith('pricePerUnit')) setSearchSort('relevance');
+  }, [browseSort, searchSort, unitPriceSortLocked]);
 
   // Filtro local por nombre: exige que todas las palabras (≥2 letras) aparezcan,
   // en cualquier orden, igual que la búsqueda del catálogo. Filtra solo lo que se
@@ -154,23 +196,30 @@ export default function StoreProductList({
     // Filtro local SOLO del buscador interno (subcategorías/favoritos); el catálogo
     // ya filtra en el servidor, así que ahí `query` está vacío y no recorta nada.
     const words = stripAccents(query).trim().split(/\s+/).filter((w) => w.length >= 2);
-    const filtered = words.length === 0
+    const matchingNames = words.length === 0
       ? products
       : products.filter((p) => {
           const name = stripAccents(p.name);
           return words.every((w) => name.includes(w));
         });
+    const filtered = glutenOnly && matchingGlutenFreeProductIds
+      ? matchingNames.filter((p) => matchingGlutenFreeProductIds.has(p.id))
+      : matchingNames;
     // keepOrder: el padre ya trae los productos en un orden con significado
     // (p. ej. cambios de precio por %) → se respeta tal cual.
     if (keepOrder) return filtered;
-    // Con una consulta activa (la interna del buscador o la externa del catálogo)
-    // se ordena por RELEVANCIA —exacto › empieza por › palabra entera › posición—;
-    // sin texto (navegación/subcategoría) se mantiene el alfabético de siempre.
+    if (searchable) {
+      return categorySort === 'relevance'
+        ? sortByRelevance(filtered, (p) => p.name, query)
+        : [...filtered].sort(compareCategoryProducts(categorySort));
+    }
+    // Con una consulta externa activa se ordena por relevancia; en los demás
+    // usos sin controles de catálogo se conserva el orden alfabético anterior.
     const rankQuery = (searchQuery ?? query).trim();
     return rankQuery.length >= 2
       ? sortByRelevance(filtered, (p) => p.name, rankQuery)
       : sortByName(filtered, (p) => p.name);
-  }, [products, query, searchQuery, keepOrder]);
+  }, [products, query, searchQuery, keepOrder, searchable, categorySort, glutenOnly, matchingGlutenFreeProductIds]);
 
   // La precarga anterior arrancaba después del primer render de FlatList: durante
   // ese frame se veían los placeholders y, acto seguido, las fotos. Esperamos al
@@ -214,7 +263,7 @@ export default function StoreProductList({
   const [visibleCount, setVisibleCount] = useState(pageSize ?? Infinity);
   useEffect(() => {
     if (pageSize != null) setVisibleCount(pageSize);
-  }, [pageSize, query, searchQuery, products]);
+  }, [pageSize, query, searchQuery, products, glutenOnly]);
   const visible = pageSize != null ? shown.slice(0, visibleCount) : shown;
 
   const handleEndReached = () => {
@@ -318,6 +367,7 @@ export default function StoreProductList({
       storeLogo={showStoreLogo ? CATALOG_STORES.find((store) => store.key === item.store)?.icon : null}
       onPress={() => selection ? selection.onSelect(item) : setDetail({ store: item.store, id: item.id, preview: item })}
       selectionState={selection ? selection.selectedKeys.has(quantityKey(item)) ? 'selected' : 'available' : undefined}
+      selectionActionAppearance={selection?.actionAppearance}
       accessibilityLabel={selection?.accessibilityLabel(item)}
     />
   );
@@ -326,7 +376,9 @@ export default function StoreProductList({
     const qty = quantities[quantityKey(item)] ?? 0;
     const active = selection ? selection.selectedKeys.has(quantityKey(item)) : qty > 0;
     const fav = isProductFavorite(item.store, item.id);
-    const stepper = selection ? (
+    const stepper = (pressed: boolean) => selection?.actionAppearance === 'glass' ? (
+      <ProductSelectionIndicator pressed={pressed} selected={active} />
+    ) : selection ? (
       <View style={styles.selectionButton}>
         <Ionicons name={active ? 'checkmark' : 'add'} size={22} color={colors.accent} />
       </View>
@@ -338,12 +390,9 @@ export default function StoreProductList({
         onDecrement={() => decrement(item)}
       />
     );
-    const row = (
-        <GlassSurface
-          style={[styles.row, roundedCards && styles.rowRounded, active && styles.rowActive]}
-          tintColor={active ? colors.accentLight : undefined}
-          fallbackColor={active ? colors.accentLight : colors.white}
-        >
+    const rowStyle = [styles.row, compactSelection && styles.rowCompact, roundedCards && styles.rowRounded, active && styles.rowActive];
+    const row = (pressed = false) => {
+      const content = <>
           {!selection && fav && <View style={styles.favBar} />}
           {showStoreLogo && (
             <View style={styles.storeLogoBadge} pointerEvents="none">
@@ -356,9 +405,9 @@ export default function StoreProductList({
           )}
           <TouchableOpacity disabled={!!selection} activeOpacity={0.7} onPress={() => setDetail({ store: item.store, id: item.id, preview: item })}>
             {item.imageUrl ? (
-              <ProductImage uri={item.imageUrl} style={styles.thumb} />
+              <ProductImage uri={item.imageUrl} style={[styles.thumb, compactSelection && styles.thumbCompact]} />
             ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder]}>
+              <View style={[styles.thumb, compactSelection && styles.thumbCompact, styles.thumbPlaceholder]}>
                 {emoji ? <Text style={{ fontSize: 22 }}>{emoji}</Text> : <Ionicons name="image-outline" size={22} color={colors.inkFaint} />}
               </View>
             )}
@@ -382,7 +431,7 @@ export default function StoreProductList({
                 diferencia de tres columnas peleando por el hueco bajo el nombre).
                 Con priceChange (Cambios de precios) la línea de precio pasa a
                 "anterior tachado · actual en verde/rojo · (%)". */}
-            {item.priceChange ? (
+            {!compactSelection && item.priceChange ? (
               <View style={styles.changeRow}>
                 <Text style={styles.changePrev}>{item.priceChange.prevLabel}</Text>
                 <Text style={[styles.changePrice, { color: item.priceChange.direction === 'down' ? colors.ok : colors.red }]}>
@@ -392,16 +441,28 @@ export default function StoreProductList({
                   ({item.priceChange.pctLabel})
                 </Text>
               </View>
-            ) : item.priceLabel ? <Text style={styles.price}>{item.priceLabel}</Text> : null}
-            {(item.metaLabel || item.pricePerUnitLabel) ? (
+            ) : !compactSelection && item.priceLabel ? <Text style={styles.price}>{item.priceLabel}</Text> : null}
+            {!compactSelection && (item.metaLabel || item.pricePerUnitLabel) ? (
               <Text style={styles.sub} numberOfLines={1}>
                 {[item.metaLabel, item.pricePerUnitLabel].filter(Boolean).join('  ·  ')}
               </Text>
             ) : null}
           </View>
-          {stepper}
-        </GlassSurface>
-    );
+          {stepper(pressed)}
+        </>;
+      // Keep the card opaque so the glass add control is never nested in glass.
+      return selection?.actionAppearance === 'glass'
+        ? <View style={rowStyle}>{content}</View>
+        : <GlassSurface style={rowStyle} tintColor={active ? colors.accentLight : undefined}
+            fallbackColor={active ? colors.accentLight : colors.white}>{content}</GlassSurface>;
+    };
+    if (selection?.actionAppearance === 'glass') {
+      return <Pressable onPress={() => selection.onSelect(item)} disabled={active}
+        accessibilityRole="button" accessibilityLabel={selection.accessibilityLabel(item)}
+        accessibilityState={{ selected: active, disabled: active }}>
+        {({ pressed }) => row(pressed)}
+      </Pressable>;
+    }
     if (selection) {
       return (
         <TouchableOpacity
@@ -412,7 +473,7 @@ export default function StoreProductList({
           accessibilityLabel={selection.accessibilityLabel(item)}
           accessibilityState={{ selected: active, disabled: active }}
         >
-          {row}
+          {row()}
         </TouchableOpacity>
       );
     }
@@ -432,7 +493,7 @@ export default function StoreProductList({
           }
         }}
       >
-        {row}
+        {row()}
       </Swipeable>
     );
   };
@@ -440,7 +501,9 @@ export default function StoreProductList({
   const emptyNode = (
     <View style={styles.center}>
       <Text style={styles.emptyText}>
-        {query.trim().length > 0 ? t('product.noSearchResults', { query: query.trim() }) : emptyLabel}
+        {query.trim().length > 0
+          ? t('product.noSearchResults', { query: query.trim() })
+          : glutenOnly && matchingGlutenFreeProductIds ? t('catalog.noResults') : emptyLabel}
       </Text>
     </View>
   );
@@ -448,29 +511,17 @@ export default function StoreProductList({
   return (
     <View style={styles.container}>
       {!hideToolbar && (
-        <View style={styles.toolbar}>
-          {searchable && (
-            <View style={styles.searchBar}>
-              <Ionicons name="search-outline" size={17} color={colors.inkSoft} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={t('product.searchPlaceholder')}
-                placeholderTextColor={colors.inkFaint}
-                value={query}
-                onChangeText={setQuery}
-                returnKeyType="search"
-                autoCorrect={false}
-                clearButtonMode="never"
-              />
-              {query.length > 0 && (
-                <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
-                  <Ionicons name="close-circle" size={17} color={colors.inkFaint} />
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-          <ViewModeToggle value={viewMode} onChange={setViewMode} />
-        </View>
+        searchable
+          ? <CategoryProductToolbar
+              query={query} onQueryChange={setQuery}
+              sort={categorySort}
+              onSortChange={(sort) => query.trim().length >= 2 ? setSearchSort(sort) : setBrowseSort(sort)}
+              viewMode={viewMode} onViewModeChange={setViewMode}
+              unitPriceSortLocked={unitPriceSortLocked} profileLoading={profileLoading}
+              glutenOnly={glutenOnly}
+              onGlutenOnlyChange={setGlutenOnly}
+            />
+          : <View style={styles.toolbar}><ViewModeToggle value={viewMode} onChange={setViewMode} /></View>
       )}
 
       {loading || awaitingInitialImages ? (
@@ -588,20 +639,6 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end',
     gap: 10, paddingHorizontal: 16, paddingBottom: 8,
   },
-  searchBar: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 9,
-    backgroundColor: colors.white,
-    paddingHorizontal: 14, paddingVertical: 11,
-    borderRadius: 16,
-    borderWidth: 1, borderColor: colors.border,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 }, elevation: 1,
-  },
-  searchInput: {
-    flex: 1, fontSize: 13.5, color: colors.ink, padding: 0,
-    fontFamily: fonts.medium,
-  },
-
   list: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4 },
   gridRow: { gap: GRID_GAP },
   // Entre filas hay más aire que entre columnas (GRID_GAP + 10).
@@ -612,6 +649,8 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white, padding: 11,
     borderWidth: 1, borderColor: colors.border, gap: 12,
   },
+  // 54 pt de imagen + 20 pt de padding + bordes = 76 pt, frente a 84 pt.
+  rowCompact: { padding: 10 },
   rowActive: { backgroundColor: colors.accentLight, borderColor: colors.accentMid },
   rowRounded: { borderRadius: 18, overflow: 'hidden' },
   swipeRounded: { borderRadius: 18 },
@@ -627,6 +666,7 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'flex-start', justifyContent: 'center', paddingLeft: 26,
   },
   thumb: { width: 60, height: 60, flex: 0 },
+  thumbCompact: { width: 54, height: 54 },
   thumbPlaceholder: { backgroundColor: colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
   info: { flex: 1, minWidth: 0 },
   // Etiqueta de oferta: píldora roja llamativa, sobre el nombre.

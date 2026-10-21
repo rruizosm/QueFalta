@@ -37,6 +37,8 @@ interface Props<T extends StoreSelection> {
   onOpenChange?: (open: boolean) => void;
   triggerRef?: React.Ref<View>;
   onTriggerLayout?: () => void;
+  /** A feature-specific allowlist: other stores are visible as coming soon. */
+  availableStores?: readonly CatalogStore[];
 }
 
 /**
@@ -48,7 +50,7 @@ interface Props<T extends StoreSelection> {
  */
 export default function StoreDropdown<T extends StoreSelection>({
   stores, value, onChange, labeled = false, modal = true, open: controlledOpen,
-  onOpenChange, triggerRef, onTriggerLayout, includeAll = false,
+  onOpenChange, triggerRef, onTriggerLayout, includeAll = false, availableStores,
 }: Props<T>) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
@@ -73,7 +75,7 @@ export default function StoreDropdown<T extends StoreSelection>({
     onOpenChange?.(nextOpen);
   };
 
-  const lidlLocked = !profileLoading && catalogStoreRequiresPlus('lidl', isPremium);
+  const lidlLocked = !availableStores && !profileLoading && catalogStoreRequiresPlus('lidl', isPremium);
   const allLocked = allStoresRequiresPlus(isPremium);
   const isCanaryUser = profile?.region === 'ES-CN'
     || regionFromPostalCode(profile?.postalCode ?? '') === 'ES-CN';
@@ -97,15 +99,17 @@ export default function StoreDropdown<T extends StoreSelection>({
 
   // Si Plus vence, no se conserva una selección protegida en pantalla.
   useEffect(() => {
-    const protectedSelection = (value === 'all' && includeAll && allLocked)
+    const protectedSelection = (availableStores && value !== 'all' && !availableStores.includes(value))
+      || (value === 'all' && includeAll && allLocked)
       || (value === 'lidl' && lidlLocked);
     if (!protectedSelection) return;
-    const fallback = stores.find((item) => !catalogStoreRequiresPlus(item.key, isPremium));
+    const fallback = stores.find((item) => availableStores
+      ? availableStores.includes(item.key) : !catalogStoreRequiresPlus(item.key, isPremium));
     if (fallback) {
       onChange(fallback.key as T);
       return;
     }
-  }, [allLocked, includeAll, isPremium, lidlLocked, onChange, stores, value]);
+  }, [allLocked, availableStores, includeAll, isPremium, lidlLocked, onChange, stores, value]);
 
   const gridStores: (StoreOption | null)[] = stores.length % 2 === 0
     ? stores
@@ -124,7 +128,8 @@ export default function StoreDropdown<T extends StoreSelection>({
     }
 
     const on = item.key === value;
-    const locked = item.key === 'lidl' && lidlLocked;
+    const comingSoon = availableStores && !availableStores.includes(item.key);
+    const locked = comingSoon || (item.key === 'lidl' && lidlLocked);
     const favorite = item.key === visibleFavoriteStore;
     const showLidlInfo = item.key === 'lidl' && isCanaryUser;
     return (
@@ -136,6 +141,7 @@ export default function StoreDropdown<T extends StoreSelection>({
             pressed && styles.cardPressed,
           ]}
           onPress={() => {
+            if (comingSoon) return;
             setMenuOpen(false);
             if (locked) {
               setPaywallVisible(true);
@@ -144,8 +150,11 @@ export default function StoreDropdown<T extends StoreSelection>({
             onChange(item.key as T);
           }}
           accessibilityRole="button"
-          accessibilityLabel={locked ? `${item.name}. ${t('storePicker.plusOnly')}` : item.name}
-          accessibilityState={{ selected: on }}
+          disabled={comingSoon}
+          accessibilityLabel={comingSoon ? `${item.name}. ${t('storePicker.comingSoon')}`
+            : locked ? `${item.name}. ${t('storePicker.plusOnly')}` : item.name}
+          accessibilityState={{ selected: on, disabled: comingSoon }}
+          testID={`store-option-${item.key}`}
         >
           {locked ? (
             <View style={styles.cardLock}>
@@ -166,13 +175,14 @@ export default function StoreDropdown<T extends StoreSelection>({
           <Text style={[styles.cardName, on && styles.cardNameActive]} numberOfLines={2}>
             {item.name}
           </Text>
+          {comingSoon ? <Text style={styles.comingSoon}>{t('storePicker.comingSoon')}</Text> : null}
         </Pressable>
         {showLidlInfo ? <StoreInfoButton
           style={styles.lidlCardInfoButton}
           onPress={openLidlCanaryNotice}
           accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
         /> : null}
-        {!visibleFavoriteStore || favorite ? (
+        {!availableStores && (!visibleFavoriteStore || favorite) ? (
           <StoreFavoriteButton
             style={styles.cardFavoriteButton}
             active={favorite}
@@ -365,6 +375,7 @@ export default function StoreDropdown<T extends StoreSelection>({
 const CHIP = 40;
 
 const themedStyles = () => StyleSheet.create({
+  comingSoon: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
   triggerRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
   },

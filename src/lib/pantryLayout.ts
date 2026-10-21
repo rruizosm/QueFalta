@@ -17,6 +17,10 @@ export const PANTRY_PRODUCT_GAP = 0.012;
 // transparent pixels do not force neighbouring products apart.
 export const PANTRY_PRODUCT_FRAME_RATIO = 0.55;
 export const PANTRY_SLOT_COUNT = 5;
+export const PANTRY_MAX_QUANTITY = 999;
+export const PANTRY_MAX_NOTES_LENGTH = 100;
+export const PANTRY_MAX_LOCATION_LENGTH = 60;
+export const PANTRY_MAX_SHELF_NAME_LENGTH = 40;
 
 export type PantrySection = 'pantry' | 'fridge';
 
@@ -24,6 +28,8 @@ export interface PantryProduct {
   id: string;
   name: string;
   illustrationUrl: string;
+  /** Missing in layouts saved before Lidl support: Mercadona. */
+  store?: 'mercadona' | 'lidl';
 }
 
 export interface PantryPlacement {
@@ -34,14 +40,74 @@ export interface PantryPlacement {
   shelfIndex?: number;
 }
 
+export interface PantryPurchaseProduct {
+  product: PantryProduct;
+  quantity: number;
+}
+
 export interface PantryItem extends PantryPlacement {
   instanceId: string;
   product: PantryProduct;
+  /** Legacy entries represent one unit and have no notes. */
+  quantity?: number;
+  notes?: string;
+  /** Optional user-defined place in the kitchen, independent of shelf placement. */
+  kitchenLocation?: string;
+  /** Optional local-calendar date, formatted YYYY-MM-DD. */
+  expiryDate?: string;
+}
+
+export function pantryQuantity(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.max(1, Math.min(PANTRY_MAX_QUANTITY, Math.trunc(value))) : 1;
+}
+
+export function isPantryExpiryDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  if (year < 1900 || year > 9999) return false;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
 export interface PantryLayout {
   items: PantryItem[];
   shelfCount: number;
+  /** User-defined kitchen locations, independent of the physical shelves. */
+  kitchenLocations?: string[];
+  /** Optional so existing v1 inventories remain compatible. Keys are shelf indices. */
+  shelfLabels?: Record<string, PantryShelfLabel>;
+}
+
+function normalizeKitchenLocations(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const locations = value.filter((entry): entry is string => typeof entry === 'string')
+    .map((entry) => entry.trim().slice(0, PANTRY_MAX_LOCATION_LENGTH)).filter(Boolean);
+  return locations;
+}
+
+export interface PantryShelfLabel {
+  name: string;
+  emoji: string | null;
+}
+
+function normalizePantryShelfLabels(value: unknown, shelfCount: number): Record<string, PantryShelfLabel> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).flatMap(([key, label]) => {
+    if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= shelfCount
+      || !label || typeof label !== 'object' || typeof label.name !== 'string') return [];
+    return [[key, { name: label.name.slice(0, PANTRY_MAX_SHELF_NAME_LENGTH),
+      emoji: typeof label.emoji === 'string' && label.emoji.trim() ? label.emoji.trim().slice(0, 32) : null }]];
+  }));
+}
+
+/** Label edits never normalize or move products. */
+export function updatePantryShelfLabel(layout: PantryLayout, index: number, label: PantryShelfLabel | null): PantryLayout {
+  if (!Number.isInteger(index) || index < 0 || index >= layout.shelfCount) return layout;
+  const labels = { ...layout.shelfLabels };
+  if (label) Object.assign(labels, normalizePantryShelfLabels({ [index]: label }, layout.shelfCount));
+  else delete labels[index];
+  return { ...layout, shelfLabels: labels };
 }
 
 export function normalizePantryShelfCount(value: unknown): number {
@@ -253,17 +319,31 @@ export function decodePantryLayout(raw: string | null): PantryLayout {
     if (!item || typeof item !== 'object') return [];
     const value = item as Partial<PantryItem>;
     if (typeof value.instanceId !== 'string' || !value.instanceId || seen.has(value.instanceId)
-      || typeof value.product?.id !== 'string' || !/^\d+$/.test(value.product.id)
+      || typeof value.product?.id !== 'string'
+      || (value.product.store === 'lidl' ? !/^\d+(?:_ES)?$/.test(value.product.id) : !/^\d+$/.test(value.product.id))
+      || (value.product.store !== undefined && value.product.store !== 'mercadona' && value.product.store !== 'lidl')
       || typeof value.product.name !== 'string' || !value.product.name.trim()
       || !isPantryImageUrl(value.product.illustrationUrl)
       || ![value.x, value.y, value.size].every((n) => typeof n === 'number' && Number.isFinite(n))) return [];
     seen.add(value.instanceId);
-    return [{ instanceId: value.instanceId, product: value.product, ...clampPantryPlacement(value as PantryPlacement, shelfCount) }];
+    return [{ instanceId: value.instanceId, product: value.product,
+      ...(value.quantity !== undefined ? { quantity: pantryQuantity(value.quantity) } : {}),
+      ...(typeof value.notes === 'string' ? { notes: value.notes.slice(0, PANTRY_MAX_NOTES_LENGTH) } : {}),
+      ...(typeof value.kitchenLocation === 'string' ? { kitchenLocation: value.kitchenLocation.slice(0, PANTRY_MAX_LOCATION_LENGTH) } : {}),
+      ...(isPantryExpiryDate(value.expiryDate) ? { expiryDate: value.expiryDate } : {}),
+      ...clampPantryPlacement(value as PantryPlacement, shelfCount) }];
   }), shelfCount);
-  return { items, shelfCount };
+  const shelfLabels = normalizePantryShelfLabels('shelfLabels' in saved ? saved.shelfLabels : undefined, shelfCount);
+  const kitchenLocations = normalizeKitchenLocations('kitchenLocations' in saved ? saved.kitchenLocations : undefined);
+  return { items, shelfCount, ...(Object.keys(shelfLabels).length ? { shelfLabels } : {}),
+    ...(kitchenLocations ? { kitchenLocations } : {}) };
 }
 
 export function encodePantryLayout(layout: PantryLayout): string {
   const shelfCount = normalizePantryShelfCount(layout.shelfCount);
-  return JSON.stringify({ version: 1, shelfCount, items: normalizePantryItems(layout.items, shelfCount) });
+  const shelfLabels = normalizePantryShelfLabels(layout.shelfLabels, shelfCount);
+  const kitchenLocations = normalizeKitchenLocations(layout.kitchenLocations);
+  return JSON.stringify({ version: 1, shelfCount, items: normalizePantryItems(layout.items, shelfCount),
+    ...(Object.keys(shelfLabels).length ? { shelfLabels } : {}),
+    ...(kitchenLocations ? { kitchenLocations } : {}) });
 }

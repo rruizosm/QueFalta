@@ -9,7 +9,10 @@ if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out
 $log = Join-Path $logDir ("froiz-sync-{0}.log" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 
 Set-Location $repo
-"=== Froiz sync $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log
+# Este lanzador siempre publica. Evita heredar un DRY_RUN=1 de la consola
+# interactiva o de otro proceso que invoque la tarea.
+Remove-Item Env:DRY_RUN -ErrorAction SilentlyContinue
+"=== Froiz sync $(Get-Date -Format 'u') (publicación; DRY_RUN desactivado) ===" | Tee-Object -FilePath $log
 $ErrorActionPreference = 'Continue'
 & node scripts/sync-froiz.mjs *>&1 | Tee-Object -FilePath $log -Append
 $code = $LASTEXITCODE

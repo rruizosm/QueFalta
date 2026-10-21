@@ -1,17 +1,22 @@
 #!/usr/bin/env node
 
-// Sincronizador local de Alcampo. Usa la pagina visible y su estado SSR, no el
-// endpoint JSON que el WAF bloquea despues de la primera peticion.
+// Sincronizador local de Alcampo. Catálogo SSR y ofertas mediante API anónima;
+// ninguna página se confirma hasta completar referencias y paginación.
 import { chromium } from 'playwright';
-import { readFile, writeFile } from 'node:fs/promises';
-import { canonicalPricePerUnit, toNumber } from './lib/price.mjs';
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { normalizeAlcampoOffer } from './lib/retailer-offers.mjs';
+import { AlcampoApi } from './lib/alcampo-api.mjs';
+import { assertAlcampoRegion, runAlcampoOffers } from './lib/alcampo-offers.mjs';
 import {
-  extractAlcampoPromotionDetails,
-  mergeAlcampoPromotionDetails,
-  normalizeAlcampoOffer,
-} from './lib/retailer-offers.mjs';
+  CHECKPOINT_VERSION, currentPrice, enrichProductPromotion, discoverCampaigns,
+  restoreCheckpoint, saveCheckpoint, withRetries, runPending, parseListing,
+  completeListing, resolveFoodCategory,
+  describeTraversal, reconcileTraversal,
+} from './lib/alcampo-crawl.mjs';
 
 const BASE = 'https://www.compraonline.alcampo.es';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
@@ -33,10 +38,10 @@ const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE || '';
 const runStart = new Date().toISOString();
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const num = (v) => { const n = toNumber(v); return n != null ? n : null; };
 const eur = (v) => typeof v === 'number' ? v.toFixed(2).replace('.', ',') : null;
 
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE');
+if (!DRY_RUN && (MAX_LEAVES || MAX_PROMOTION_LEAVES)) throw new Error('un recorrido limitado no se puede publicar');
 
 async function apiJson(path) {
   const res = await fetch(`${BASE}/api/webproductpagews${path}`, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: AbortSignal.timeout(30000) });
@@ -44,10 +49,23 @@ async function apiJson(path) {
   return res.json();
 }
 
-function walkLeaves(node, n1, n2, out) {
+function slugifyCategorySegment(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' y ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function walkLeaves(node, n1, n2, out, path) {
   const children = node.childCategories || [];
-  if (!children.length) { if (node.retailerCategoryId) out.push({ rid: node.retailerCategoryId, n1, n2 }); return; }
-  for (const child of children) walkLeaves(child, n1, n2, out);
+  if (!children.length) {
+    if (node.retailerCategoryId) out.push({ rid: node.retailerCategoryId, n1, n2, path });
+    return;
+  }
+  for (const child of children) walkLeaves(child, n1, n2, out, [...path, child.name]);
 }
 
 function walkPromotionLeaves(node, trail, out) {
@@ -79,7 +97,7 @@ async function buildFoodTree() {
     for (const child of root.childCategories || []) {
       const n2 = child.retailerCategoryId;
       if (!n2) continue;
-      catName.set(n2, child.name); catParent.set(n2, n1); walkLeaves(child, n1, n2, leaves);
+      catName.set(n2, child.name); catParent.set(n2, n1); walkLeaves(child, n1, n2, leaves, [root.name, child.name]);
     }
   }
   const promotionRoots = roots.filter((node) =>
@@ -98,6 +116,11 @@ async function buildFoodTree() {
       ? promotionLeaves.slice(0, MAX_PROMOTION_LEAVES)
       : promotionLeaves,
   };
+}
+
+function fallbackCategoryUrl(leaf) {
+  const segments = (leaf.path || []).map(slugifyCategorySegment).filter(Boolean);
+  return `${BASE}/categories/${segments.join('/')}/${encodeURIComponent(leaf.rid)}`;
 }
 
 async function categoryUrls() {
@@ -123,28 +146,6 @@ async function categoryUrls() {
   return { categories, promotions };
 }
 
-function extractObject(html, key) {
-  const markerAt = html.indexOf(`"${key}"`);
-  if (markerAt < 0) return null;
-  const start = html.indexOf('{', markerAt);
-  if (start < 0) return null;
-  let depth = 0, string = false, escaped = false;
-  for (let i = start; i < html.length; i++) {
-    const ch = html[i];
-    if (string) { if (escaped) escaped = false; else if (ch === '\\') escaped = true; else if (ch === '"') string = false; continue; }
-    if (ch === '"') string = true;
-    else if (ch === '{') depth++;
-    else if (ch === '}' && --depth === 0) return html.slice(start, i + 1);
-  }
-  return null;
-}
-
-function ssrEntities(html) {
-  const blob = extractObject(html, 'productEntities');
-  if (!blob) return null;
-  try { return JSON.parse(blob); } catch { return null; }
-}
-
 function imageOf(entity) {
   const image = entity.image || entity.thumbnail;
   if (typeof image === 'string') return image;
@@ -152,9 +153,9 @@ function imageOf(entity) {
 }
 
 function normalizeEntity(entity, id, leaf, catName) {
-  const price = num(entity.price?.current?.amount ?? entity.price?.amount ?? entity.currentPrice?.amount);
+  const price = currentPrice(entity);
   const rawUnit = entity.price?.unit?.label ?? entity.price?.unit?.unit ?? entity.unitPrice?.unit;
-  const ppuAmount = entity.price?.unit?.current?.amount ?? entity.unitPrice?.price?.amount;
+  const ppuAmount = entity.price?.unit?.current?.amount ?? entity.promoUnitPrice?.price?.amount ?? entity.unitPrice?.price?.amount;
   const ppu = ppuAmount != null ? canonicalPricePerUnit(ppuAmount, rawUnit) : null;
   const offer = normalizeAlcampoOffer(entity);
   const stableId = String(id || entity.productId || entity.retailerProductId || '');
@@ -186,52 +187,6 @@ function normalizeEntity(entity, id, leaf, catName) {
   };
 }
 
-function applyOffer(row, offer) {
-  row.promo_name = offer?.promo_name ?? null;
-  row.promo_text = offer?.promo_text ?? null;
-  row.promo_price = offer?.promo_price ?? null;
-  row.promo_base_price = offer?.promo_base_price ?? null;
-  row.promo_start = offer?.promo_start ?? null;
-  row.promo_end = offer?.promo_end ?? null;
-  row.promo_online_only = offer?.promo_online_only ?? false;
-  row.promo_details = offer?.promo_details ?? [];
-}
-
-function enrichProductPromotion(row, entity, source) {
-  const discovered = extractAlcampoPromotionDetails(entity, source);
-  const allPromotions = mergeAlcampoPromotionDetails(row.promo_details ?? [], discovered);
-  applyOffer(row, normalizeAlcampoOffer(entity, { additionalPromotions: allPromotions }));
-
-  // Las landings promocionales publican el precio actual y, en rebajas directas,
-  // el anterior tachado. Son la fuente más específica y deben prevalecer.
-  const current = num(entity.price?.current?.amount ?? entity.price?.amount);
-  if (current != null) {
-    row.unit_price = current;
-    row.price_format = `${eur(current)} €`;
-  }
-  return discovered;
-}
-
-function campaignFromPromotion(promotion, source) {
-  const id = promotion.retailer_promotion_id;
-  if (!id) return null;
-  return {
-    id,
-    onlineOnly: Boolean(promotion.online_only || source.onlineOnly),
-    sourcePaths: [...new Set([...(promotion.source_paths ?? []), source.sourcePath].filter(Boolean))].slice(0, 8),
-  };
-}
-
-function mergeCampaign(map, campaign) {
-  if (!campaign) return;
-  const previous = map.get(campaign.id);
-  map.set(campaign.id, {
-    id: campaign.id,
-    onlineOnly: Boolean(previous?.onlineOnly || campaign.onlineOnly),
-    sourcePaths: [...new Set([...(previous?.sourcePaths ?? []), ...(campaign.sourcePaths ?? [])])].slice(0, 8),
-  });
-}
-
 async function waitForVerification(page) {
   const blocked = /human verification|verify you are human|checking your browser|just a moment|access denied|cloudflare/i;
   const isBlocked = async () => page.evaluate((pattern) => {
@@ -261,153 +216,111 @@ async function upsert(table, rows) {
 
 async function main() {
   console.log(`[alcampo-pw] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} · perfil=${PROFILE_DIR}`);
-  const [{ catName, catParent, leaves, promotionLeaves }, sitemap] = await Promise.all([buildFoodTree(), categoryUrls()]);
-  console.log(`[alcampo-pw] ${leaves.length} hojas de catálogo · ${promotionLeaves.length} hojas promocionales · ${sitemap.categories.size}/${sitemap.promotions.size} URLs`);
-  const context = await chromium.launchPersistentContext(PROFILE_DIR, { headless: false, viewport: { width: 1365, height: 900 }, userAgent: UA, locale: 'es-ES', extraHTTPHeaders: { 'Accept-Language': 'es-ES,es;q=0.9' } });
-  const page = context.pages()[0] || await context.newPage();
-  const products = new Map(), catCount = new Map(), campaigns = new Map();
-  let empty = 0;
-  let catalogNextIndex = 0, promotionNextIndex = 0, offerNextIndex = 0;
+  const api = new AlcampoApi({ delayMs: DELAY_MS });
+  const [{ catName, catParent, leaves, promotionLeaves }, sitemap, { regionId }] = await Promise.all([
+    buildFoodTree(), categoryUrls(), api.session(),
+  ]);
+  console.log(`[alcampo-pw] ${leaves.length} hojas de catálogo · ${promotionLeaves.length} hojas promocionales por API · región=${regionId}`);
+  const catalogTasks = leaves.map((leaf) => ({ key: `catalog:${leaf.rid}`, kind: 'catalog',
+    categoryId: leaf.rid,
+    leaf,
+    // Alcampo puede publicar una hoja en el árbol API antes de añadirla al sitemap.
+    // La URL derivada sigue pasando por la misma validación HTTP/HTML de visit().
+    url: sitemap.categories.get(String(leaf.rid)) || fallbackCategoryUrl(leaf),
+  }));
+  const promotionTasks = promotionLeaves.map((leaf) => ({ key: `api:promotion:${leaf.rid}`,
+    categoryId: leaf.rid }));
+  // El directorio general cubre campañas que no figuren en ramas especiales.
+  if (!MAX_PROMOTION_LEAVES) promotionTasks.unshift({ key: 'api:promotion:all' });
+  const traversal = describeTraversal({ catalogTasks, promotionTasks, catName, catParent });
+  // Solo para migrar V3 anteriores sin invalidar su progreso si aún coincide
+  // exactamente. Los nuevos checkpoints usan la firma estable por IDs.
+  const legacyTraversalId = createHash('sha256').update(JSON.stringify({
+    catalogTasks, promotionTasks, categories: [...catName], parents: [...catParent],
+  })).digest('hex');
+  let products = new Map(), campaigns = new Map(), completed = new Set(), seenProductIds = new Set();
   if (RESUME) {
     try {
       const checkpoint = JSON.parse(await readFile(RESUME_FILE, 'utf8'));
-      for (const row of checkpoint.products || []) products.set(row.id, row);
-      for (const [id, count] of checkpoint.catCount || []) catCount.set(id, count);
-      for (const campaign of checkpoint.campaigns || []) mergeCampaign(campaigns, campaign);
-      // Permite corregir un checkpoint creado por la versión anterior, que
-      // conservaba `raw.offers` pero todavía no rellenaba las columnas promo_*.
-      for (const row of products.values()) {
-        applyOffer(row, normalizeAlcampoOffer(row.raw, { additionalPromotions: row.promo_details ?? [] }));
+      if (checkpoint.regionId) assertAlcampoRegion(regionId, checkpoint.regionId);
+      const restored = restoreCheckpoint(checkpoint);
+      const reconciliation = reconcileTraversal(checkpoint, restored, traversal, legacyTraversalId);
+      ({ products, campaigns, completed, seenProductIds } = restored);
+      if (reconciliation.revalidate) {
+        campaigns.clear();
+        console.warn(`[alcampo-pw] ${reconciliation.reason}; se conservan los productos, se redescubren las campañas y se revalidan las páginas (${reconciliation.discardedPages} marcas anteriores)`);
       }
-      catalogNextIndex = Number(checkpoint.catalogNextIndex ?? checkpoint.nextIndex ?? 0);
-      promotionNextIndex = Number(checkpoint.promotionNextIndex ?? 0);
-      offerNextIndex = Number(checkpoint.offerNextIndex ?? 0);
-      console.log(`[alcampo-pw] reanudando catálogo ${catalogNextIndex}/${leaves.length} · promociones ${promotionNextIndex}/${promotionLeaves.length} · landings ${offerNextIndex} · ${products.size} productos`);
+      console.log(`[alcampo-pw] ${products.size} productos · ${campaigns.size} campañas recuperadas · ${completed.size} páginas verificadas`);
     } catch (error) { throw new Error(`no se pudo cargar el checkpoint ${RESUME_FILE}: ${error.message}`); }
   }
-  const saveCheckpoint = async () => {
-    await writeFile(RESUME_FILE, JSON.stringify({
-      version: 2,
-      catalogNextIndex,
-      promotionNextIndex,
-      offerNextIndex,
+  const persist = () => saveCheckpoint(RESUME_FILE, {
+      version: CHECKPOINT_VERSION, traversalId: traversal.id, traversalManifest: traversal.manifest,
+      regionId,
+      completed: [...completed], seenProductIds: [...seenProductIds],
       products: [...products.values()],
-      catCount: [...catCount.entries()],
       campaigns: [...campaigns.values()],
-    }));
+  });
+  const ingest = (entities, source, catalogLeaf = null) => {
+    const resolved = Object.entries(entities).map(([id, entity]) => {
+      const leaf = catalogLeaf ?? (products.has(id) ? null : resolveFoodCategory(entity, catName, catParent, FOOD_ROOTS));
+      return { id, entity, leaf };
+    });
+    for (const { id, entity, leaf } of resolved) {
+      discoverCampaigns(campaigns, entity, source);
+      let row = products.get(id);
+      if (!row && !leaf) continue;
+      if (!row || !seenProductIds.has(id)) {
+        const category = leaf ?? { n1: row.category_ids[0], n2: row.category_id };
+        row = normalizeEntity(entity, id, category, catName);
+        products.set(id, row);
+      }
+      enrichProductPromotion(row, entity, source);
+      seenProductIds.add(id);
+    }
+    console.log(`[alcampo-pw] ${source.sourcePath} · ${Object.keys(entities).length} productos completos · ${seenProductIds.size} alimentarios · ${campaigns.size} campañas`);
+  };
+  const context = await chromium.launchPersistentContext(PROFILE_DIR, { headless: false, viewport: { width: 1365, height: 900 }, userAgent: UA, locale: 'es-ES', extraHTTPHeaders: { 'Accept-Language': 'es-ES,es;q=0.9' } });
+  const page = context.pages()[0] || await context.newPage();
+  const retry = (action) => withRetries(action, { delay: () => sleep(DELAY_MS),
+    onRetry: (error, attempt) => console.warn(`[alcampo-pw] reintento ${attempt}/3: ${error.message.split('\n')[0]}`) });
+  const requestJson = (path, method, body) => retry(async () => {
+    // Consulta dentro de la misma sesión y origen que la página. No se guardan
+    // cookies ni tokens en el checkpoint. Un bloqueo se considera un fallo.
+    const result = await page.evaluate(async ({ path, method, body }) => {
+      const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
+      const csrf = window.__INITIAL_STATE__?.session?.csrf?.token;
+      if (csrf) headers['X-CSRF-TOKEN'] = csrf;
+      const response = await fetch(path, { method, headers, credentials: 'same-origin',
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
+      return { status: response.status, text: await response.text() };
+    }, { path, method, body });
+    if (result.status < 200 || result.status >= 300) throw new Error(`consulta de productos HTTP ${result.status}`);
+    try { return JSON.parse(result.text); } catch { throw new Error('consulta de productos sin JSON válido'); }
+  });
+  const visit = async (task) => {
+    if (!task.url) throw new Error(`sin URL sitemap para ${task.key}; página pendiente, no se publica`);
+    const listing = await retry(async () => {
+      if (page.isClosed()) throw new Error('la pestaña se cerró; usa -Resume');
+      const response = await page.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      if (!await waitForVerification(page)) throw new Error('verificación no completada');
+      if (!response || response.status() >= 400) throw new Error(`página HTTP ${response?.status() ?? 'sin respuesta'}`);
+      const listing = parseListing(await page.content(), 'catalog');
+      assertAlcampoRegion(regionId, listing.regionId);
+      return listing;
+    });
+    const entities = await completeListing(listing, { kind: 'catalog', categoryId: task.categoryId,
+      requestJson, pause: () => sleep(DELAY_MS) });
+    ingest(entities, { sourcePath: new URL(page.url()).pathname }, task.leaf);
+    await sleep(DELAY_MS);
   };
   try {
-    await page.goto(`${BASE}/categories/alimentación/OCC10`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch((e) => console.warn(`[alcampo-pw] portada: ${e.message.split('\n')[0]}`));
-    if (!await waitForVerification(page)) throw new Error('verificación no completada; abortado sin publicar');
-
-    for (let index = catalogNextIndex; index < leaves.length; index++) {
-      const leaf = leaves[index];
-      if (page.isClosed()) throw new Error('la pestaña se cerró; ejecución detenida, usa RESUME=1 para continuar');
-      const url = sitemap.categories.get(String(leaf.rid));
-      let count = 0;
-      if (!url) {
-        empty++;
-        console.warn(`[alcampo-pw] sin URL sitemap para ${leaf.rid}`);
-      } else try {
-        const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-        if (!await waitForVerification(page)) throw new Error('verificación no completada; ejecución detenida sin avanzar el checkpoint');
-        const entities = ssrEntities(await page.content());
-        if (!entities) throw new Error('SSR sin productEntities; ejecución detenida sin avanzar el checkpoint');
-        for (const [id, entity] of Object.entries(entities)) {
-          const row = normalizeEntity(entity, id, leaf, catName);
-          if (!row.id || !row.display_name) continue;
-          const existing = products.get(row.id);
-          if (existing) {
-            enrichProductPromotion(existing, entity, {});
-          } else {
-            products.set(row.id, row);
-            count++;
-            for (const cat of [leaf.n1, leaf.n2]) if (cat) catCount.set(cat, (catCount.get(cat) || 0) + 1);
-          }
-          for (const promotion of extractAlcampoPromotionDetails(entity)) {
-            mergeCampaign(campaigns, campaignFromPromotion(promotion, {}));
-          }
-        }
-        if (response && response.status() >= 400) console.warn(`[alcampo-pw] ${leaf.rid}: HTTP ${response.status()} pero SSR usable`);
-      } catch (e) {
-        // Un bloqueo/verificación no es una categoría vacía: avanzar aquí
-        // perdería el punto de reanudación. Se conserva el checkpoint anterior.
-        if (/verificación|productEntities|pestaña se cerró/i.test(e.message)) throw e;
-        empty++;
-        console.warn(`[alcampo-pw] ${leaf.rid}: ${e.message.split('\n')[0]}`);
-      }
-      catalogNextIndex = index + 1;
-      await saveCheckpoint();
-      if (catalogNextIndex % 25 === 0 || catalogNextIndex === leaves.length) console.log(`[alcampo-pw] catálogo ${catalogNextIndex}/${leaves.length} · +${count} · ${products.size} productos · ${campaigns.size} promociones`);
-      if (catalogNextIndex < leaves.length) await sleep(DELAY_MS);
-    }
-
-    // Las ramas especiales son el directorio de campañas. Se recorren para
-    // descubrir promociones que no aparezcan en las primeras tarjetas de una
-    // categoría normal y para identificar ramas exclusivas online.
-    for (let index = promotionNextIndex; index < promotionLeaves.length; index++) {
-      const leaf = promotionLeaves[index];
-      const url = sitemap.promotions.get(String(leaf.rid));
-      if (!url) {
-        empty++;
-        console.warn(`[alcampo-pw] sin URL promocional para ${leaf.rid}`);
-      } else try {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-        if (!await waitForVerification(page)) throw new Error('verificación no completada; ejecución detenida sin avanzar promociones');
-        const entities = ssrEntities(await page.content());
-        if (!entities) throw new Error('SSR promocional sin productEntities; ejecución detenida sin avanzar');
-        const source = { sourceOnlineOnly: leaf.onlineOnly, sourcePath: new URL(url).pathname, onlineOnly: leaf.onlineOnly };
-        for (const [id, entity] of Object.entries(entities)) {
-          const details = extractAlcampoPromotionDetails(entity, source);
-          for (const promotion of details) mergeCampaign(campaigns, campaignFromPromotion(promotion, source));
-          const row = products.get(String(id || entity.productId || entity.retailerProductId || ''));
-          if (row) enrichProductPromotion(row, entity, source);
-        }
-      } catch (e) {
-        if (/verificación|productEntities|pestaña se cerró/i.test(e.message)) throw e;
-        empty++;
-        console.warn(`[alcampo-pw] promo ${leaf.rid}: ${e.message.split('\n')[0]}`);
-      }
-      promotionNextIndex = index + 1;
-      await saveCheckpoint();
-      if (promotionNextIndex % 25 === 0 || promotionNextIndex === promotionLeaves.length) console.log(`[alcampo-pw] directorio promo ${promotionNextIndex}/${promotionLeaves.length} · ${campaigns.size} campañas`);
-      if (promotionNextIndex < promotionLeaves.length) await sleep(DELAY_MS);
-    }
-
-    // La landing canónica de cada promoción contiene todos sus productos en un
-    // único productEntities, evitando depender de la primera página de cada hoja.
-    const campaignQueue = [...campaigns.values()].sort((a, b) => a.id.localeCompare(b.id));
-    for (let index = offerNextIndex; index < campaignQueue.length; index++) {
-      const campaign = campaignQueue[index];
-      try {
-        const response = await page.goto(`${BASE}/offers/x/${encodeURIComponent(campaign.id)}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
-        if (!await waitForVerification(page)) throw new Error('verificación no completada; ejecución detenida sin avanzar landings');
-        const entities = ssrEntities(await page.content());
-        if (!entities) throw new Error('landing sin productEntities; ejecución detenida sin avanzar');
-        const source = {
-          sourceOnlineOnly: campaign.onlineOnly,
-          sourcePath: new URL(response?.url() || page.url()).pathname,
-          onlineOnly: campaign.onlineOnly,
-        };
-        let matched = 0;
-        for (const [id, entity] of Object.entries(entities)) {
-          const row = products.get(String(id || entity.productId || entity.retailerProductId || ''));
-          if (!row) continue;
-          enrichProductPromotion(row, entity, source);
-          matched++;
-        }
-        console.log(`[alcampo-pw] oferta ${index + 1}/${campaignQueue.length} ${campaign.id} · ${Object.keys(entities).length} productos · ${matched} en catálogo`);
-      } catch (e) {
-        if (/verificación|productEntities|pestaña se cerró/i.test(e.message)) throw e;
-        empty++;
-        console.warn(`[alcampo-pw] oferta ${campaign.id}: ${e.message.split('\n')[0]}`);
-      }
-      offerNextIndex = index + 1;
-      await saveCheckpoint();
-      if (offerNextIndex < campaignQueue.length) await sleep(DELAY_MS);
-    }
+    await runPending(() => catalogTasks, completed, visit, persist);
   } finally { await context.close(); }
-  const rows = [...products.values()];
+  await runAlcampoOffers({ api, regionId, promotionTasks, campaigns, completed, ingest, persist,
+    pause: () => sleep(DELAY_MS) });
+  const rows = [...products.values()].filter((row) => seenProductIds.has(String(row.id)));
+  const catCount = new Map();
+  for (const row of rows) for (const id of new Set(row.category_ids)) catCount.set(id, (catCount.get(id) ?? 0) + 1);
   // Al reanudar, las filas del checkpoint conservan el `synced_at` del
   // scrape original. Para que la limpieza final no las considere obsoletas,
   // se sellan con el inicio de esta publicación antes del upsert.
@@ -418,7 +331,7 @@ async function main() {
   const catRows = [...catName.keys()].map((id) => ({ id, name: catName.get(id), parent_id: catParent.get(id) ?? null, product_count: catCount.get(id) || 0, published: true, synced_at: runStart }));
   const offerRows = rows.filter((row) => row.promo_name);
   const onlineRows = offerRows.filter((row) => row.promo_online_only);
-  console.log(`[alcampo-pw] resultado: ${rows.length} productos · ${catRows.length} categorías · ${campaigns.size} campañas · ${offerRows.length} productos con oferta (${onlineRows.length} online) · ${empty} incidencias`);
+  console.log(`[alcampo-pw] resultado: ${rows.length} productos · ${catRows.length} categorías · ${campaigns.size} campañas · ${offerRows.length} productos con oferta (${onlineRows.length} online) · ${completed.size} páginas completas`);
   for (const row of rows.slice(0, 5)) console.log(`  ${row.display_name} · ${row.unit_price ?? '—'} € · ${row.category_name}`);
   if (DRY_RUN) return;
   if (rows.length < MIN_PRODUCTS) throw new Error(`solo ${rows.length} productos (< ${MIN_PRODUCTS}); posible scrape parcial, no se escribe`);

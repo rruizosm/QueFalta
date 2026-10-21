@@ -136,7 +136,8 @@ test('Alcampo conserva y deduplica varias promociones con su origen', () => {
   const merged = mergeAlcampoPromotionDetails(base, campaign);
 
   assert.equal(merged.length, 2);
-  assert.equal(merged.find((item) => item.retailer_promotion_id === 'promo-1')?.online_only, true);
+  assert.equal(merged.find((item) => item.retailer_promotion_id === 'promo-1')?.online_only, false);
+  assert.equal(merged.find((item) => item.retailer_promotion_id === 'promo-2')?.online_only, true);
   assert.equal(merged.find((item) => item.retailer_promotion_id === 'promo-2')?.source_paths.length, 1);
 });
 

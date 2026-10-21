@@ -56,6 +56,7 @@ export class AlcampoApi {
     if (promotions && !regionId) throw new Error('Promotions require the storefront regionId');
     let token;
     const seenTokens = new Set();
+    const seenProducts = new Set();
     for (let page = 1; page <= maxPages; page++) {
       const params = new URLSearchParams({
         includeAdditionalPageInfo: String(!token),
@@ -69,14 +70,35 @@ export class AlcampoApi {
         ? '/api/product-listing-pages/v1/pages/promotions'
         : '/api/webproductpagews/v6/product-pages';
       const data = await this.request(`${endpoint}?${params}`);
-      if (!Array.isArray(data.productGroups) || data.productGroups.some(g => !Array.isArray(g.decoratedProducts))) {
+      if (!Array.isArray(data?.productGroups) || !data.metadata || typeof data.metadata !== 'object'
+        || data.productGroups.some(group => !Array.isArray(group.decoratedProducts))) {
         throw new Error('Alcampo: invalid product page, cannot treat it as an empty catalogue');
       }
+      for (const group of data.productGroups) {
+        const decoratedIds = new Set(group.decoratedProducts.map(product => {
+          if (typeof product?.productId !== 'string' || !product.productId || !product.name) {
+            throw new Error('Alcampo: incomplete decorated product');
+          }
+          return product.productId;
+        }));
+        for (const references of [group.otherProductIds, group.productIds, group.products]) {
+          if (references == null) continue;
+          if (!Array.isArray(references) || references.some(product =>
+            !decoratedIds.has(typeof product === 'string' ? product : product?.productId))) {
+            throw new Error('Alcampo: incomplete product page, undecorated references');
+          }
+        }
+      }
       const next = data.metadata?.nextPageToken;
+      if (next != null && typeof next !== 'string') throw new Error('Alcampo: invalid pagination token');
       if (next && seenTokens.has(next)) throw new Error('Alcampo: repeated pagination token');
+      const products = data.productGroups.flatMap(group => group.decoratedProducts);
+      const added = products.filter(product => !seenProducts.has(product.productId)).length;
+      if (next && page > 1 && !added) throw new Error('Alcampo: pagination without new products');
+      for (const product of products) seenProducts.add(product.productId);
       if (next) seenTokens.add(next);
       yield {
-        page, products: data.productGroups.flatMap(g => g.decoratedProducts),
+        page, products,
         complete: !next, truncated: Boolean(next && page === maxPages),
       };
       if (!next) return;
@@ -87,9 +109,13 @@ export class AlcampoApi {
 
   async promotion(retailerPromotionId) {
     const data = await this.request(`/api/webproductpagews/v4/promotion/retailer-id/${encodeURIComponent(retailerPromotionId)}`);
-    if (!Array.isArray(data.promotionGroups) || data.promotionGroups.some(g => !Array.isArray(g.products))) {
+    if (String(data?.retailerPromotionId) !== String(retailerPromotionId)
+      || !Array.isArray(data.promotionGroups)
+      || data.promotionGroups.some(group => !Array.isArray(group.products)
+        || group.products.some(product => typeof product?.productId !== 'string' || !product.productId || !product.name))) {
       throw new Error('Alcampo: invalid promotion detail');
     }
+    if (data.nextPageToken || data.metadata?.nextPageToken) throw new Error('Alcampo: paginated promotion detail not supported');
     return data;
   }
 }

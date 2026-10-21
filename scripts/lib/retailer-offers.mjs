@@ -47,6 +47,15 @@ const validityFromText = (value) => {
   };
 };
 
+const alcampoPeriodDate = (value) => {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(value)) return null;
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(date);
+};
+
 const isOnlineOnlyText = (value) => {
   const text = cleanOfferText(value)?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() ?? '';
   return /\b(?:solo|exclusiv[ao]s?)\s+online\b|\bonline\s+exclusiv[ao]s?\b/.test(text);
@@ -72,7 +81,9 @@ export function mergeAlcampoPromotionDetails(...groups) {
     }
     merged.set(key, {
       ...previous,
-      ...promotion,
+      // Una fuente parcial (p. ej. cabecera de campaña) no borra cantidad,
+      // vigencia o tipo ya observados en el producto.
+      ...Object.fromEntries(Object.entries(promotion).filter(([, value]) => value != null)),
       online_only: Boolean(previous.online_only || promotion.online_only),
       source_paths: unique([...(previous.source_paths ?? []), ...(promotion.source_paths ?? [])]).slice(0, 8),
     });
@@ -83,6 +94,7 @@ export function mergeAlcampoPromotionDetails(...groups) {
 export function extractAlcampoPromotionDetails(product, {
   sourceOnlineOnly = false,
   sourcePath = null,
+  sourcePromotionId = null,
 } = {}) {
   // El endpoint JSON usa `promotions`; el SSR de Playwright usa `offers` y, en
   // algunos productos, además deja una oferta singular en `offer`.
@@ -108,9 +120,13 @@ export function extractAlcampoPromotionDetails(product, {
         required_product_quantity: promotion?.requiredProductQuantity == null
           ? null
           : num(promotion.requiredProductQuantity),
-        promo_start: validity.promo_start,
-        promo_end: validity.promo_end,
-        online_only: Boolean(sourceOnlineOnly || isOnlineOnlyText(description)),
+        promo_start: alcampoPeriodDate(promotion?.activePeriod?.activeFrom) ?? validity.promo_start,
+        promo_end: alcampoPeriodDate(promotion?.activePeriod?.activeTo) ?? validity.promo_end,
+        // Una landing solo acredita exclusividad para SU promoción, no para
+        // todas las ofertas que comparten los productos de esa landing.
+        online_only: Boolean(isOnlineOnlyText(description) || (sourceOnlineOnly
+          && sourcePromotionId != null
+          && String(promotion?.retailerPromotionId) === String(sourcePromotionId))),
         source_paths: sourcePath ? [sourcePath] : [],
       };
     }));
@@ -159,9 +175,10 @@ export function normalizeAlcampoOffer(product, {
   additionalPromotions = [],
   sourceOnlineOnly = false,
   sourcePath = null,
+  sourcePromotionId = null,
 } = {}) {
   const promotions = mergeAlcampoPromotionDetails(
-    extractAlcampoPromotionDetails(product, { sourceOnlineOnly, sourcePath }),
+    extractAlcampoPromotionDetails(product, { sourceOnlineOnly, sourcePath, sourcePromotionId }),
     additionalPromotions,
   );
   const descriptions = unique(promotions.map((promotion) => promotion.description));

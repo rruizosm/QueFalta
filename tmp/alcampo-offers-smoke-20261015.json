@@ -1,0 +1,87 @@
+{
+  "checkedAt": "2026-10-15T07:44:55.244Z",
+  "regionId": "ac90d761-9d58-4918-a37d-dd14e1ce384a",
+  "scope": "Plátanos y Bananas y campañas descubiertas",
+  "products": 864,
+  "campaigns": 2,
+  "campaignsLimitedToDirectory": true,
+  "completed": [
+    "api:promotion:OC170104",
+    "api:offer:promo-ui-593a8f5100ba4670b839864e3f5f8a8b",
+    "api:offer:1163113_1"
+  ],
+  "sample": [
+    {
+      "id": "52698dec-cd3b-498d-bf11-f3a02ab21825",
+      "name": "Banana al peso.",
+      "unit_price": 0.89,
+      "promo_price": null,
+      "promo_base_price": null,
+      "promo_details": [
+        {
+          "id": null,
+          "retailer_promotion_id": "promo-ui-593a8f5100ba4670b839864e3f5f8a8b",
+          "description": "Ofertones del fin de semana, del 15/10/2026 al 18/10/2026",
+          "type": "OFFER",
+          "presentation_mode": "DEFAULT",
+          "required_product_quantity": null,
+          "promo_start": "2026-10-15",
+          "promo_end": "2026-10-18",
+          "online_only": false,
+          "source_paths": [
+            "/api/product-listing-pages/v1/pages/promotions?regionId=ac90d761-9d58-4918-a37d-dd14e1ce384a&retailerCategoryId=OC170104",
+            "/api/webproductpagews/v4/promotion/retailer-id/promo-ui-593a8f5100ba4670b839864e3f5f8a8b"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1d09378e-69d6-4839-97d2-9f69153250f0",
+      "name": "ALCAMPO CULTIVAMOS LO BUENO Plátano de Canarias (Indicación Geográfica Protegida)  bandeja 700 g.",
+      "unit_price": 1.99,
+      "promo_price": null,
+      "promo_base_price": null,
+      "promo_details": [
+        {
+          "id": null,
+          "retailer_promotion_id": "1163113_1",
+          "description": "Producto en Folleto (08/10/26_21/10/26)",
+          "type": "OFFER",
+          "presentation_mode": "DEFAULT",
+          "required_product_quantity": 2,
+          "promo_start": "2026-10-08",
+          "promo_end": "2026-10-21",
+          "online_only": false,
+          "source_paths": [
+            "/api/product-listing-pages/v1/pages/promotions?regionId=ac90d761-9d58-4918-a37d-dd14e1ce384a&retailerCategoryId=OC170104",
+            "/api/webproductpagews/v4/promotion/retailer-id/1163113_1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cac4c298-d807-4b34-b041-a54144448075",
+      "name": "Calabacines al peso.",
+      "unit_price": 0.99,
+      "promo_price": null,
+      "promo_base_price": null,
+      "promo_details": [
+        {
+          "id": null,
+          "retailer_promotion_id": "promo-ui-593a8f5100ba4670b839864e3f5f8a8b",
+          "description": "Ofertones del fin de semana, del 15/10/2026 al 18/10/2026",
+          "type": "OFFER",
+          "presentation_mode": "DEFAULT",
+          "required_product_quantity": null,
+          "promo_start": "2026-10-15",
+          "promo_end": "2026-10-18",
+          "online_only": false,
+          "source_paths": [
+            "/api/webproductpagews/v4/promotion/retailer-id/promo-ui-593a8f5100ba4670b839864e3f5f8a8b"
+          ]
+        }
+      ]
+    }
+  ],
+  "databaseWrites": 0
+}

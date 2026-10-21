@@ -1,5 +1,34 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Alcampo: ofertas por API integradas (local, 2026-10-15)
+
+- El runner mantiene Playwright solo para catálogo. Tras cerrar Chromium,
+  `scripts/lib/alcampo-offers.mjs` recorre directorios y campañas mediante
+  `AlcampoApi`, con paginación completa, validación de productos y región.
+- Conserva condiciones, precios y vigencias estructuradas. Los nuevos
+  marcadores de checkpoint obligan a revalidar recorridos antiguos y redescubrir
+  campañas, conservando los productos guardados.
+- No se ha publicado ni migrado Supabase, ni ejecutado el barrido híbrido
+  completo. El checkpoint real no se modifica durante esta implementación.
+  Detalle y comandos en `scripts/README-alcampo-playwright.md`.
+- 55 pruebas y TypeScript correctos. Piloto real de lectura: una categoría y
+  dos campañas, 864 productos únicos; la cola se limitó a las campañas del
+  directorio. Evidencia en `tmp/alcampo-offers-smoke-20261015.json`.
+
+## Carrefour: sync con publicación parcial (local, 2026-10-07)
+
+- Se rechazan redirecciones de categoría a la portada y respuestas HTTP inválidas.
+  Las páginas se incorporan solo después de validar toda la categoría.
+- Si falla una categoría/zona, se actualiza el resto y se conserva la categoría
+  completa en todas las zonas, incluidos productos compartidos ya guardados.
+  Sin markStale global; `catalog_sync_status` queda en el último éxito completo.
+- El runner puede completar el comparador tras `OK PARCIAL`/exit 0. Sin cambios
+  de app/esquema/tarea Windows, sin sync real ni publicación remota en este ajuste.
+- 37 pruebas focalizadas y TypeScript correctos; validación real de solo lectura
+  de las URLs y de la protección de IDs (284, REST/SQL coincidentes).
+- Ver `scripts/README-carrefour-sync.md` y las regresiones
+  `scripts/tests/carrefour-sync-resilience.test.mjs` antes de ejecutar el próximo sync.
+
 ## Verificación conjunta antes de subir a GitHub (2026-10-07)
 
 - Lote local completo en `codex/integrate-local-updates-main-linear`:

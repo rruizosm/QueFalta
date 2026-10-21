@@ -1,5 +1,10 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Integración Mac y Windows (2026-10-21)
+
+- Rama conjunta `codex/merge-mac-windows-20261021`, PR borrador #79. Los conflictos de este documento y `CONTEXTO.md` conservan ambas aportaciones.
+- Sin ilustraciones, checkpoint LFS de Alcampo ni JSON de prueba. TypeScript, lint y 1127 pruebas correctos localmente tras actualizar el contrato de las pruebas de Despensa. Falta el check remoto y fusionar en `main`.
+
 ## Lidl: traslado del barrido semanal a Windows (local, 2026-10-21)
 
 - Runner local completo preparado: PowerShell lee `.env.local`, Node programa

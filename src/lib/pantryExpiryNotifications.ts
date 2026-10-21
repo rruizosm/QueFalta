@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { getLanguage, t } from '../i18n';
+import { t } from '../i18n';
 import { getNotificationsEnabled, hasPermission } from './notifications';
 import { readPantryLayout } from './pantryStorage';
 import { isPantryExpiryDate, type PantryItem, type PantrySection } from './pantryLayout';

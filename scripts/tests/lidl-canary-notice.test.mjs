@@ -57,7 +57,7 @@ test('the combined-store information button appears only while the Plus option i
   assert.match(infoButton, /<StoreCardActionButton[\s\S]*icon="information-circle-outline"/);
   assert.match(cardActionButton, /width: 44, height: 44/);
   assert.match(cardActionButton, /width: 34, height: 34/);
-  assert.match(cardActionButton, /fallbackColor=\{colors\.accentLight\}/);
+  assert.match(cardActionButton, /fallbackColor=\{hasSelectionAppearance \? colors\.white : colors\.accentLight\}/);
 });
 
 test('the combined-store popup includes a real list example for the three requested stores', () => {

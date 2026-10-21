@@ -476,7 +476,7 @@ test('editable stock and notes survive storage without migrating legacy entries 
   const malformed = JSON.stringify({ version: 1, items: [{ ...edited, quantity: -4, notes: 'a'.repeat(600) }] });
   const recovered = layout.decodePantryLayout(malformed).items[0];
   assert.equal(recovered.quantity, 1);
-  assert.equal(recovered.notes.length, 500);
+  assert.equal(recovered.notes.length, layout.PANTRY_MAX_NOTES_LENGTH);
   for (const [input, expected] of [[NaN, 1], [Infinity, 1], [2.5, 2], [1000, 999], ['8', 1]]) {
     assert.equal(layout.pantryQuantity(input), expected);
   }

@@ -84,7 +84,7 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
   const [noSpace, setNoSpace] = useState<PantrySection | null>(null);
   const pantryScene = useMemo(() => arrangePantryItems(pantry.items, pantry.shelfCount), [pantry.items, pantry.shelfCount]);
   const fridgeScene = useMemo(() => arrangePantryItems(fridge.items, fridge.shelfCount), [fridge.items, fridge.shelfCount]);
-  const { placed, unplaced } = section === 'pantry' ? pantryScene : fridgeScene;
+  const { unplaced } = section === 'pantry' ? pantryScene : fridgeScene;
   const place = usePlaceProduct(pantry, 'pantry', setNoSpace, editingLabelsRef);
   const placeFridge = usePlaceProduct(fridge, 'fridge', setNoSpace);
   const pager = useContext(PagerGestureContext);
@@ -97,10 +97,9 @@ export function PantryScreenContent({ userId }: { userId: string | null }) {
     return pager ? native.requireExternalGestureToFail(pager) : native;
   }, [pager]);
   const listItems = useMemo(() => [...pantryScene.placed, ...pantryScene.unplaced], [pantryScene]);
-  const placedIds = useMemo(() => new Set(placed.map((item) => item.instanceId)), [placed]);
   const kitchenLocationOptions = useMemo(() => {
-    const activeLayout = section === 'pantry' ? pantry : fridge;
-    return activeLayout.kitchenLocations ?? Array.from({ length: 3 }, (_, index) =>
+    const locations = section === 'pantry' ? pantry.kitchenLocations : fridge.kitchenLocations;
+    return locations ?? Array.from({ length: 3 }, (_, index) =>
       t('pantry.defaultKitchenLocation', { number: index + 1 }));
   }, [section, pantry.kitchenLocations, fridge.kitchenLocations, t]);
   const updateKitchenLocationOptions = section === 'pantry' ? pantry.setKitchenLocations : fridge.setKitchenLocations;

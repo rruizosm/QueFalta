@@ -1,5 +1,11 @@
 # QuéFalta — Contexto del proyecto
 
+## Integración Mac y Windows (rama conjunta, 2026-10-21)
+
+- `codex/merge-mac-windows-20261021` reúne los commits de ambas máquinas en el PR borrador #79. Conserva los cambios de app y syncs, y resuelve las secciones concurrentes de este documento y `HANDOFF.md`.
+- El checkpoint LFS y el JSON de prueba de Windows, junto con las ilustraciones y temporales excluidos en Mac, no forman parte de la rama conjunta.
+- Corregidas las advertencias de lint y actualizadas las pruebas que seguían validando la interfaz anterior de Despensa. Comprobación local: TypeScript, lint y 1127/1127 pruebas. Pendiente el check remoto y la integración en `main`.
+
 ## Lidl: traslado del fleet semanal a Windows (local, 2026-10-21)
 
 - Preparados `scripts/run-lidl-fleet-local.mjs` y `scripts/run-lidl-fleet.ps1`:

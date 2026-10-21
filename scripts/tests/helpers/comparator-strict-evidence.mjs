@@ -36,8 +36,9 @@ const AUTHORIZED_SUCCESSORS = {
     beforeBmProvinceCoverage: '7a39686f481c69bdf76c7264fb397b5eacbdfe55838ac1b01179381c83f63a72',
     beforeEljamon: '5235e20af5c2ddc940ec75036f600a478eb5a57175ac84f031b2621260982769',
     beforeOctoberIntegration: '73a34f066bec549986e54623f6f36007edc306cf13c371037834a76d73cc1d2d',
-    to: '45938c5ce3fcee4927b3176d364f7d81da80380a2d749245ae6994d3b87a2d06',
-    reason: 'Lidl offers and isolated search, BM/El Jamón integration, then the Carrefour paginated offer RPC through main 8149d84; current bytes verified against that commit during the owner-requested 2026-10-13 publication',
+    beforeMacCatalogChanges: '45938c5ce3fcee4927b3176d364f7d81da80380a2d749245ae6994d3b87a2d06',
+    to: 'ca50abc78b0e27ddb5e8441816ad9c98e98428fefc3b00f45f0d3686d5941422',
+    reason: 'Carrefour paginated offer RPC through main 8149d84, followed by Mac catalog integration in cba85df; current bytes verified during the 2026-10-21 Mac/Windows merge',
   },
 };
 

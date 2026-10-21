@@ -53,6 +53,7 @@ import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { carrefourOffers, extractCarrefourProducts, money } from './lib/carrefour-offers.mjs';
 const execFileP = promisify(execFile);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -135,28 +136,41 @@ const BROWSER_HEADERS = [
   '-H', 'Sec-Fetch-User: ?1',
 ];
 
-async function fetchHtml(path, { tries = 5, cookie } = {}) {
+async function fetchHtml(path, { tries = 5, cookie, categoryId } = {}, runCurl = execFileP) {
   // Algunas urls del SSR vienen absolutas (https://…) y otras relativas (/supermercado/…).
   const url = path.startsWith('http') ? path : `${HOME}${path}`;
   // -L: ?offset=0 hace 302 a la URL canónica (offset 0 es el default); offset>0 se respeta.
-  // -w añade el código HTTP al final del stdout para diagnóstico.
+  // -w permite comprobar el HTTP Y la URL final: una portada tras un 302
+  // también contiene productos y taxonomía, pero no es el listado solicitado.
   const args = ['-sSL', '--compressed', '--max-time', '30', '-A', UA, ...BROWSER_HEADERS];
   if (cookie) args.push('-b', cookie);
-  args.push('-w', '\n__HTTP__%{http_code}', url);
+  args.push('-w', '\n__HTTP__%{http_code}|%{url_effective}', url);
+  let lastError;
   for (let t = 0; t < tries; t++) {
     try {
-      const { stdout } = await execFileP('curl', args, { maxBuffer: 32 * 1024 * 1024 });
+      const { stdout } = await runCurl('curl', args, { maxBuffer: 32 * 1024 * 1024 });
       const mi = stdout.lastIndexOf('\n__HTTP__');
-      const status = mi >= 0 ? stdout.slice(mi + 9).trim() : '?';
+      const [status, effectiveUrl] = mi >= 0 ? stdout.slice(mi + 9).trim().split('|') : [];
       const html = mi >= 0 ? stdout.slice(0, mi) : stdout;
+      if (status !== '200') throw new Error(`HTTP ${status ?? '?'} al descargar ${path}`);
+      if (categoryId && (new URL(effectiveUrl).origin !== new URL(url).origin
+        || new URL(effectiveUrl).pathname.match(/\/(cat\d+)\/c\/?$/)?.[1] !== categoryId)) {
+        const error = new Error(`redirección fuera de categoría ${categoryId}: ${effectiveUrl}`);
+        error.code = 'CARREFOUR_CATEGORY_REDIRECT';
+        throw error;
+      }
       if (html.includes('"product_id"') || html.includes('firstLevelCategories')) return html;
-      if (t === tries - 1) console.warn(`[carrefour] ${path}: HTTP ${status}, ${html.length}b · ${html.replace(/\s+/g, ' ').trim().slice(0, 200)}`);
+      throw new Error(`respuesta sin catálogo: HTTP ${status}, ${html.length}b (${effectiveUrl})`);
     } catch (e) {
+      // processCategory ya reintenta la página: no multiplicar esos intentos
+      // por los reintentos de transporte cuando Carrefour devuelve la portada.
+      if (e.code === 'CARREFOUR_CATEGORY_REDIRECT') throw e;
+      lastError = e;
       console.warn(`[carrefour] curl ${path} falló: ${e.message.split('\n')[0]} (intento ${t + 1})`);
     }
-    await sleep(800 * (t + 1));
+    if (t < tries - 1) await sleep(800 * (t + 1));
   }
-  throw new Error(`no se pudo descargar ${path}`);
+  throw lastError;
 }
 
 // Resuelve el almacén (werks_id) que sirve un CP, vía /cloud-api/salepoints/v1/
@@ -226,57 +240,28 @@ function categoryItems(html, key) {
 }
 
 function pagination(html) {
-  // El SSR trae "pagination":{"offset":0,"page_size":24,"total_results":N}.
-  const m = unesc(html).match(/"pagination":\{[^{}]*"total_results":(\d+)[^{}]*\}/);
-  return { total: m ? Number(m[1]) : null };
+  const m = unesc(html).match(/"pagination"\s*:\s*(\{[^{}]*\})/);
+  try {
+    const p = JSON.parse(m?.[1] ?? 'null');
+    const integer = (v) => Number.isInteger(v) && v >= 0 ? v : null;
+    return { total: integer(p?.total_results), offset: integer(p?.offset) };
+  } catch { return { total: null, offset: null }; }
 }
 
-// Productos del SSR: el objeto balanceado más pequeño que contiene product_id + sku_id.
-// (Los productos son objetos planos salvo el sub-objeto "images"; exigir un único
-//  product_id descarta contenedores que agrupan varios.)
-function extractProducts(html) {
-  const h = unesc(html);
-  const out = new Map();
-  const stack = [];
-  for (let i = 0; i < h.length; i++) {
-    const c = h[i];
-    if (c === '{') stack.push(i);
-    else if (c === '}') {
-      const s = stack.pop();
-      if (s == null) continue;
-      const seg = h.slice(s, i + 1);
-      if (seg.length < 4000 && seg.includes('"product_id"') && seg.includes('"sku_id"') &&
-          (seg.match(/"product_id"/g) || []).length === 1) {
-        try { const p = JSON.parse(seg); if (p.product_id && !out.has(p.product_id)) out.set(p.product_id, p); } catch {}
-      }
-    }
-  }
-  return [...out.values()];
-}
+// Objetos de producto del SSR, sin límite de tamaño; strings JSON respetados.
+const extractProducts = extractCarrefourProducts;
 
 // ── Normalización ────────────────────────────────────────────────────────────
 // "15,40 €" / "1.234,56 €" → 15.4 / 1234.56
-const eurNum = (s) => {
-  if (s == null) return null;
-  const n = parseFloat(String(s).replace(/[\s€]/g, '').replace(/\./g, '').replace(',', '.'));
-  return Number.isFinite(n) ? n : null;
-};
-
-// "13/07/2026" → "2026-07-13" (fechas de validez del badge de promo).
-const isoDate = (s) => {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(s ?? '').trim());
-  return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
-};
+const eurNum = money;
+const offerToday = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid' }).format(new Date(runStart));
 
 function normalize(p) {
   // €/unidad canónico: Carrefour da price_per_unit ("1,11 €", el valor) + measure_unit ("l").
   const ppu = canonicalPricePerUnit(p.price_per_unit, p.measure_unit);
-  // Oferta (ver carrefour_offers.sql): badge_map.promotions[0] trae la promo de
-  // lote con fechas; badge es el fallback sin fechas. strikethrough_price es el
-  // precio ANTERIOR de un descuento directo (price ya viene rebajado). Las claves
-  // van SIEMPRE en el payload (null si no hay) para que el upsert LIMPIE la
-  // oferta del producto cuando desaparece de la web.
-  const promo = p.badge_map?.promotions?.[0] ?? null;
+  // Campos compatibles con la app; todas las mecánicas quedan en raw.
+  // Enviar null explícito limpia campañas mal clasificadas en el próximo sync.
+  const { promotions, ...offer } = carrefourOffers(p, offerToday);
   return {
     id: String(p.product_id),
     retailer_product_id: p.sku_id ?? null,
@@ -289,12 +274,8 @@ function normalize(p) {
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.units_in_stock == null ? true : Number(p.units_in_stock) > 0,
     published: true,
-    promo_name: promo?.name ?? p.badge?.name ?? null,
-    promo_text: promo?.pdp_text ?? p.badge?.description ?? null,
-    promo_start: isoDate(promo?.start_date),
-    promo_end: isoDate(promo?.end_date),
-    strikethrough_price: eurNum(p.strikethrough_price),
-    raw: p,
+    ...offer,
+    raw: { ...p, quefalta_offers: { version: 1, observed_at: runStart, promotions } },
     synced_at: runStart,
   };
 }
@@ -308,6 +289,7 @@ const zonePriceObj = (p) => {
     ppu: ppu?.value ?? null,
     ppuu: ppu?.unit ?? null,
     av: p.units_in_stock == null ? true : Number(p.units_in_stock) > 0,
+    offers: { version: 1, observed_at: runStart, ...carrefourOffers(p, offerToday) },
   };
 };
 
@@ -546,6 +528,36 @@ async function upsert(table, rows) {
 // la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
+// No pisar un producto guardado de una categoría fallida aunque también se
+// encuentre en otra categoría validada. Leer solo IDs, paginados por clave,
+// antes de cualquier escritura. Incluir category_id para filas antiguas.
+async function fetchProtectedProductIds(categoryIds, fetchImpl = fetch) {
+  const protectedIds = new Set();
+  for (const ids of chunk([...categoryIds], 50)) {
+    if (ids.some((id) => !/^cat\d+$/.test(id))) throw new Error('ID de categoría Carrefour inválido');
+    let after = null;
+    for (;;) {
+      const url = new URL(`${SUPABASE_URL}/rest/v1/carrefour_products`);
+      url.searchParams.set('select', 'id');
+      url.searchParams.set('or', `(category_ids.ov.{${ids.join(',')}},category_id.in.(${ids.join(',')}))`);
+      url.searchParams.set('order', 'id.asc');
+      url.searchParams.set('limit', '1000');
+      if (after != null) url.searchParams.set('id', `gt.${after}`);
+      const res = await fetchImpl(url, {
+        headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}` },
+      });
+      if (!res.ok) throw new Error(`read protected products ${res.status}: ${await res.text()}`);
+      const batch = await res.json();
+      for (const row of batch) protectedIds.add(row.id);
+      if (batch.length === 0) break;
+      const next = batch.at(-1).id;
+      if (next === after) throw new Error('read protected products: paginación sin avance');
+      after = next;
+    }
+  }
+  return protectedIds;
+}
+
 // ── Árbol de categorías (N1 → N2) ────────────────────────────────────────────
 // La taxonomía es NACIONAL (no varía por zona) → se construye una vez, con la
 // cookie de la zona base (Madrid).
@@ -571,51 +583,85 @@ async function fetchCategoryTree(cookie) {
 // la 1ª zona que lo trae, Madrid primero), membership (N2 por producto, union entre
 // zonas), zonesOfProduct (almacenes donde aparece → CCAA) y priceByZone (precio por
 // almacén → regional_prices).
-async function processCategory(cat, cookie, zone, products, membership, zonesOfProduct, priceByZone) {
+async function processCategory(cat, cookie, zone, products, membership, zonesOfProduct, priceByZone, fetchPage = fetchHtml) {
   const seen = new Set();
+  // No incorporar las primeras páginas hasta validar la categoría completa.
+  const categoryProducts = new Map();
+  const pageSignatures = new Set();
   let total = Infinity;
   for (let offset = 0; offset < total; offset += PAGE_SIZE) {
-    const html = await fetchHtml(`${cat.url}?offset=${offset}`, { cookie });
-    if (offset === 0) { const t = pagination(html).total; if (t != null) total = t; }
-    const prods = extractProducts(html);
-    let fresh = 0;
+    let prods, signature;
+    // Un total cuenta posiciones del listado, no necesariamente IDs únicos.
+    // Validar las páginas solicitadas antes de incorporarlas al catálogo.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const html = await fetchPage(`${cat.url}?offset=${offset}`, { cookie, categoryId: cat.id });
+        const info = pagination(html);
+        if (info.total == null) throw new Error('listado sin total_results; cobertura desconocida');
+        if (info.offset != null && info.offset !== offset) {
+          throw new Error(`offset incorrecto: pedido=${offset}, recibido=${info.offset}`);
+        }
+        prods = extractProducts(html);
+        if (offset < info.total && prods.length === 0) {
+          throw new Error(`página vacía antes del final: offset=${offset}, total=${info.total}`);
+        }
+        signature = JSON.stringify(prods.map((p) => String(p.product_id)).sort());
+        if (prods.length && offset < info.total && pageSignatures.has(signature)) {
+          throw new Error(`página repetida: offset=${offset}, total=${info.total}`);
+        }
+        total = info.total;
+        break;
+      } catch (error) {
+        if (attempt === 2) throw error;
+        console.warn(`[carrefour] ${zone.name ?? zone.werks}/${cat.name ?? cat.id}: reintento ${attempt + 1}/2 offset=${offset}: ${error.message}`);
+        await sleep(400 * (attempt + 1));
+      }
+    }
+    if (offset >= total) break;
+    pageSignatures.add(signature);
     for (const p of prods) {
       if (seen.has(p.product_id)) continue;
       seen.add(p.product_id);
-      fresh++;
-      if (!products.has(p.product_id)) {
-        const n = normalize(p);
-        if (n.display_name) products.set(p.product_id, n);
-      }
-      if (!products.has(p.product_id)) continue; // sin nombre → no lo contamos
-      let set = membership.get(p.product_id);
-      if (!set) membership.set(p.product_id, (set = new Set()));
-      set.add(cat.id);
-      let zs = zonesOfProduct.get(p.product_id);
-      if (!zs) zonesOfProduct.set(p.product_id, (zs = new Set()));
-      zs.add(zone.werks);
-      let zp = priceByZone.get(p.product_id);
-      if (!zp) priceByZone.set(p.product_id, (zp = new Map()));
-      zp.set(zone.werks, zonePriceObj(p));
+      categoryProducts.set(String(p.product_id), p);
     }
-    // Salir si la página no aporta nada nuevo (sólo se repiten promocionados) o vino vacía.
-    if (prods.length === 0 || fresh === 0) break;
     await sleep(120);
+  }
+  if (seen.size < total) {
+    console.log(`[carrefour] ${zone.name ?? zone.werks}/${cat.name ?? cat.id}: recorrido completo · ${seen.size} IDs únicos / ${total} posiciones anunciadas`);
+  }
+  for (const [id, p] of categoryProducts) {
+    if (!products.has(id)) {
+      const n = normalize(p);
+      if (n.display_name) products.set(id, n);
+    }
+    if (!products.has(id)) continue;
+    let set = membership.get(id);
+    if (!set) membership.set(id, (set = new Set()));
+    set.add(cat.id);
+    let zs = zonesOfProduct.get(id);
+    if (!zs) zonesOfProduct.set(id, (zs = new Set()));
+    zs.add(zone.werks);
+    let zp = priceByZone.get(id);
+    if (!zp) priceByZone.set(id, (zp = new Map()));
+    zp.set(zone.werks, zonePriceObj(p));
   }
 }
 
-async function main() {
-  console.log(`[carrefour] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
+async function main({ fetchZones = resolveZones, fetchTree = fetchCategoryTree, fetchPage = fetchHtml, dryRun = DRY_RUN, skipDetail = SKIP_DETAIL } = {}) {
+  if (!dryRun && (Number.isFinite(MAX_CATEGORIES) || Number.isFinite(MAX_ZONES))) {
+    throw new Error('MAX_CATEGORIES/MAX_ZONES requieren DRY_RUN=1; no publicar muestras limitadas');
+  }
+  console.log(`[carrefour] inicio ${runStart}${dryRun ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
 
   // 0) Resolver zonas (una capital por comunidad, deduplicadas por almacén).
-  const zones = await resolveZones();
+  const zones = await fetchZones();
   if (zones.length === 0) throw new Error('no se resolvió ninguna zona (¿cambió /cloud-api/salepoints/v1/?)');
   const base = zones[0]; // Madrid (COL PINAR) = base / referencia nacional
   const baseCookie = salepointCookie(base.cp);
   console.log(`[carrefour] ${zones.length} zonas: ${zones.map((z) => `${z.name}[${[...z.ccaas].join('/')}]`).join(', ')}`);
 
   // 1) Árbol de categorías (taxonomía nacional): una vez, con la zona base.
-  const tree = await fetchCategoryTree(baseCookie);
+  const tree = await fetchTree(baseCookie);
   const selectedN2s = ONLY_CATEGORY
     ? tree.n2s.filter((c) => c.id === ONLY_CATEGORY || c.parent_id === ONLY_CATEGORY)
     : tree.n2s;
@@ -635,6 +681,8 @@ async function main() {
   const membership = new Map();       // product_id → Set<categoryId>
   const zonesOfProduct = new Map();   // product_id → Set<werks>
   const priceByZone = new Map();      // product_id → Map<werks, priceObj>
+  const categoryFailures = [];
+  const failedCategoryIds = new Set();
 
   // 2) Barrer cada zona (secuencial; N2 en paralelo dentro de la zona).
   for (const zone of zones) {
@@ -645,22 +693,29 @@ async function main() {
       for (;;) {
         const cat = queue.shift();
         if (!cat) break;
-        try { await processCategory(cat, cookie, zone, products, membership, zonesOfProduct, priceByZone); }
-        catch (e) { console.warn(`[carrefour] ${zone.name}/${cat.name} falló: ${e.message}`); }
+        try { await processCategory(cat, cookie, zone, products, membership, zonesOfProduct, priceByZone, fetchPage); }
+        catch (e) {
+          failedCategoryIds.add(cat.id);
+          categoryFailures.push(`${zone.name}/${cat.name}: ${e.message}`);
+          console.warn(`[carrefour] ${zone.name}/${cat.name} falló: ${e.message}`);
+        }
         if (++done % 50 === 0) console.log(`[carrefour] ${zone.name}: ${done}/${cats.length} cat · ${products.size} prod acumulados`);
       }
     }));
     console.log(`[carrefour] zona ${zone.name} [${[...zone.ccaas].join('/')}] hecha · ${products.size} productos acumulados`);
   }
 
-  // 3) regions (CCAA donde está disponible; null = nacional) + regional_prices
-  //    (precio por CCAA cuando difiere del de Madrid). Semántica de `regions` igual
-  //    que mercadona/dia_products.regions; no se usa aún para filtrar en la app.
+  if (categoryFailures.length) {
+    console.warn(`[carrefour] barrido parcial: ${categoryFailures.length} fallos categoría/zona; se conservan ${failedCategoryIds.size} categorías completas y sus productos previos. ${categoryFailures.join(' | ')}`);
+  }
+  const complete = !ONLY_CATEGORY && failedCategoryIds.size === 0;
+  const protectedIds = failedCategoryIds.size && !dryRun ? await fetchProtectedProductIds(failedCategoryIds) : new Set();
+
+  // 3) Disponibilidad + overrides por CCAA cuando cambia el precio O la oferta.
   const werksCCAA = new Map(zones.map((z) => [z.werks, z.ccaas])); // werks → Set<CCAA>
   const ccaaWerks = new Map();                                     // CCAA → werks (1 zona por CCAA)
   for (const z of zones) for (const c of z.ccaas) if (!ccaaWerks.has(c)) ccaaWerks.set(c, z.werks);
   const allCCAA = new Set(); for (const z of zones) for (const c of z.ccaas) allCCAA.add(c);
-  const BASE_WERKS = base.werks;
 
   let regionalCount = 0, priceVaryCount = 0;
   for (const [id, det] of products) {
@@ -672,30 +727,41 @@ async function main() {
     const zp = priceByZone.get(id);
     const rp = {};
     if (zp) for (const [ccaa, werks] of ccaaWerks) {
-      if (werks === BASE_WERKS) continue;                                 // Madrid = columnas base
       const po = zp.get(werks);
       if (!po) continue;                                                  // no disponible en esa CCAA (→ regions)
-      if (po.p === det.unit_price && po.av === det.available) continue;    // mismo precio que base
+      const sameOffers = po.offers.strikethrough_price === det.strikethrough_price
+        && JSON.stringify(po.offers.promotions) === JSON.stringify(det.raw.quefalta_offers.promotions);
+      if (po.p === det.unit_price && po.pf === det.price_format
+        && po.ppu === det.price_per_unit && po.ppuu === det.price_per_unit_unit
+        && po.av === det.available && sameOffers) continue;
+      // Un override con promotions:[] anula la oferta base. Si todo coincide,
+      // heredar la base evita duplicar condiciones idénticas en todas las CCAA.
       rp[ccaa] = po;
     }
     det.regional_prices = Object.keys(rp).length ? rp : null;
     if (det.regional_prices) priceVaryCount++;
   }
-  console.log(`[carrefour] ${allCCAA.size} CCAA barridas · ${regionalCount} productos con disponibilidad regional · ${priceVaryCount} con precio regional distinto`);
+  console.log(`[carrefour] ${allCCAA.size} CCAA barridas · ${regionalCount} productos con disponibilidad regional · ${priceVaryCount} con precios/ofertas por zona`);
 
   // Adjuntar a cada producto sus categorías reales (las N2 que lo listan).
   const counts = new Map();
-  const rows = [];
+  const observedRows = [];
   for (const [id, det] of products) {
     const mem = [...(membership.get(id) ?? [])];
     for (const c of mem) counts.set(c, (counts.get(c) ?? 0) + 1);
-    rows.push({ ...det, category_ids: mem, category_id: mem[0] ?? null, category_name: mem[0] ? catName.get(mem[0]) ?? null : null });
+    observedRows.push({ ...det, category_ids: mem, category_id: mem[0] ?? null, category_name: mem[0] ? catName.get(mem[0]) ?? null : null });
   }
+  const rows = observedRows.filter((row) => !protectedIds.has(row.id) && !row.category_ids.some((id) => failedCategoryIds.has(id)));
+  const validatedCatRows = catRows.filter((cat) => !failedCategoryIds.has(cat.id));
+  if (failedCategoryIds.size) console.log(`[carrefour] categorías pendientes: ${[...failedCategoryIds].join(', ')} · ${protectedIds.size} productos previos protegidos · ${observedRows.length - rows.length} productos observados omitidos`);
   // product_count por categoría (lo observado, union entre zonas).
   for (const c of catRows) if (counts.has(c.id)) c.product_count = counts.get(c.id);
   console.log(`[carrefour] ${rows.length} productos únicos`);
+  const offerCounts = {};
+  for (const row of rows) if (row.promo_name) offerCounts[row.promo_name] = (offerCounts[row.promo_name] ?? 0) + 1;
+  console.log('[carrefour] ofertas principales vigentes:', JSON.stringify(offerCounts));
 
-  if (DRY_RUN) {
+  if (dryRun) {
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
@@ -714,7 +780,7 @@ async function main() {
       console.log(`   ${r.display_name.slice(0, 34).padEnd(34)} base=${r.price_format}  ${diffs}`);
     }
     // Muestra de ficha: descarga la de los primeros productos para verificar el parseo.
-    if (!SKIP_DETAIL) {
+    if (!skipDetail) {
       for (const r of rows.slice(0, 3)) {
         const url = r.raw?.url;
         if (!url) continue;
@@ -728,7 +794,7 @@ async function main() {
     }
     return;
   }
-  if (rows.length === 0) throw new Error('0 productos (¿bloqueo / cambio de SSR?)');
+  if (rows.length === 0) throw new Error('0 productos validados para actualizar; se conserva el catálogo anterior');
 
   // Guardar el CATÁLOGO + regions/regional_prices PRIMERO, antes de tocar la ficha. En el
   // 1er run multi-zona hay ~17k fichas nuevas (~3 h) que, sumadas al barrido de zonas (~2 h),
@@ -737,26 +803,30 @@ async function main() {
   // pasada de ficha se corte; la ficha (nueva/caducada) va en una 2ª pasada + 2º upsert, y se
   // completa de forma incremental en runs siguientes (DETAIL_TTL_DAYS / DETAIL_MAX).
   let staleDetail = [];
-  if (!SKIP_DETAIL) staleDetail = await loadExistingDetail(rows); // arrastra la ficha guardada a `rows`
+  if (!skipDetail) staleDetail = await loadExistingDetail(rows); // arrastra la ficha guardada a `rows`
 
-  await upsert('carrefour_categories', catRows);
+  await upsert('carrefour_categories', validatedCatRows);
   await upsert('carrefour_products', rows);
-  if (!ONLY_CATEGORY) {
+  if (complete) {
     await markStale('carrefour_products');
     await markStale('carrefour_categories');
   } else {
-    console.log(`[carrefour] sync parcial: se omite markStale global (${ONLY_CATEGORY})`);
+    console.log(`[carrefour] sync parcial: se omite markStale global (${ONLY_CATEGORY ?? `${failedCategoryIds.size} categorías pendientes`})`);
   }
   console.log(`[carrefour] catálogo + regions guardados (${rows.length} productos)`);
 
   // Ficha (INGREDIENTES/NUTRICIÓN/ORIGEN…): solo nuevos/caducados (tope DETAIL_MAX); el resto
   // ya se arrastró en el upsert anterior. SKIP_DETAIL=1 la deja intacta.
-  if (!SKIP_DETAIL) {
+  if (!skipDetail) {
     try { await downloadDetail(staleDetail); await upsert('carrefour_products', rows); }
     catch (e) { console.warn(`[carrefour] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
   }
-  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'carrefour' });
-  console.log('[carrefour] OK');
+  if (complete) {
+    await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'carrefour' });
+    console.log('[carrefour] OK');
+  } else {
+    console.log(`[carrefour] OK PARCIAL: ${rows.length} productos actualizados; catalog_sync_status conserva la fecha del último barrido completo`);
+  }
 }
 
 // Ejecuta main() solo al invocar el fichero como script (no al importarlo en tests).
@@ -765,4 +835,4 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   main().catch((e) => { console.error('[carrefour] ERROR', e); process.exit(1); });
 }
 
-export { carrefourDetailColumns, findNutritionInfo, extractInitialState, nutritionText, htmlToText };
+export { normalize, zonePriceObj, processCategory, fetchHtml, fetchProtectedProductIds, main, carrefourDetailColumns, findNutritionInfo, extractInitialState, nutritionText, htmlToText };

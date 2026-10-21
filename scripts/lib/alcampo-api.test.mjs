@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { AlcampoApi, AlcampoApiError } from './alcampo-api.mjs';
 
 const json = (data, headers = {}) => new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json', ...headers } });
-const productPage = (id, nextPageToken) => ({ productGroups: [{ decoratedProducts: [{ productId: id }] }], metadata: { nextPageToken } });
+const productPage = (id, nextPageToken) => ({ productGroups: [{ decoratedProducts: [{ productId: id, name: `Producto ${id}` }] }], metadata: { nextPageToken } });
 
 test('pagination retains rotated anonymous cookies, encodes tokens, and finishes only at the end', async () => {
   const requests = [];
@@ -47,4 +47,45 @@ test('invalid successful product shapes are rejected and storefront tag paramete
     return json({ message: 'not a product page' });
   } });
   await assert.rejects(async () => { for await (const _ of api.pages()) { /* consume */ } }, /invalid product page/);
+});
+
+test('undecorated references, missing metadata and invalid product IDs block the listing', async () => {
+  for (const data of [
+    { ...productPage('a'), metadata: null },
+    { ...productPage('a'), metadata: { nextPageToken: 2 } },
+    { productGroups: [{ decoratedProducts: [{ productId: 'a' }] }], metadata: {} },
+    { productGroups: [{ decoratedProducts: [], otherProductIds: ['a'] }], metadata: {} },
+    { productGroups: [{ decoratedProducts: [{ productId: 'a', name: 'A' }], productIds: ['a', 'b'] }], metadata: {} },
+  ]) {
+    const api = new AlcampoApi({ fetchImpl: async () => json(data) });
+    await assert.rejects(async () => {
+      for await (const page of api.pages({ promotions: true, regionId: 'r' })) assert.fail(JSON.stringify(page));
+    }, /invalid|incomplete/);
+  }
+});
+
+test('changing cursors cannot conceal a listing that stopped advancing', async () => {
+  let calls = 0;
+  const api = new AlcampoApi({ delayMs: 0, fetchImpl: async () => json(productPage('a', `token-${++calls}`)) });
+  await assert.rejects(async () => {
+    for await (const page of api.pages({ promotions: true, regionId: 'r', maxPages: 3 })) assert.equal(page.page, 1);
+  }, /without new products/);
+});
+
+test('campaign details must match their ID and contain every product with no unsupported cursor', async () => {
+  const detail = { retailerPromotionId: 'a', promotionGroups: [{ products: [{ productId: 'p', name: 'P' }] }] };
+  for (const data of [
+    { ...detail, retailerPromotionId: 'other' },
+    { ...detail, nextPageToken: 'next' },
+    { ...detail, metadata: { nextPageToken: 'next' } },
+    { ...detail, promotionGroups: [{ products: ['p'] }] },
+  ]) {
+    const api = new AlcampoApi({ fetchImpl: async () => json(data) });
+    await assert.rejects(api.promotion('a'), /invalid|not supported/);
+  }
+  const api = new AlcampoApi({ fetchImpl: async url => {
+    assert.ok(url.endsWith('/v4/promotion/retailer-id/a%2F1'));
+    return json({ ...detail, retailerPromotionId: 'a/1' });
+  } });
+  assert.equal((await api.promotion('a/1')).promotionGroups[0].products.length, 1);
 });

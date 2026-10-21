@@ -164,19 +164,24 @@ precios no la toca). En DRY_RUN se imprime la ficha de los 3 primeros productos 
 
 ## 4. Programarlo 1×/semana en Windows
 
+La tarea semanal ejecuta Dia y Froiz en secuencia cada lunes a las 09:50, hora
+local de Windows. Ambos lanzadores eliminan cualquier `DRY_RUN` heredado y
+publican en Supabase. `scripts/run-monday-catalog-sync.ps1` registra el resultado
+de cada lanzador en `scripts/logs/monday-catalog-sync-<fecha>.log`.
+
 ```powershell
 # Ejecutar desde la raíz del repositorio en una PowerShell normal.
-$ps1 = (Resolve-Path '.\scripts\run-dia-sync.ps1').Path
+$ps1 = (Resolve-Path '.\scripts\run-monday-catalog-sync.ps1').Path
 $action   = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$ps1`""
 $trigger  = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 9:50am
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew
-Register-ScheduledTask -TaskName 'QueFalta - Sync Dia' -Action $action -Trigger $trigger -Settings $settings -Description 'Sincroniza el catalogo de Dia a Supabase' -Force
+Register-ScheduledTask -TaskName 'QueFalta - Sync Dia' -Action $action -Trigger $trigger -Settings $settings -Description 'Sincroniza los catalogos de Dia y Froiz a Supabase' -Force
 ```
 
 La tarea usa la zona horaria local de Windows. El equipo debe estar encendido y
 con red; `StartWhenAvailable` recupera la ejecución si estaba apagado a las 09:50.
-Los logs quedan en `scripts/logs/dia-sync-<fecha>.log` y el lanzador conserva los
-14 más recientes.
+Los wrappers conservan los últimos 14 logs de cada súper y el despachador conserva
+los últimos 14 resúmenes semanales.
 
 ## Notas
 

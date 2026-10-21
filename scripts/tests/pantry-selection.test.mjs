@@ -239,7 +239,9 @@ test('shelf labels stay independent from products and appear in list locations',
   byId(h.render(), 'pantry-edit').props.onPress();
   assert.deepEqual(byType(h.render(), 'PantryShelf').props.shelfLabels, { 0: { name: 'Desayunos', emoji: '🥣' } });
   selectorFor(h.render(), 'cupboard').props.onChange('list');
-  assert.match(byId(h.render(), 'pantry-list-item-milk-1').props.accessibilityLabel, /🥣 Desayunos/);
+  const listLabel = byId(h.render(), 'pantry-list-item-milk-1').props.accessibilityLabel;
+  assert.match(listLabel, /pantry.oneUnit/);
+  assert.doesNotMatch(listLabel, /Desayunos/, 'shelf labels do not replace the independent kitchen location');
   selectorFor(h.render(), 'fridge').props.onChange('fridge');
   assert.equal(h.writes('fridge'), 0);
   selectorFor(h.render(), 'fridge').props.onChange('pantry');
@@ -307,9 +309,9 @@ test('the pantry product information button opens its Mercadona detail without c
   assert.ok(byType(h.render(), 'PantryProductFocus'));
 });
 
-test('the focused product panel shows the supermarket above the name and an information control beside it', () => {
+test('the focused product panel shows an accessible supermarket logo beside the name and an information control', () => {
   const source = readFileSync(new URL('../../src/components/PantryProductFocus.tsx', import.meta.url), 'utf8');
-  assert.match(source, /styles\.storeRow[\s\S]*STORE_META\[product\.store \?\? 'mercadona'\]\.name[\s\S]*STORE_META\[product\.store \?\? 'mercadona'\]\.icon/);
+  assert.match(source, /styles\.nameRow[\s\S]*STORE_META\[product\.store \?\? 'mercadona'\]\.icon[\s\S]*accessibilityLabel=\{STORE_META\[product\.store \?\? 'mercadona'\]\.name\}/);
   assert.match(source, /styles\.nameRow[\s\S]*styles\.name[\s\S]*testID="pantry-focus-details"/);
   assert.match(source, /name="information-circle-outline"/);
 });
@@ -480,7 +482,7 @@ test('list renders a bounded initial batch and preserves the saved order, copies
   assert.equal(list.props.data.at(-1).instanceId, 'copy-99');
   assert.equal(h.writes(), 0);
   const last = nodes(list.props.renderItem({ item: list.props.data.at(-1) }));
-  assert.match(last[0].props.accessibilityLabel, /pantry.pendingLocation/);
+  assert.match(last[0].props.accessibilityLabel, /pantry.oneUnit/);
   last[0].props.onPress();
   assert.equal(byType(h.render(), 'PantryProductFocus').props.product, milk);
   byType(h.render(), 'PantryProductFocus').props.onFinish();
@@ -604,23 +606,19 @@ test('editing a selected copy preserves its neighbours, updates the list and sur
   assert.equal(h.writes('fridge'), 0);
 });
 
-test('location edits move only the selected copy, reject a full shelf and keep notes and quantity', () => {
+test('kitchen location edits affect only the selected copy and preserve shelf placement, notes and quantity', () => {
   const edited = { ...item, quantity: 3, notes: 'Abierto' };
-  const crowded = Array.from({ length: 5 }, (_, i) => ({ ...item, instanceId: `full-${i}`,
-    ...layout.pantrySlotPlacement(i, 1) }));
-  const h = harness([edited, ...crowded]);
+  const neighbour = { ...item, instanceId: 'milk-2', ...layout.pantrySlotPlacement(0, 1) };
+  const h = harness([edited, neighbour]);
   byType(h.render(), 'PantryShelf').props.onSelect(item.instanceId);
   const focus = byType(h.render(), 'PantryProductFocus');
-  assert.equal(focus.props.onMove(1), false);
-  assert.equal(focus.props.onMove(99), false);
-  assert.equal(focus.props.onMove(-1), false);
-  assert.equal(h.writes(), 0);
-  assert.equal(focus.props.onMove(2), true);
-  assert.equal(h.saved()[0].shelfIndex, 2);
+  focus.props.onEdit({ kitchenLocation: 'Armario alto' });
+  assert.equal(h.saved()[0].kitchenLocation, 'Armario alto');
+  assert.equal(h.saved()[0].shelfIndex, edited.shelfIndex);
   assert.equal(h.saved()[0].quantity, 3);
   assert.equal(h.saved()[0].notes, 'Abierto');
-  assert.deepEqual(h.saved().slice(1), crowded);
-  assert.equal(byType(h.render(), 'PantryProductFocus').props.shelfIndex, 2);
+  assert.deepEqual(h.saved()[1], neighbour);
+  assert.equal(byType(h.render(), 'PantryProductFocus').props.kitchenLocation, 'Armario alto');
 });
 
 test('late detail edits remain bound to their inventory and clamp quantities and notes', () => {
@@ -630,7 +628,7 @@ test('late detail edits remain bound to their inventory and clamp quantities and
   selectorFor(h.render(), 'fridge').props.onChange('fridge');
   editPantry({ quantity: 10000, notes: 'x'.repeat(900) });
   assert.equal(h.saved()[0].quantity, 999);
-  assert.equal(h.saved()[0].notes.length, 500);
+  assert.equal(h.saved()[0].notes.length, layout.PANTRY_MAX_NOTES_LENGTH);
   byType(h.render(), 'PantryFridge').props.onSelect(item.instanceId);
   byType(h.render(), 'PantryProductFocus').props.onEdit({ quantity: 0, notes: 'Frío' });
   assert.equal(h.saved('fridge')[0].quantity, 1);

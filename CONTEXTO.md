@@ -1,5 +1,11 @@
 # QuéFalta — Contexto del proyecto
 
+## Integración Mac y Windows (rama conjunta, 2026-10-21)
+
+- `codex/merge-mac-windows-20261021` reúne los commits de ambas máquinas en el PR borrador #79. Conserva los cambios de app y syncs, y resuelve las secciones concurrentes de este documento y `HANDOFF.md`.
+- El checkpoint LFS y el JSON de prueba de Windows, junto con las ilustraciones y temporales excluidos en Mac, no forman parte de la rama conjunta.
+- Corregidas las advertencias de lint y actualizadas las pruebas que seguían validando la interfaz anterior de Despensa. Comprobación local: TypeScript, lint y 1127/1127 pruebas. Pendiente el check remoto y la integración en `main`.
+
 ## Lidl: traslado del fleet semanal a Windows (local, 2026-10-21)
 
 - Preparados `scripts/run-lidl-fleet-local.mjs` y `scripts/run-lidl-fleet.ps1`:
@@ -1189,6 +1195,38 @@ Sin reanudación automática. Los 876 anteriores y 124 pendientes conservan su e
   al solicitar detener reintentos), 12421 → 34170 (dos). Sustitutos publicados
   originalmente sin ilustración, fuera de las otras selecciones. Los productos
   excluidos no se publicaron; trazabilidad en `selection-replacements.json`.
+
+## Alcampo: catálogo Playwright y ofertas API (local, 2026-10-15)
+
+- `sync-alcampo-playwright.mjs` reserva Chromium para el catálogo y cierra el
+  navegador antes de recorrer directorios promocionales y detalles de campañas
+  con `AlcampoApi`. Mantiene las ramas de folletos/campañas, la cola dinámica y
+  la fusión de productos alimentarios; no hay fallback de ofertas al navegador.
+- Exige paginación completa, productos decorados, detalle de campaña válido y
+  coincidencia de región API/SSR/checkpoint. Conserva condiciones, rebajas,
+  €/unidad, exclusividad online y fechas estructuradas en `Europe/Madrid`.
+- Los nuevos marcadores `api:promotion:*` y `api:offer:*` impiden reutilizar como
+  completos los recorridos antiguos de navegador. Al reanudar un checkpoint
+  anterior conserva productos, pero revalida páginas y redescubre campañas.
+- Sin publicación ni migraciones. El checkpoint existente permanece intacto;
+  falta validar el barrido híbrido completo antes de un futuro `-Publish`.
+  Operación y límites en `scripts/README-alcampo-playwright.md`.
+- 55 pruebas dirigidas, TypeScript y sintaxis correctos. Piloto API de una
+  categoría y sus dos campañas: 864 productos únicos, sin expandir la cola más
+  allá de las campañas del directorio. Sin navegador ni escrituras de catálogo.
+
+## Carrefour: publicación parcial ante categorías fallidas (local, 2026-10-07)
+
+- El último intento del 05/10 falló antes de publicar: Sushi en Galicia/Murcia
+  redirige a la portada; Cuidado del cabello en Extremadura falló en offset 72.
+- El sync valida HTTP/URL final y acumula cada categoría solo tras validarla.
+  Una categoría fallida ya no cancela las restantes: publicación `OK PARCIAL`,
+  conservando sus filas y productos compartidos en todas las zonas. Sin limpieza
+  global ni avance de `catalog_sync_status` hasta un barrido completo.
+- Cambio local de scripts y documentación; sin sync real ni escrituras remotas.
+  37 pruebas focalizadas y TypeScript correctos. Lecturas reales confirman las
+  redirecciones y los 284 IDs protegidos (REST coincide con SQL).
+  Contrato, límites y pruebas en `scripts/README-carrefour-sync.md`.
 
 ## Verificación conjunta antes de subir a GitHub (2026-10-07)
 

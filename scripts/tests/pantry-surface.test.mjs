@@ -104,7 +104,7 @@ test('dragging between labeled shelves maps visible row spacing back into saved 
   const headerHeight = tree.find((node) => node.type === 'PantryShelfLabel').props.editing === false ? 52 : NaN;
   const height = canvasWidth / layout.PANTRY_ASPECT_RATIO;
   drag.onStart();
-  drag.onUpdate({ translationX: 0, translationY: 4 * (layout.PANTRY_SHELF_SPACING_Y * height + headerHeight) });
+  drag.onUpdate({ translationX: 0, translationY: 4 * layout.PANTRY_SHELF_SPACING_Y * height + headerHeight });
   drag.onFinalize({}, true);
   assert.equal(commits[0].shelfIndex, 4);
   assert.equal(commits[0].size, item.size);

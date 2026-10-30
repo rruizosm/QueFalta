@@ -1,3 +1,19 @@
+## PR #81: correcciones del check Quality (2026-10-30)
+
+- Validación local: TypeScript correcto, lint sin caché sin avisos y
+  1.275 pruebas correctas (0 fallos).
+- Eliminados imports de `View` sin uso y unificados los imports de tipos de
+  React Native. `AndroidImportance` se importa por nombre desde la API pública
+  de Expo Notifications para que ESLint lo resuelva también en Linux.
+- Actualizadas las pruebas de agrupación al comportamiento documentado del
+  26/10 (subcategorías del retailer, sin inferencia por nombre) y las pruebas
+  de accesibilidad al componente compartido `ViewModeToggle`.
+- Registradas las huellas exactas de `StoreProductModal` (esquinas opcionales)
+  y `catalog.ts` (filtros sin gluten y paginación) publicados en `cf346108`;
+  los recibos históricos del comparador se conservan intactos.
+- Quality solo intenta adjuntar el log de tests cuando ese paso ha fallado;
+  un fallo anterior de lint ya no genera un segundo error por log inexistente.
+
 ## Despensa/Nevera: pendientes solo informativos (local, 2026-10-29)
 
 - Las fotos sin colocar son View estáticas, sin onPress y con pointerEvents none.

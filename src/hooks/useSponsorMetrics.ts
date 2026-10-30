@@ -1,6 +1,6 @@
 import type { ViewInstance } from 'react-native';
 import { useCallback, useEffect, useRef } from 'react';
-import { AppState, View, useWindowDimensions } from 'react-native';
+import { AppState, useWindowDimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { recordSponsorEvent } from '../api/sponsorMetrics';
 import { createBannerDwell, sponsorEventId, visibleBannerFraction } from '../lib/sponsorMetrics';

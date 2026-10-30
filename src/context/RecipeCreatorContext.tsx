@@ -1,6 +1,5 @@
 import type { ViewInstance } from 'react-native';
 import { createContext, useContext, useRef, type ReactNode, type RefObject } from 'react';
-import { View } from 'react-native';
 import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 
 export type RecipeButtonBounds = { x: number; y: number; width: number; height: number };

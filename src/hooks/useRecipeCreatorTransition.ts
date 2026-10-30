@@ -1,6 +1,5 @@
-import type { ViewInstance } from 'react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import { Keyboard, useWindowDimensions, type LayoutChangeEvent, type ViewInstance } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
 import {
   cancelAnimation, Easing, interpolate, ReduceMotion, runOnJS,

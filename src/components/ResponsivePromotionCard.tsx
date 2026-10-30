@@ -1,8 +1,7 @@
-import type { ViewInstance } from 'react-native';
 import { useEffect, useState, type RefObject } from 'react';
 import { Image, type ImageSource } from 'expo-image';
-import type { StyleProp, ViewStyle } from 'react-native';
 import {
+  type StyleProp, type ViewStyle, type ViewInstance,
   Linking,
   Pressable,
   StyleSheet,

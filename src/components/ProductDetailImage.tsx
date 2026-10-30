@@ -1,6 +1,5 @@
-import type { ViewInstance } from 'react-native';
 import { useRef, useState } from 'react';
-import { Pressable, View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, Text, StyleSheet, type StyleProp, type ViewStyle, type ViewInstance } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';

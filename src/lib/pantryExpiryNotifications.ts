@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { AndroidImportance } from 'expo-notifications';
 import { t } from '../i18n';
 import { getNotificationsEnabled, hasPermission } from './notifications';
 import { fetchGroupPantry } from '../api/groupPantry';
@@ -104,7 +105,7 @@ async function reconcile(userId: string, inventories?: Inventories): Promise<voi
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
       name: 'General',
-      importance: Notifications.AndroidImportance.DEFAULT,
+      importance: AndroidImportance.DEFAULT,
       vibrationPattern: [0, 250, 250, 250],
     });
   }

@@ -1,46 +1,50 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { categoryOfItem, groupByZone, sortZoneItems, OTHER_ZONE } from '../../src/constants/zones.ts';
 
-import { zoneOfCategory, zoneOfItem } from '../../src/constants/zones.ts';
-
-test('las categorías de carne de Mercadona se asignan a frescos', () => {
-  assert.equal(zoneOfCategory('Hamburguesas y picadas').key, 'frescos');
-  assert.equal(zoneOfCategory('Aves y pollo').key, 'frescos');
-  assert.equal(zoneOfCategory('Pollo').key, 'frescos');
-  assert.equal(zoneOfCategory('Pollastre').key, 'frescos');
-});
-
-test('los tres productos reportados salen de Otros aunque falte su categoría', () => {
-  assert.equal(zoneOfItem(null, 'Burger Crunchy Chicken').key, 'frescos');
-  assert.equal(zoneOfItem('Otros', 'Filetes pechuga de pollo corte fino').key, 'frescos');
-  assert.equal(zoneOfItem(null, 'Lasaña Boloñesa Hacendado').key, 'preparados');
-});
-
-test('el fallback conserva la clasificación en catalán', () => {
-  assert.equal(zoneOfItem(null, 'Filets de pit de pollastre tall fi').key, 'frescos');
-  assert.equal(zoneOfItem(null, 'Lasanya bolonyesa Hacendado').key, 'preparados');
-});
-
-test('una categoría conocida sigue teniendo prioridad sobre el nombre del producto', () => {
-  assert.equal(zoneOfItem('Caldos', 'Caldo de pollo Hacendado').key, 'despensa');
-  assert.equal(zoneOfItem('Congelados', 'Lasaña boloñesa ultracongelada').key, 'congelados');
-});
-
-test('BM conserva la zona Congelados al combinar N1 y subcategoría', () => {
-  for (const leaf of ['Pescado y marisco', 'Platos preparados', 'Verduras y hortalizas', 'Panificación y repostería']) {
-    assert.equal(zoneOfCategory(`Congelados › ${leaf}`).key, 'congelados');
+test('la cesta conserva las subcategorías de cada supermercado', () => {
+  assert.equal(categoryOfItem('Hamburguesas y picadas').label, 'Hamburguesas y picadas');
+  assert.equal(categoryOfItem('Pollastre').label, 'Pollastre');
+  for (const separator of [' › ', ' -> ', ' → ']) {
+    assert.deepEqual(categoryOfItem(`Congelados${separator}Pescado y marisco`), {
+      key: 'pescado y marisco', label: 'Pescado y marisco', emoji: '🛒',
+    });
   }
-  assert.equal(zoneOfCategory('Congelados -> Fruta y verdura').key, 'congelados');
-  assert.equal(zoneOfCategory('Frescos › Frutas').key, 'fruta');
-  assert.equal(zoneOfItem(null, 'Fruta congelada').key, 'congelados');
 });
 
-test('BM prioriza la hoja en raíces genéricas y la raíz en secciones específicas', () => {
-  assert.equal(zoneOfCategory('Alimentación › Aperitivos y frutos secos').key, 'aperitivos');
-  assert.equal(zoneOfCategory('Alimentación › Platos preparados').key, 'preparados');
-  assert.equal(zoneOfCategory('Frescos › Horno de pan').key, 'pan');
-  assert.equal(zoneOfCategory('Bebé › Perfumería e higiene').key, 'bebe');
-  assert.equal(zoneOfCategory('Mascotas › Accesorios e higiene').key, 'mascotas');
-  assert.equal(zoneOfCategory('Cuidado del hogar › Cuidado de la ropa').key, 'limpieza');
-  assert.equal(zoneOfCategory('Bebidas › Cava, champagne y sidra').key, 'bebidas');
+test('sin categoría se usa Otros sin inferirla del nombre del producto', () => {
+  for (const category of [null, undefined, '', '   ']) assert.equal(categoryOfItem(category), OTHER_ZONE);
+  const groups = groupByZone([
+    { categoryName: null, productName: 'Burger Crunchy Chicken' },
+    { categoryName: null, productName: 'Lasaña boloñesa' },
+  ]);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].zone.key, 'otros');
+  assert.equal(groups[0].data.length, 2);
+});
+
+test('agrupa categorías equivalentes y ordena alfabéticamente con Otros al final', () => {
+  const items = [
+    { id: 1, categoryName: null },
+    { id: 2, categoryName: 'Frescos › Lácteos' },
+    { id: 3, categoryName: 'Bebidas' },
+    { id: 4, categoryName: 'lacteos' },
+    { id: 5, categoryName: null },
+  ];
+  const groups = groupByZone(items);
+  assert.deepEqual(groups.map(group => group.zone.key), ['bebidas', 'lacteos', 'otros']);
+  assert.deepEqual(groups.map(group => group.data.map(item => item.id)), [[3], [2, 4], [1, 5]]);
+  assert.equal(items[0].id, 1);
+});
+
+test('ordena pendientes primero y alfabéticamente sin modificar la lista original', () => {
+  const items = [
+    { productName: 'Zanahorias', inCart: true },
+    { productName: 'Leche', inCart: false },
+    { productName: 'Arroz', inCart: true },
+    { productName: 'Agua', inCart: false },
+  ];
+  assert.deepEqual(sortZoneItems(items).map(item => item.productName), ['Agua', 'Leche', 'Arroz', 'Zanahorias']);
+  assert.equal(items[0].productName, 'Zanahorias');
+  assert.deepEqual(groupByZone([]), []);
 });

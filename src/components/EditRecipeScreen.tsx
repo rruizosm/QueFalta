@@ -1,6 +1,6 @@
 import type { ViewInstance } from 'react-native';
 import { useRef } from 'react';
-import { Keyboard, View } from 'react-native';
+import { Keyboard } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';

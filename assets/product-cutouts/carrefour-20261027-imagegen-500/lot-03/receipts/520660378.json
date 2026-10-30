@@ -1,0 +1,15 @@
+{
+  "id": "520660378",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/578567_00_1.jpg",
+  "sourceSha256": "6e5efcf5ffa85d8523c64b4b817c6b5cf298e2eaf6a55d8b901def635194aeed",
+  "outputSha256": "50309d2adc1e7bd340867b7ea2d4ce84fe8ba628383948061b6ae9e5a756fecd",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660378.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-1347703e-aaf9-4db1-bf76-bb17396935ee.png",
+  "visualReview": "Rejected: returned dark opaque studio background instead of transparent alpha.",
+  "validAlpha": true,
+  "visualReviewAccepted": false,
+  "bytes": 1307274,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:56:46.553Z"
+}

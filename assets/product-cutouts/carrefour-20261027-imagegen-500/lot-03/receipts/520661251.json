@@ -1,0 +1,15 @@
+{
+  "id": "520661251",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/000141_00_1.jpg",
+  "sourceSha256": "445c10eefccd9310356d6ef16366e4aa923512d333e2482afcf38468ada03868",
+  "outputSha256": "973b1945d421cea0d46c27d1b686e497e9224a44ef1ea77dfc3919bf41e27a0e",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520661251.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-15648c9b-03a5-4443-8d8a-a743c216e872.png",
+  "visualReview": "Mahou 6x25cl red multipack plus foreground bottle preserved, composition complete on transparent background.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1476487,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.058Z"
+}

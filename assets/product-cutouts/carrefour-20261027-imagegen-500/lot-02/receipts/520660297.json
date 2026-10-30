@@ -1,0 +1,16 @@
+{
+  "id": "520660297",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/798307_00_1.jpg",
+  "sourceSha256": "2fbe0ede1b03d8686cc23638f6fdfad2ba266a94f9fb8a1ae29c793ff4667dbe",
+  "outputSha256": "b6b25f5fb5595e968356ff3ddcefbdd3fd74fcddbcc17ffb1f1e4a19a32fe960",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660297.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-3bef-70f2-96db-97196e0282fe/exec-6ceb1d02-aeb8-4762-a0f0-28dc453f3170.png",
+  "validAlpha": true,
+  "bytes": 611388,
+  "withinBucketLimit": true,
+  "visualReviewAccepted": true,
+  "visualReview": "Complete matching photographed product and packaging. Transparent external background, white product surfaces preserved. Minor generated text/brightness/edge differences consistent with user-authorized ImageGen approach.",
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:56:45.310Z"
+}

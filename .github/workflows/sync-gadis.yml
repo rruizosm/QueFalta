@@ -2,7 +2,7 @@ name: Sync Gadis catalog
 
 on:
   schedule:
-    - cron: '20 5 * * *' # diario, antes de que caduquen las promociones cortas
+    - cron: '20 5 * * 1' # lunes 05:20 UTC
   workflow_dispatch: {}
 
 concurrency:

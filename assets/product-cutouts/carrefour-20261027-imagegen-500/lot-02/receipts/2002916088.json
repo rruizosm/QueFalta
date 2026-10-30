@@ -1,0 +1,16 @@
+{
+  "id": "2002916088",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-3bef-70f2-96db-97196e0282fe/exec-63b15ae7-654d-4d1a-9b7e-b6b29e5423ea.png",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/312496_00_1.jpg",
+  "sourceSha256": "beeb8b3ff2449d98f5e7592b795a2c5a0d851f40bcf116525e13ec22f1d3eb0c",
+  "outputSha256": "6b65466599eb821a0c7a8672a7102537ac4676bf402f87380a96eea5b6abd82d",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2002916088.txt",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "visualReview": "Complete matching product and retail packaging, transparent external background. Original white surfaces retained. Minor generated label and edge differences consistent with user-authorized ImageGen approach.",
+  "sourceBytes": 9454,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.989Z",
+  "matchingBrowserDownloadDeleted": true
+}

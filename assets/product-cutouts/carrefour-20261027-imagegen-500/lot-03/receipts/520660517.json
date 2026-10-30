@@ -1,0 +1,15 @@
+{
+  "id": "520660517",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/000050_00_1.jpg",
+  "sourceSha256": "dc38b9a11e9c74330c69be4b4fe6a5cee465faac373107fa3a6d56f41485ec1f",
+  "outputSha256": "6e358130e85ce3fd863f0425d74a646d196eff37ce4bafa6d7de73e79a38d7a2",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660517.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-465fec95-3464-416f-b3a6-01be0e7ce9f1.png",
+  "visualReview": "Rejected: top metal rim of Pepsi can is clipped at image top, unlike requested transparent margin.",
+  "validAlpha": true,
+  "visualReviewAccepted": false,
+  "bytes": 657387,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:56:46.624Z"
+}

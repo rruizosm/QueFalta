@@ -33,6 +33,9 @@ sesión anónima usada para enriquecer las fichas necesita Playwright.
   €/unidad canónico l/kg/ud vía `lib/price.mjs`), `category:[N1,N2,N3]`,
   `on_sale`/`on_promotion`, `is_novelty`, `without_gluten`/`without_lactose`,
   `isEco`, `state`. Todo se conserva en `raw`.
+- `gluten_free_label` copia la señal nativa `without_gluten` (1 = sin gluten)
+  en cada upsert. El backfill de productos existentes está en
+  `supabase/migrations/20261022120000_condis_dia_gluten_free_labels.sql`.
 - **Bilingüe es/ca** (param `lang`): la 1ª pasada (es) fija el conjunto de productos
   y los nombres castellanos; la 2ª (ca) añade `display_name_ca` por id (mismos ids).
 - **Imágenes:** el CDN público `cdn.condis.es/fit-in/600x600/es/products/{id}.jpg`

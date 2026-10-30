@@ -2,19 +2,22 @@ import Reanimated from 'react-native-reanimated';
 import { useTabBarScrollOffsetStyle } from '../hooks/useTabBarScroll';
 import { PagerNativeFlatList as FlatList } from './bottom-tabs-pager/PagerNativeScroll';
 import { prepareProductImages } from '../lib/prefetchProductImages';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { PagerGestureContext } from './bottom-tabs-pager/PagerGestureContext';
 import {
   View, Text, TouchableOpacity, Pressable, StyleSheet, ActivityIndicator, Alert, Image, useWindowDimensions,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Swipeable } from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import type { SwipeableMethods, SwipeableProps } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import type { LegacyPanGesture, PanGesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useCatalogStore } from '../context/CatalogStoreContext';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
@@ -32,6 +35,20 @@ import ProductSelectionIndicator from './ProductSelectionIndicator';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
 import ActiveCartIcon from './ActiveCartIcon';
 import GlassSurface from './GlassSurface';
+
+// Each row keeps its own imperative handle. The legacy pager gesture has a
+// native handlerTag, which RNGH 3 uses to resolve requireToFail relationships.
+function FavoriteSwipeable({ pagerGesture, onFavorite, children, ...props }: Omit<SwipeableProps, 'onSwipeableOpen' | 'requireToFail'> & {
+  pagerGesture: LegacyPanGesture | null;
+  onFavorite: () => void;
+}) {
+  const ref = useRef<SwipeableMethods>(null);
+  return <Swipeable {...props} ref={ref}
+    requireToFail={pagerGesture ? pagerGesture as unknown as PanGesture : undefined}
+    onSwipeableOpen={direction => {
+      if (direction === 'left') { onFavorite(); ref.current?.close(); }
+    }}>{children}</Swipeable>;
+}
 
 const GRID_GAP = 8;
 const INITIAL_IMAGE_PREPARE_TIMEOUT_MS = 1200;
@@ -59,6 +76,7 @@ const compareCategoryProducts = (sort: Exclude<CategoryProductSort, 'relevance'>
 export interface ProductSelection {
   onSelect: (product: UIProduct) => void;
   selectedKeys: ReadonlySet<string>;
+  allowDeselect?: boolean;
   accessibilityLabel: (product: UIProduct) => string;
   bottomInset: number;
   /** Glass add control with press feedback, used by the pantry picker. */
@@ -100,6 +118,9 @@ interface Props {
    *  siguiente página (catálogo). `loadingMore` pinta el spinner de pie. */
   onEndReached?: () => void;
   loadingMore?: boolean;
+  /** Muestra las tarjetas en cuanto llegan los datos, sin esperar la precarga
+   * inicial de imágenes (útil en listados que se cargan por páginas). */
+  waitForInitialImages?: boolean;
   /** Mantiene el orden en que llegan los `products` (p. ej. cambios de precio
    *  ordenados por % en el servidor, o las novedades curadas de Mercadona) en
    *  vez de reordenar alfabéticamente/por relevancia. El buscador interno
@@ -130,12 +151,11 @@ export default function StoreProductList({
   emptyText, errorText,
   emoji, searchable = false, glutenFreeProductIds, searchQuery,
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
-  pageSize, onEndReached, loadingMore = false, keepOrder = false,
+  pageSize, onEndReached, loadingMore = false, waitForInitialImages = true, keepOrder = false,
   topInset = 0, roundedCards = false, badgeLabel, onScrollBeginDrag,
   showStoreLogo = false, selection, compactSelection = false,
 }: Props) {
   const pagerGesture = useContext(PagerGestureContext);
-  const pagerRef = useMemo(() => ({ current: pagerGesture }), [pagerGesture]);
   const styles = useThemedStyles(themedStyles);
   const { width: windowWidth } = useWindowDimensions();
   // Se recalcula en rotación, Split View y ventanas Android redimensionables.
@@ -150,6 +170,7 @@ export default function StoreProductList({
   const tabBarOffsetStyle = useTabBarScrollOffsetStyle();
   const bottomPad = selection ? selection.bottomInset + 24 : 110 + tabBarOffset;
   const { t } = useTranslation();
+  const { glutenOnly, setGlutenOnly } = useCatalogStore();
   const { isPremium, loading: profileLoading } = useProfile();
   const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
   const emptyLabel = emptyText ?? t('product.emptyDefault');
@@ -172,11 +193,10 @@ export default function StoreProductList({
   const [query, setQuery] = useState('');
   const [browseSort, setBrowseSort] = useState<CategoryProductSort>('priceAsc');
   const [searchSort, setSearchSort] = useState<CategoryProductSort>('relevance');
-  const [glutenOnly, setGlutenOnly] = useState(false);
   const categorySort = query.trim().length >= 2 ? searchSort : browseSort;
   const localGlutenFreeProductIds = useMemo(
     () => searchable && !glutenFreeProductIds
-      ? new Set(products.filter((p) => /(?:sin|sense) gluten/i.test(p.name)).map((p) => p.id))
+      ? new Set(products.filter((p) => p.glutenFreeByTag || /(?:sin|sense) gluten/i.test(p.name)).map((p) => p.id))
       : undefined,
     [products, searchable, glutenFreeProductIds],
   );
@@ -232,7 +252,7 @@ export default function StoreProductList({
   const hasProductsToPrepare = shown.length > 0;
   const [initialImagesReady, setInitialImagesReady] = useState(false);
   useEffect(() => {
-    if (initialImagesReady || loading || error || !hasProductsToPrepare) return undefined;
+    if (!waitForInitialImages || initialImagesReady || loading || error || !hasProductsToPrepare) return undefined;
 
     const firstImageUris = JSON.parse(firstImageBatchKey) as (string | null)[];
     if (!firstImageUris.some(Boolean)) {
@@ -253,8 +273,8 @@ export default function StoreProductList({
       clearTimeout(timeout);
       preparation.cancel();
     };
-  }, [error, firstImageBatchKey, hasProductsToPrepare, initialImagesReady, loading]);
-  const awaitingInitialImages = !loading && !error && hasProductsToPrepare && !initialImagesReady;
+  }, [error, firstImageBatchKey, hasProductsToPrepare, initialImagesReady, loading, waitForInitialImages]);
+  const awaitingInitialImages = waitForInitialImages && !loading && !error && hasProductsToPrepare && !initialImagesReady;
 
   // Ventana local (paginación de favoritos): se pinta solo lo revelado y crece
   // de `pageSize` en `pageSize` al hacer scroll. Sin `pageSize`, se pinta todo
@@ -356,6 +376,7 @@ export default function StoreProductList({
       uri={item.imageUrl}
       name={item.name}
       price={item.priceLabel}
+      metaLabel={compactSelection ? item.metaLabel : undefined}
       priceChange={item.priceChange ? {
         prevLabel: item.priceChange.prevLabel,
         direction: item.priceChange.direction,
@@ -368,6 +389,7 @@ export default function StoreProductList({
       onPress={() => selection ? selection.onSelect(item) : setDetail({ store: item.store, id: item.id, preview: item })}
       selectionState={selection ? selection.selectedKeys.has(quantityKey(item)) ? 'selected' : 'available' : undefined}
       selectionActionAppearance={selection?.actionAppearance}
+      selectionAllowDeselect={selection?.allowDeselect}
       accessibilityLabel={selection?.accessibilityLabel(item)}
     />
   );
@@ -442,9 +464,9 @@ export default function StoreProductList({
                 </Text>
               </View>
             ) : !compactSelection && item.priceLabel ? <Text style={styles.price}>{item.priceLabel}</Text> : null}
-            {!compactSelection && (item.metaLabel || item.pricePerUnitLabel) ? (
+            {(item.metaLabel || (!compactSelection && item.pricePerUnitLabel)) ? (
               <Text style={styles.sub} numberOfLines={1}>
-                {[item.metaLabel, item.pricePerUnitLabel].filter(Boolean).join('  ·  ')}
+                {[item.metaLabel, !compactSelection && item.pricePerUnitLabel].filter(Boolean).join('  ·  ')}
               </Text>
             ) : null}
           </View>
@@ -457,9 +479,9 @@ export default function StoreProductList({
             fallbackColor={active ? colors.accentLight : colors.white}>{content}</GlassSurface>;
     };
     if (selection?.actionAppearance === 'glass') {
-      return <Pressable onPress={() => selection.onSelect(item)} disabled={active}
+      return <Pressable onPress={() => selection.onSelect(item)} disabled={active && !selection.allowDeselect}
         accessibilityRole="button" accessibilityLabel={selection.accessibilityLabel(item)}
-        accessibilityState={{ selected: active, disabled: active }}>
+        accessibilityState={{ selected: active, disabled: active && !selection.allowDeselect }}>
         {({ pressed }) => row(pressed)}
       </Pressable>;
     }
@@ -467,34 +489,28 @@ export default function StoreProductList({
       return (
         <TouchableOpacity
           onPress={() => selection.onSelect(item)}
-          disabled={active}
+          disabled={active && !selection.allowDeselect}
           activeOpacity={0.75}
           accessibilityRole="button"
           accessibilityLabel={selection.accessibilityLabel(item)}
-          accessibilityState={{ selected: active, disabled: active }}
+          accessibilityState={{ selected: active, disabled: active && !selection.allowDeselect }}
         >
           {row()}
         </TouchableOpacity>
       );
     }
     return (
-      <Swipeable
-        // Root-tab drags navigate pages; nested product lists retain swipe-to-favorite.
-        waitFor={pagerGesture ? pagerRef : undefined}
+      <FavoriteSwipeable
+        pagerGesture={pagerGesture}
         containerStyle={roundedCards ? styles.swipeRounded : undefined}
         friction={1}
         leftThreshold={48}
         overshootFriction={8}
         renderLeftActions={renderFavAction}
-        onSwipeableOpen={(direction, swipeable) => {
-          if (direction === 'left') {
-            handleSwipeFav(item);
-            swipeable.close();
-          }
-        }}
+        onFavorite={() => handleSwipeFav(item)}
       >
         {row()}
-      </Swipeable>
+      </FavoriteSwipeable>
     );
   };
 
@@ -552,7 +568,7 @@ export default function StoreProductList({
           onScrollBeginDrag={onScrollBeginDrag}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
-          ListFooterComponent={listFooter}
+          ListFooterComponent={listFooter ?? undefined}
           ListEmptyComponent={emptyNode}
         />
       ) : (
@@ -574,7 +590,7 @@ export default function StoreProductList({
           onScrollBeginDrag={onScrollBeginDrag}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
-          ListFooterComponent={listFooter}
+          ListFooterComponent={listFooter ?? undefined}
           ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           ListEmptyComponent={emptyNode}
         />

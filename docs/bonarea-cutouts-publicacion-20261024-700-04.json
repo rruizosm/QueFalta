@@ -1,0 +1,38 @@
+{
+  "completed_at_utc": "2026-10-24T16:10:30.894444+00:00",
+  "project": "gkffvigcnsesbaihycay",
+  "table": "public.bonarea_products",
+  "column": "illustration_url",
+  "requested_new_products": 700,
+  "new_products_linked_and_verified": 528,
+  "additional_reviewed_but_held": 172,
+  "prior_products_preserved": 2405,
+  "total_products_with_image": 2933,
+  "method": "Official existing transparent PNG photographs linked without changing source pixels.",
+  "unique_linked_ids": 528,
+  "unique_linked_urls": 528,
+  "unique_linked_png_hashes": 528,
+  "all_700_reviewed_remote_pngs_http_200_and_sha256_match": true,
+  "visual_review": "700 photographs reviewed across 28 contact sheets",
+  "linked_mapping_sha256": "6b3e4a916c14f7b6b1a3d378acb18674be4f62e0bc3cbaedf66efc0340e9bdc1",
+  "database_verification": {
+    "linked_new": 528,
+    "expected_safe_subset": 528,
+    "total_linked": 2933
+  },
+  "held_status_breakdown": {
+    "published=True,available=False": 88,
+    "published=False,available=True": 81,
+    "published=False,available=False": 3
+  },
+  "held_product_type_breakdown": {
+    "food_or_other_catalog_item": 100,
+    "non_food_05*": 72
+  },
+  "automatic_review": "Rejected the 700-row update because it included 05* hardware/apparel records outside the grocery-focused batch; no retry of that broader update was made.",
+  "removed_temporary_directory": "/private/tmp/bonarea-cutouts-20261024-700-04",
+  "removed_files": 790,
+  "removed_bytes": 1414060628,
+  "typecheck": "npx tsc --noEmit: exit 0",
+  "cleanup_complete": true
+}

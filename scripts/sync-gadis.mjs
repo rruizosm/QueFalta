@@ -108,6 +108,7 @@ function normalize(product) {
     promo_group_id: primaryOffer?.group_id ?? null,
     promo_is_related: primaryOffer?.is_related === true,
     promo_is_coupon: offers.some((offer) => offer?.is_offer_coupon === true),
+    gluten_free_label: (product.properties ?? []).some((property) => String(property?.property_code ?? '') === '16'),
     is_new: isNew, published: true, raw: product, synced_at: runStart,
   };
 }

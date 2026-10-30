@@ -32,7 +32,7 @@ export default function ProfileLoadErrorScreen({ onRetry }: { onRetry: () => Pro
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle="dark-content" />
       <View style={styles.icon} accessibilityElementsHidden>
         <Ionicons name="cloud-offline-outline" size={38} color={colors.blue} />
       </View>

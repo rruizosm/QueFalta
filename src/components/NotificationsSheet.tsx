@@ -81,7 +81,7 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
   return (
     <Modal visible={visible} animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
       <View style={styles.screen}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} />
 
         {items.length === 0 ? (
           <View style={[styles.empty, { paddingTop: headerPad }]}>

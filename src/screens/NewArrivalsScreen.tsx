@@ -21,7 +21,8 @@ import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
 import StoreDropdown from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import { type ViewMode } from '../components/ViewModeToggle';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
+import CatalogFilterButton from '../components/CatalogFilterButton';
 import SlidingSegments from '../components/SlidingSegments';
 import ProductFilterSheet, { PRICE_RANGES, type FilterGroup, type PriceSort } from '../components/ProductFilterSheet';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
@@ -92,7 +93,7 @@ export default function NewArrivalsScreen() {
     () => storeOptions.filter((option) => !catalogStoreRequiresPlus(option.key, isPremium)),
     [isPremium, storeOptions],
   );
-  const { store, setStore } = useCatalogStore();
+  const { store, setStore, glutenOnly, setGlutenOnly } = useCatalogStore();
 
   // Si la preferencia cambia y la tienda activa deja de estar, salta a la primera.
   useEffect(() => {
@@ -127,7 +128,7 @@ export default function NewArrivalsScreen() {
   const [productSearchExpanded, setProductSearchExpanded] = useState(false);
   const [queryInHeader, setQueryInHeader] = useState(false);
   const [sortPaywallVisible, setSortPaywallVisible] = useState(false);
-  const sheetFiltersActive = category.length > 0 || filterStores.length > 0 || priceRange != null;
+  const sheetFiltersActive = glutenOnly || category.length > 0 || filterStores.length > 0 || priceRange != null;
   const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
   const activeSortSegment: ProductSortSegment = pricePerUnitSort
     ? `pricePerUnit${pricePerUnitSort === 'asc' ? 'Asc' : 'Desc'}`
@@ -374,9 +375,9 @@ export default function NewArrivalsScreen() {
     if (searchActive) {
       const activeSort = pricePerUnitSort ?? sort;
       if (!activeSort) {
-        return sortByRelevance(searchBase, (product) => product.name, debouncedQuery);
+        return sortByRelevance(glutenOnly ? searchBase.filter((product) => product.glutenFreeByTag) : searchBase, (product) => product.name, debouncedQuery);
       }
-      return [...searchBase].sort((a, b) => {
+      return (glutenOnly ? searchBase.filter((product) => product.glutenFreeByTag) : [...searchBase]).sort((a, b) => {
         const priceA = pricePerUnitSort ? a.pricePerUnit : a.unitPrice;
         const priceB = pricePerUnitSort ? b.pricePerUnit : b.unitPrice;
         if (priceA == null && priceB != null) return 1;
@@ -391,6 +392,7 @@ export default function NewArrivalsScreen() {
     const categoryStores = new Set(category.map((value) => value.split('\u001f')[0] as CatalogStore));
     const selectedStoreSet = new Set(filterStores);
     let out = base.filter((p) => {
+      if (glutenOnly && !p.glutenFreeByTag) return false;
       const productStore = p.store as CatalogStore;
       if (store === 'all' && selectedStoreSet.size > 0 && !selectedStoreSet.has(productStore)) return false;
       if (category.length > 0) {
@@ -423,7 +425,7 @@ export default function NewArrivalsScreen() {
     return out;
   }, [
     base, query, category, filterStores, priceRange, sort, pricePerUnitSort, store,
-    searchActive, searchBase, debouncedQuery,
+    searchActive, searchBase, debouncedQuery, glutenOnly,
   ]);
 
   const products = useMemo(
@@ -509,6 +511,15 @@ export default function NewArrivalsScreen() {
     searchLoadingMore, requestedSearchStores, searchCache, searchCacheKeyFor,
     newFiltersForStore, lidlStoreId,
   ]);
+
+  // Al filtrar, recorrer también las páginas que aún no se han mostrado.
+  useEffect(() => {
+    if (!glutenOnly || (searchActive ? searchLoading || searchLoadingMore : loading || loadingMore)) return;
+    const pending = searchActive
+      ? requestedSearchStores.some((key) => searchCache[searchCacheKeyFor(key)]?.nextOffset != null)
+      : (store === 'all' ? stores.map((item) => item.key) : [store]).some((key) => cache[cacheKeyFor(key)]?.nextOffset != null);
+    if (pending) loadMore();
+  }, [glutenOnly, searchActive, searchLoading, searchLoadingMore, loading, loadingMore, requestedSearchStores, searchCache, searchCacheKeyFor, store, stores, cache, cacheKeyFor, loadMore]);
 
   const lockedUnitPriceSortButton = (direction: PriceSort) => (
     <TouchableOpacity
@@ -667,40 +678,11 @@ export default function NewArrivalsScreen() {
                 ) : fallbackSortSegments(true)}
               </View>
 
-              {glassAvailable || Platform.OS === 'android' ? (
-                <SlidingSegments
-                  compact dense emphasized allowReselect transparentTrack={Platform.OS === 'android'}
-                  segments={[{ key: 'filters', icon: 'options-outline', accessibilityLabel: t('filters.a11yOpen') }]}
-                  value={sheetFiltersActive ? 'filters' : null}
-                  onChange={() => setFilterOpen(true)}
-                />
-              ) : (
-                <TouchableOpacity style={[styles.filterBtn, sheetFiltersActive && styles.filterBtnOn]} onPress={() => setFilterOpen(true)} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={t('filters.a11yOpen')}>
-                  <Ionicons name="options-outline" size={20} color={sheetFiltersActive ? colors.white : colors.inkSoft} />
-                </TouchableOpacity>
-              )}
+              <CatalogFilterButton active={sheetFiltersActive} onPress={() => setFilterOpen(true)}
+                accessibilityLabel={t('filters.a11yOpen')} />
 
               <View style={styles.prodViewGroup}>
-                {glassAvailable || Platform.OS === 'android' ? (
-                  <SlidingSegments
-                    compact dense emphasized transparentTrack={Platform.OS === 'android'}
-                    segments={[
-                      { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
-                      { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
-                    ]}
-                    value={viewMode}
-                    onChange={(value) => setViewMode(value as ViewMode)}
-                  />
-                ) : (
-                  <View style={[styles.viewToggle, styles.prodToggleDense]}>
-                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'list' && styles.viewBtnOn]} onPress={() => setViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')}>
-                      <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'grid' && styles.viewBtnOn]} onPress={() => setViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')}>
-                      <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
-                    </TouchableOpacity>
-                  </View>
-                )}
+                <ViewModeToggle value={viewMode} onChange={setViewMode} />
               </View>
             </>
           )}
@@ -726,7 +708,7 @@ export default function NewArrivalsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && chrome}
 
@@ -751,7 +733,10 @@ export default function NewArrivalsScreen() {
 
       {/* Hoja de filtros: categoría / precio / orden, aplica en vivo. */}
       <ProductFilterSheet
+        animateOptions
         visible={filterOpen}
+        glutenOnly={glutenOnly}
+        onGlutenOnlyChange={setGlutenOnly}
         onClose={() => setFilterOpen(false)}
         categories={categories}
         category={category}

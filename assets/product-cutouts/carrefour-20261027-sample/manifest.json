@@ -1,0 +1,13 @@
+{
+  "store": "carrefour",
+  "date": "2026-10-27",
+  "status": "linked-production-client-local",
+  "excludedCategories": ["Papelería", "Bazar", "Calzado"],
+  "products": [
+    { "id": "520664611", "name": "Caldo casero de pollo natural Original Carrefour 1 l", "categoryName": "Conservas, Sopas y Precocinados", "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/271289_00_1.jpg" },
+    { "id": "520660281", "name": "Aceite de oliva virgen extra ecológico Carrefour Bio 500 ml", "categoryName": "Aceites y vinagres", "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/447877_00_1.jpg" },
+    { "id": "521002680", "name": "Galletas horneadas Carrefour Original 500 g", "categoryName": "Desayuno", "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/228290_00_1.jpg" },
+    { "id": "521003205", "name": "Leche condensada Carrefour 397 g", "categoryName": "Lácteos", "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/231548_00_1.jpg" },
+    { "id": "521001754", "name": "Cera para terrazo y baldosa Carrefour 1 l", "categoryName": "Limpieza del hogar", "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/097592_00_1.jpg", "backgroundSeeds": [[200, 135]] }
+  ]
+}

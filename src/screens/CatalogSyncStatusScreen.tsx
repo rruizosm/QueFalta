@@ -43,7 +43,7 @@ export default function CatalogSyncStatusScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       <ProfileSubscreenHeader
         title={t('catalogSyncStatus.title')}
         icon="sync-outline"

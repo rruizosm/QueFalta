@@ -1,0 +1,49 @@
+{
+  "completed_date": "2026-10-26",
+  "project": "gkffvigcnsesbaihycay",
+  "table": "public.bonarea_products",
+  "column": "illustration_url",
+  "scope": "Published and available food and beverage products, including previously excluded 03* references.",
+  "requested_products": 135,
+  "additional_food_and_beverages": 90,
+  "previously_pending": 45,
+  "new_products_linked_and_verified": 135,
+  "new_alpha_only_cutouts": 134,
+  "native_transparent_png": 1,
+  "prior_products_preserved": 2933,
+  "total_products_with_image": 3068,
+  "active_products_with_image": 3008,
+  "active_products_pending": 0,
+  "method": "User explicitly authorized script-based background removal. Original RGB arrays and resolution retained; only alpha changed. Border-connected white extraction, local U2Netp masks for prepared foods, and reviewed contour corrections.",
+  "rgb_unchanged_for_all_134_cutouts": true,
+  "all_134_remote_files_http_200_and_sha256_match": true,
+  "visual_review": "135 photographs reviewed across contact sheets; prepared-food masks and edge corrections reviewed separately.",
+  "recovered_sources": [
+    {
+      "id": "03*78299",
+      "note": "Catalog thumbnail was not_found.jpg; official 03_78299_1.jpg exists and correctly shows Ramón Bilbao Crianza."
+    },
+    {
+      "id": "13*0091305",
+      "note": "BonÀrea photo showed a sausage. Replaced for this cutout with the MENAL Plum cake 600 g photo published on AECOC by Pa de Mel.",
+      "source_page": "https://www.aecoctrade.es/es/producto/hphPseNhmKJeSs7kfCNuH2"
+    }
+  ],
+  "storage": {
+    "bucket": "product-illustrations",
+    "prefix": "bonarea/cutouts-20261026/",
+    "objects": 134,
+    "bytes": 168805012,
+    "original_file_size_limit_restored": 3145728
+  },
+  "prior_url_digest_md5_before_and_after": "e2e33c0651b3fd77a489893ac8072150",
+  "linked_mapping_sha256": "1989bfacbe4e48a83a15eaf4e484e344418bec117ac5c5acca0c87d30aab5c91",
+  "cleanup": {
+    "temporary_directory_removed": true,
+    "temporary_files": 3346,
+    "temporary_bytes": 426250212,
+    "discarded_imagegen_preview_removed": true,
+    "cleanup_complete": true
+  },
+  "typecheck": "npx tsc --noEmit: exit 0"
+}

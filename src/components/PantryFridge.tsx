@@ -19,6 +19,7 @@ function PantryFridge({ bottomPadding, onAddShelf, footer, ...shelfProps }: Prop
   const { scheme } = useTheme();
   const { t } = useTranslation();
   const dark = scheme === 'dark';
+  const addingDisabled = !shelfProps.canAdd || shelfProps.editingLabels;
   const pager = useContext(PagerGestureContext);
   const scrollGesture = useMemo(() => {
     const native = Gesture.Native();
@@ -28,12 +29,13 @@ function PantryFridge({ bottomPadding, onAddShelf, footer, ...shelfProps }: Prop
   return <View style={[styles.container, { backgroundColor: dark ? '#152E42' : '#D6EAF5' }]}>
     <GestureDetector gesture={scrollGesture}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.container}
-        contentContainerStyle={[styles.content, { paddingBottom: bottomPadding + 16 }]}>
-        <PantryShelf {...shelfProps} scrollGesture={scrollGesture} finish="ice" dark={dark} testIDPrefix="fridge" />
-        <Pressable disabled={!shelfProps.canAdd} testID="fridge-add-shelf" onPress={onAddShelf}
+        keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets
+        contentContainerStyle={[styles.content, { paddingBottom: bottomPadding + 88 }]}>
+        {shelfProps.canAdd && <PantryShelf {...shelfProps} scrollGesture={scrollGesture} finish="ice" dark={dark} testIDPrefix="fridge" />}
+        <Pressable disabled={addingDisabled} testID="fridge-add-shelf" onPress={() => { if (!addingDisabled) onAddShelf(); }}
           accessibilityRole="button" accessibilityLabel={t('pantry.addShelf')}
-          accessibilityState={{ disabled: !shelfProps.canAdd }}
-          style={({ pressed }) => [styles.addShelf, (!shelfProps.canAdd || pressed) && styles.pressed]}>
+          accessibilityState={{ disabled: addingDisabled }}
+          style={({ pressed }) => [styles.addShelf, (addingDisabled || pressed) && styles.pressed]}>
           <Ionicons name="add" size={22} color="#F2FAFF" />
           <Text style={styles.addShelfLabel}>{t('pantry.addShelf')}</Text>
         </Pressable>
@@ -45,7 +47,7 @@ function PantryFridge({ bottomPadding, onAddShelf, footer, ...shelfProps }: Prop
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flexGrow: 1, paddingTop: 12, paddingHorizontal: 16, gap: 8 },
+  content: { flexGrow: 1, paddingTop: 12, paddingHorizontal: 10, gap: 8 },
   addShelf: { minHeight: 48, alignSelf: 'center', maxWidth: '100%', flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 12,
     borderRadius: 24, backgroundColor: '#285C7F', borderWidth: 1, borderColor: '#A9D3EB' },

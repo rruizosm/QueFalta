@@ -1,13 +1,13 @@
 import { startTransition, useEffect, useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { Animated, Easing, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import GlutenFilterOption from './GlutenFilterOption';
 
 interface Props {
   visible: boolean;
@@ -31,6 +31,26 @@ export default function CatalogFilterSheet({ visible, onClose, glutenOnly, onGlu
   const selectedRef = useRef(glutenOnly);
   const pendingSelection = useRef<boolean | null>(null);
   const sheetHeight = height * SHEET_HEIGHT_FRACTION;
+  const [presented, setPresented] = useState(visible);
+  const transition = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) setPresented(true);
+  }, [visible]);
+
+  useEffect(() => {
+    if (!presented) return;
+    const animation = Animated.timing(transition, {
+      toValue: visible ? 1 : 0,
+      duration: reducedMotion ? 0 : visible ? 280 : 220,
+      easing: visible ? Easing.out(Easing.cubic) : Easing.inOut(Easing.quad),
+      useNativeDriver: true,
+    });
+    animation.start(({ finished }) => {
+      if (finished && !visible) setPresented(false);
+    });
+    return () => animation.stop();
+  }, [visible, presented, reducedMotion, transition]);
 
   useEffect(() => {
     if (pendingSelection.current !== null && glutenOnly !== pendingSelection.current) return;
@@ -64,42 +84,36 @@ export default function CatalogFilterSheet({ visible, onClose, glutenOnly, onGlu
           <Ionicons name="close" size={20} color={colors.inkSoft} />
         </TouchableOpacity>
       </View>
-      <Pressable
-        style={[styles.option, selected && styles.optionSelected]}
-        onPress={toggleGlutenOnly}
-        accessibilityRole="checkbox"
-        accessibilityLabel={t('catalog.glutenFree')}
-        accessibilityHint={t('catalog.glutenFreeHint')}
-        accessibilityState={{ checked: selected }}
-        testID="catalog-gluten-option"
-      >
-        <MaterialCommunityIcons name="barley-off" size={21} color={selected ? colors.accent : colors.inkSoft} />
-        <Text style={styles.optionText}>{t('catalog.glutenFree')}</Text>
-        <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-          {selected && <Ionicons name="checkmark" size={15} color={colors.white} />}
-        </View>
-      </Pressable>
+      <GlutenFilterOption selected={selected} onPress={toggleGlutenOnly}
+        onComplete={onClose} testID="catalog-gluten-option" />
     </>
   );
 
   return (
     <Modal
-      visible={visible}
+      visible={presented}
       transparent
-      animationType={reducedMotion ? 'none' : 'slide'}
+      animationType="none"
       statusBarTranslucent
       onRequestClose={onClose}
     >
       <View style={styles.root}>
-        <Pressable style={styles.backdrop} onPress={onClose} accessible={false} />
-        <View
-          style={[styles.sheet, { height: sheetHeight, paddingBottom: insets.bottom }]}
+        <Animated.View style={[styles.backdrop, { opacity: transition }]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} />
+        </Animated.View>
+        <Animated.View
+          style={[styles.sheet, {
+            height: sheetHeight, paddingBottom: insets.bottom,
+            transform: [{ translateY: transition.interpolate({
+              inputRange: [0, 1], outputRange: [sheetHeight, 0],
+            }) }],
+          }]}
           accessibilityViewIsModal
         >
           {sheetHeight - insets.bottom < HEADER_HEIGHT + OPTION_HEIGHT
             ? <ScrollView showsVerticalScrollIndicator={false}>{content}</ScrollView>
             : <View>{content}</View>}
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -126,17 +140,5 @@ const themedStyles = () => StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
-  },
-  option: {
-    minHeight: OPTION_HEIGHT, flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 14, borderRadius: 16,
-    borderWidth: 1.25, borderColor: colors.border,
-  },
-  optionSelected: { borderColor: colors.accentMid },
-  optionText: { flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
-  checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: colors.border },
-  checkboxSelected: {
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accent, borderColor: colors.accent,
   },
 });

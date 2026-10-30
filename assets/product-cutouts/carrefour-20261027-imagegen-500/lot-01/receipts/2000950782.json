@@ -1,0 +1,16 @@
+{
+  "id": "2000950782",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/927913_00_1.jpg",
+  "sourceSha256": "5b487078df7c204ac93def24b61dfef2ceb9b455217278771c2feb6efff0a661",
+  "outputSha256": "36ad7bd088bf2165f765cf8480064c09423e2d0dffa8d401204ea9106863e987",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2000950782.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-c4337336-b87a-4125-8181-73ddcf77c68f.png",
+  "visualReview": "Correct complete product, packaging and recognizable brand/variant retained; genuine transparent exterior. Minor generated print and contour changes as in approved samples.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 840201,
+  "sourceBytes": 13702,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.931Z"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "2003043896",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/436359_00_1.jpg",
+  "sourceSha256": "0c5e8a0332a50ed8b1945f797f2fb11647d438acd51df6df6e51b11b863e75f5",
+  "outputSha256": "8ff813153c993c7e0ae4b54835697745670b543de2705477be57203428e4aeff",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2003043896.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-dceb6eda-13ba-49a9-9e3c-f39614bd927b.png",
+  "visualReview": "Correct complete packaging and brand/variant retained, 2x190g Hero quantity preserved, genuine transparent exterior; minor print changes as approved sample.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1934547,
+  "sourceBytes": 33725,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.149Z"
+}

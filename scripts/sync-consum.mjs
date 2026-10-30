@@ -41,6 +41,7 @@ import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { isGlutenFreeCategory } from './lib/gluten-free-categories.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -323,6 +324,7 @@ async function main() {
     rows.push({
       ...det,
       category_ids: [...expanded],
+      gluten_free_label: isGlutenFreeCategory('consum', [...expanded]),
       category_id: primary,
       category_name: primary ? catName.get(primary) ?? null : null,
     });

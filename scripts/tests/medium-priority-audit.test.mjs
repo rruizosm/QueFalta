@@ -11,6 +11,7 @@ const groupMembers = read('src/screens/GroupMembersScreen.tsx');
 const productList = read('src/components/StoreProductList.tsx');
 const productImage = read('src/components/ProductImage.tsx');
 const catalog = read('src/screens/CatalogScreen.tsx');
+const viewModeToggle = read('src/components/ViewModeToggle.tsx');
 
 test('Cesta no anima una altura por fila y expone controles accesibles', () => {
   assert.doesNotMatch(listScreen, /AnimatedZoneRow|ZONE_STAGGER_WINDOW_MS|useNativeDriver:\s*false/);
@@ -67,8 +68,10 @@ test('Catálogo responde al ancho actual y mantiene fallback visual', () => {
   assert.match(productList, /useWindowDimensions\(\)/);
   assert.doesNotMatch(productList, /Dimensions\.get\('window'\)/);
   assert.match(productList, /key=\{`grid-\$\{gridColumns\}`\}/);
-  assert.match(catalog, /accessibilityLabel: t\('product\.viewList'\)/);
-  assert.match(catalog, /accessibilityLabel: t\('product\.viewGrid'\)/);
+  assert.match(catalog, /<ViewModeToggle value=\{prodViewMode\} onChange=\{setProdViewMode\}/);
+  assert.match(viewModeToggle, /accessibilityRole="button"/);
+  assert.match(viewModeToggle, /accessibilityLabel=\{t\(value === 'list' \? 'product\.viewList' : 'product\.viewGrid'\)\}/);
+  assert.match(viewModeToggle, /accessibilityHint=\{t\(next === 'list' \? 'product\.switchToList' : 'product\.switchToGrid'\)\}/);
   assert.match(productList, /prepareProductImages\(firstImageUris\)/);
   assert.match(productList, /loading \|\| awaitingInitialImages/);
   assert.match(productImage, /onError=\{\(\) => setFailure\(\{ request: optimizedUri, source \}\)\}/);

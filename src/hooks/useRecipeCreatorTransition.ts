@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import { Keyboard, useWindowDimensions, type LayoutChangeEvent, type ViewInstance } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
 import {
   cancelAnimation, Easing, interpolate, ReduceMotion, runOnJS,
@@ -22,7 +22,7 @@ export function useRecipeCreatorTransition(
 ) {
   const window = useWindowDimensions();
   const { sourceRef, sourceHidden } = useRecipeCreatorSource();
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ViewInstance>(null);
   const initialized = useRef(false);
   const layoutReady = useRef(false);
   const formReady = useRef(false);

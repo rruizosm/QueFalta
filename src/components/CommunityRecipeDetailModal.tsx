@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -63,7 +64,7 @@ export default function CommunityRecipeDetailModal({
   const [section, setSection] = useState<DetailSection>('ingredients');
   const [imageVisible, setImageVisible] = useState(false);
   const detailClosing = useRef(false);
-  const heroRef = useRef<View>(null);
+  const heroRef = useRef<ViewInstance>(null);
   const [imageRatio, setImageRatio] = useState(1);
   const imageProgress = useSharedValue(0);
   const detailProgress = useSharedValue(0);
@@ -165,7 +166,7 @@ export default function CommunityRecipeDetailModal({
   return (
     <Container {...containerProps}>
       <Animated.View style={[styles.root, detailMotion]}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <StatusBar barStyle="light-content" />
 
         <View ref={heroRef} collapsable={false} style={[styles.hero, { height: heroHeight }]}>
           <Pressable

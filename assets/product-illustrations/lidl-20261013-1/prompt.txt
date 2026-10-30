@@ -1,8 +1,0 @@
-Use case: style-transfer
-Asset type: isolated supermarket product illustration for QuéFalta.
-Input images: Image 1 is the exact product reference, Lidl product 8804651149163_ES, Leche semi desnatada Leyma Natura, 1 litre. Image 2 is only the drawing-style reference from the existing QuéFalta collection; do not copy its product, Hacendado brand, colors, text or label.
-Primary request: illustrate the real Leyma milk carton in Image 1 using the clean warm editorial drawing style of Image 2: soft fine outlines, flat defined colors, subtle hand-painted texture, no photorealistic or 3D-render appearance.
-Subject: one complete tall rectangular Leyma semi-skimmed milk carton with slanted top and white screw cap. Preserve the white carton, green top/bottom bands, dark blue LEYMA NATURA logo and friendly blue cow printed on the front. The cow is printed packaging artwork, not a separate character.
-Composition: upright, front-facing carton with a horizontal base, minimal visible side, whole carton and cap visible, centered, modest even transparent margin.
-Text (verbatim): "SEMIDESNATADA", "LEYMA", "NATURA", "1L". Keep the main label hierarchy and the green lower band seen in the photo. Do not invent small print or extra claims.
-Constraints: actual transparent alpha background. No floor, no exterior drop shadow, no halo, no white backdrop, no checkerboard painted into the pixels, no hands, props, other cartons, detached cap, utensils, decorations or Hacendado elements. Preserve all product components and recognizable original packaging.

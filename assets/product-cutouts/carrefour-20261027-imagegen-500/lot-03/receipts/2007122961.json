@@ -1,0 +1,16 @@
+{
+  "id": "2007122961",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/964504_00_1.jpg",
+  "sourceSha256": "32194ef52a05dfedaff34ed7363f04ba74026bef8f7809b6c6f5df18600b2779",
+  "outputSha256": "0714fa194e8de633fd291b85877cadf012bb4a9b899fc65783f84502f20ea367",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2007122961.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-75f39fe0-66cc-41ae-b4f8-e7e0cc17525a.png",
+  "visualReview": "Reviewed against original: same complete brown Ultima Medium Maxi Adulto beef 3 kg bag, dog graphic, branding, ingredient bowl, packaging proportions and transparent background. Minor generative detail changes accepted as in authorized five-image sample.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1575075,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.038Z",
+  "matchingBrowserDownloadDeleted": true
+}

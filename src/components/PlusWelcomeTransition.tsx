@@ -163,7 +163,7 @@ export default function PlusWelcomeTransition({ visible, onDismiss }: Props) {
         <View style={styles.symbolStage} pointerEvents="none" accessible={false}>
           {messageVisible ? PARTICLES.map((particle, index) => {
             const phase = reducedMotion
-              ? new Animated.Value(particle.phase)
+              ? Animated.add(new Animated.Value(particle.phase), 0)
               : Animated.modulo(Animated.add(particleCycle, particle.phase), 1);
             const translateX = phase.interpolate({
               inputRange: [0, 0.35, 0.7, 1],

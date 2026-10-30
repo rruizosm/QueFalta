@@ -292,7 +292,7 @@ export default function GroupsScreen() {
   return (
     <View style={styles.container}>
       <AmbientBubbleBackdrop variant="groups" showGradient={false} />
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && header}
 
@@ -360,7 +360,7 @@ export default function GroupsScreen() {
                 <Ionicons name="close" size={18} color={colors.inkSoft} />
               </TouchableOpacity>
             </View>
-          ) : null}
+          ) : undefined}
           contentContainerStyle={[
             styles.list,
             { paddingTop: glassAvailable ? headerHeight + 8 : 0, paddingBottom: bottomPad },

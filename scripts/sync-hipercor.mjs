@@ -7,6 +7,7 @@ import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { hasGlutenFreeName } from './lib/gluten-free-names.mjs';
 import {
   assertHipercorSharedCenterParity,
   groupHipercorPostalMappings,
@@ -478,7 +479,9 @@ async function crawlCenter(browser, target, syncedAt) {
     }
   } finally { await context.close(); }
 
-  const rows = [...products.values()].map((row) => ({ ...row, published: true, synced_at: syncedAt }));
+  const rows = [...products.values()].map((row) => ({
+    ...row, gluten_free_label: hasGlutenFreeName(row.display_name), published: true, synced_at: syncedAt,
+  }));
   if (rows.length < MIN_PRODUCTS) throw new Error(`centro ${target.centerId}: solo ${rows.length} productos (< ${MIN_PRODUCTS}); posible catálogo parcial`);
   const validationByCategory = new Map(validations.map((validation) => [validation.categoryId, validation]));
   const categories = ROOT_CATEGORIES.map(({ id, name }) => ({
@@ -569,6 +572,7 @@ function masterRows(rows, syncedAt) {
     id: row.id,
     retailer_product_id: row.retailer_product_id,
     display_name: row.display_name,
+    gluten_free_label: hasGlutenFreeName(row.display_name),
     packaging: row.packaging,
     thumbnail: row.thumbnail,
     product_url: row.raw.source,

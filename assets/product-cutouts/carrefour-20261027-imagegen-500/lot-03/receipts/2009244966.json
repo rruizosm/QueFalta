@@ -1,0 +1,16 @@
+{
+  "id": "2009244966",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/771706_00_1.jpg",
+  "sourceSha256": "7a6f997949037c5d612dce42bee69870183015c6c2ac2e04406c67bb7ef43db3",
+  "outputSha256": "d08d18ff7300471b10516057da1987f1862269b82dc81caf668730e4e88b4302",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2009244966.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-6c3a1f63-6c9e-4d01-bb64-331ecf7ed3e3.png",
+  "visualReview": "Complete correct pack/product with real alpha exterior; Amstel12x33cl and glass3cup pack retained. Minor generated print/contour variations.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1824555,
+  "sourceBytes": 6114,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:52:07.478Z"
+}

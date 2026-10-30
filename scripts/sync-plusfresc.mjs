@@ -202,6 +202,8 @@ function normalize(copies) {
     promo_end: offerCopy ? offerEndISO(offerCopy.end_date) : null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
+    gluten_free_label: Array.isArray(primary.characteristics)
+      && primary.characteristics.some((characteristic) => String(characteristic?.id ?? '').toUpperCase() === 'SGL_SI'),
     available: primary.available !== false,
     published: true,
     raw: offerCopy && offerCopy !== primary

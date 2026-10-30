@@ -25,7 +25,7 @@ export default function WordStatisticsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       <ProfileSubscreenHeader
         title={t('wordGame.myStats')}
         icon="stats-chart-outline"

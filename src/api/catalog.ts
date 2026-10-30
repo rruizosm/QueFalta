@@ -441,7 +441,10 @@ async function keysetPage(
       q = q.order('id', { ascending: true });
     } else {
       q = q
-        .order(activeOrderCol, { ascending: !desc, nullsFirst: false })
+        // El precio nulo se pagina por separado y se excluye en buildQuery; en
+        // orden descendente, nullsFirst=true permite usar el índice DESC de la
+        // bandera sin alterar el orden visible de ninguna fila.
+        .order(activeOrderCol, { ascending: !desc, nullsFirst: priceOrder ? desc : false })
         .order('id', { ascending: true });
     }
     q = q.limit(pageLimit);
@@ -466,13 +469,15 @@ async function keysetPage(
     return signal ? q.abortSignal(signal) : q;
   };
 
-  const nullPhase = pricePerUnitOrder && cursor != null && cursor.name == null;
+  // En cualquier orden de precio, los valores nulos van después de los precios
+  // conocidos y se recorren por id, también si un futuro sync trae alguno.
+  const nullPhase = priceOrder && cursor != null && cursor.name == null;
   const { data, error } = await buildQuery(nullPhase, limit, cursor);
   if (error) throw error;
   // El select dinámico (`${cols}, ${orderCol}`) impide a supabase-js inferir la
   // forma de la fila; se trata como any[] (lo consume el map de cada súper).
   const rows = [...((data ?? []) as any[])];
-  if (pricePerUnitOrder && !nullPhase && rows.length < limit) {
+  if (priceOrder && !nullPhase && rows.length < limit) {
     const { data: nullData, error: nullError } = await buildQuery(true, limit - rows.length, null);
     if (nullError) throw nullError;
     rows.push(...((nullData ?? []) as any[]));
@@ -488,7 +493,7 @@ async function keysetPage(
 // ficha vuelve a pedir el detalle al abrirse. Todas estas columnas ya las rellena
 // sync-catalog.mjs, así que no dependen de una migración nueva.
 const MERCADONA_LIST_COLS =
-  'id, display_name, display_name_ca, slug, packaging, thumbnail, unit_price, price_per_unit, price_per_unit_unit, category_name, category_id';
+  'id, display_name, display_name_ca, gluten_free_label, slug, packaging, thumbnail, unit_price, price_per_unit, price_per_unit_unit, category_name, category_id';
 
 // Reconstruye la forma mínima MercadonaProduct que consumen los adaptadores. Se
 // conserva compatibilidad con cualquier llamada antigua que todavía aporte raw.
@@ -513,8 +518,7 @@ function mirrorMercadonaProduct(r: any, ca: boolean): MercadonaProduct {
     id: String(r.id ?? raw?.id ?? ''),
     slug: String(r.slug ?? raw?.slug ?? ''),
     display_name,
-    glutenFreeByName: /sin gluten/i.test(r.display_name ?? raw?.display_name ?? '')
-      || /sense gluten/i.test(r.display_name_ca ?? ''),
+    glutenFreeByName: r.gluten_free_label === true,
     packaging: String(r.packaging ?? raw?.packaging ?? ''),
     thumbnail: String(r.thumbnail ?? raw?.thumbnail ?? ''),
     price_instructions: priceInstructions,
@@ -535,24 +539,19 @@ export async function searchProducts(query: string, region: RegionValue | null, 
   return rows.map((r: any) => mirrorMercadonaProduct(r, ca));
 }
 
-/** Productos de Mercadona cuyo nombre indica explícitamente «sin gluten» o
- *  «sense gluten». Busca ambas columnas aunque la app esté en un solo idioma. */
-export async function fetchMercadonaGlutenFreeProducts(
+/** Bandera materializada desde los nombres ES/CA; misma paginación y orden
+ * que el resto de espejos, con disponibilidad regional. */
+export function fetchMercadonaGlutenFreeProducts(
   region: RegionValue | null,
   signal?: AbortSignal,
+  onPage?: (page: MercadonaProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
 ): Promise<MercadonaProduct[]> {
   const ca = getLanguage() === 'ca';
-  const query = filterRegionalAvailability(
-    supabase
-      .from('mercadona_products')
-      .select(MERCADONA_LIST_COLS)
-      .eq('published', true)
-      .or('display_name_norm.ilike.%sin gluten%,display_name_ca_norm.ilike.%sense gluten%'),
-    region,
-  ).order(ca ? 'display_name_ca_norm' : 'display_name_norm').limit(1000);
-  const { data, error } = await abortable(query, signal);
-  if (error) throw error;
-  return (data ?? []).map((r: any) => mirrorMercadonaProduct(r, ca));
+  return fetchGlutenFreeLabelProducts(
+    'mercadona_products', MERCADONA_LIST_COLS, (row) => mirrorMercadonaProduct(row, ca),
+    signal, onPage, order, (query) => filterRegionalAvailability(query, region),
+  );
 }
 
 /** Navegación alfabética del catálogo de Mercadona (sin búsqueda), paginada por
@@ -622,24 +621,27 @@ export async function fetchProductMirror(id: string): Promise<{
   ean: string | null;
   nutrition: unknown | null;
   categoryName: string | null;
+  glutenFreeByName: boolean;
 }> {
   const { data, error } = await supabase
     .from('mercadona_products')
-    .select('source_wh, ean, nutrition, category_name')
+    .select('source_wh, ean, nutrition, category_name, gluten_free_label')
     .eq('id', id)
     .maybeSingle();
-  if (error || !data) return { wh: null, ean: null, nutrition: null, categoryName: null };
+  if (error || !data) return { wh: null, ean: null, nutrition: null, categoryName: null, glutenFreeByName: false };
   const row = data as {
     source_wh: string | null;
     ean: string | null;
     nutrition: unknown | null;
     category_name: string | null;
+    gluten_free_label: boolean | null;
   };
   return {
     wh: row.source_wh ?? null,
     ean: row.ean ?? null,
     nutrition: row.nutrition ?? null,
     categoryName: row.category_name ?? null,
+    glutenFreeByName: row.gluten_free_label === true,
   };
 }
 
@@ -662,6 +664,7 @@ const ppuLabel = (value: any, unit: any): string | null => {
 export interface BonpreuProduct {
   id: string;
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   productInfo: string | null;
   supplierName: string | null;
@@ -685,6 +688,7 @@ const mapBonpreu = (r: any): BonpreuProduct => {
   return {
     id: r.id,
     displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
+    glutenFreeByTag: r.gluten_free_label === true,
     brand: r.brand ?? null,
     productInfo: r.product_info ?? null,
     supplierName: r.supplier_name ?? null,
@@ -704,7 +708,11 @@ const mapBonpreu = (r: any): BonpreuProduct => {
 };
 
 const BONPREU_COLS =
-  'id, display_name, display_name_ca, brand, product_info, supplier_name, ingredients, nutrition, packaging, thumbnail, unit_price, promo_price, promo_base_price, promo_name, promo_name_ca, promo_text, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, display_name_ca, gluten_free_label, packaging, thumbnail, unit_price, category_name, price_per_unit, price_per_unit_unit';
+// La ficha se carga por id al abrir el modal; evita enviar ingredientes y
+// nutrición en cada fila de búsquedas, categorías y listados.
+const BONPREU_DETAIL_COLS =
+  `${BONPREU_COLS}, brand, product_info, supplier_name, ingredients, nutrition, promo_price, promo_base_price, promo_name, promo_name_ca, promo_text, price_format`;
 
 /** Búsqueda por nombre en el catálogo de BonpreuEsclat (server-side). Bilingüe:
  *  en català busca/muestra por la columna catalana (display_name_ca[_norm]). */
@@ -726,7 +734,7 @@ export async function browseBonpreuProducts(cursor: BrowseCursor | null, limit =
 export async function fetchBonpreuProduct(id: string): Promise<BonpreuProduct | null> {
   const { data, error } = await supabase
     .from('bonpreu_products')
-    .select(BONPREU_COLS)
+    .select(BONPREU_DETAIL_COLS)
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
@@ -785,6 +793,7 @@ export async function fetchBonpreuProductsByCategory(categoryId: string, limit =
 export interface CarrefourProduct {
   id: string;
   displayName: string;
+  glutenFreeByTag?: boolean;
   thumbnail: string | null;
   unitPrice: number | null;     // precio numérico (15.4)
   priceFormat: string | null;   // precio mostrado tal cual ("15,40 €")
@@ -818,13 +827,16 @@ const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProdu
   const community = region != null && region !== REGION_ALL
     ? REGION_MERCADONA_NAME[region]
     : null;
-  const regional = community && r.regional_prices && typeof r.regional_prices === 'object'
-    ? r.regional_prices[community]
+  const regional = community && r.regional_price && typeof r.regional_price === 'object'
+    ? r.regional_price
+    : community && r.regional_prices && typeof r.regional_prices === 'object'
+      ? r.regional_prices[community]
     : null;
   const offers = resolveCarrefourOffers(r, community ?? null, todayLocalISO());
   return {
   id: r.id,
   displayName: r.display_name,
+  glutenFreeByTag: r.gluten_free_label === true,
   thumbnail: r.thumbnail ?? null,
   unitPrice: regional?.p != null ? Number(regional.p) : r.unit_price != null ? Number(r.unit_price) : null,
   priceFormat: regional?.pf ?? r.price_format ?? null,
@@ -852,7 +864,15 @@ const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProdu
 // El €/unidad de medida del raw venía sin unidad ("192,50 €"); se usa el €/unidad
 // canónico (columnas l/kg/ud) para mostrar "192,50 €/kg" como en el resto de supers.
 const CARREFOUR_COLS =
-  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices, promo_name, promo_text, promo_start, promo_end, strikethrough_price, quefalta_offers:raw->quefalta_offers';
+  'id, display_name, gluten_free_label, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices, promo_name, promo_text, promo_start, promo_end, strikethrough_price, quefalta_offers:raw->quefalta_offers';
+const carrefourGlutenCols = (region: RegionValue | null): string => {
+  const community = region != null && region !== REGION_ALL
+    ? REGION_MERCADONA_NAME[region]
+    : null;
+  const columns = CARREFOUR_COLS.split(',').filter((column) => column.trim() !== 'regional_prices');
+  if (community) columns.push(`regional_price:regional_prices->"${community}"`);
+  return columns.join(', ');
+};
 // Datos de ficha: solo se piden al abrir el detalle.
 const CARREFOUR_DETAIL_COLS =
   `${CARREFOUR_COLS}`
@@ -939,6 +959,7 @@ export async function fetchCarrefourProductsByCategory(categoryId: string, regio
 export interface BonareaProduct {
   id: string;                  // identifier con asterisco ("13*5304"), lo que pide el carrito
   displayName: string;
+  glutenFreeByTag?: boolean;
   thumbnail: string | null;
   unitPrice: number | null;    // precio numérico (4.08)
   priceFormat: string | null;  // precio mostrado ("4,08 €/u.")
@@ -963,6 +984,7 @@ const mapBonarea = (r: any): BonareaProduct => {
   return {
     id: r.id,
     displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
+    glutenFreeByTag: r.gluten_free_label === true,
     thumbnail: r.thumbnail ?? null,
     unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
     priceFormat: r.price_format ?? null,
@@ -988,7 +1010,7 @@ const pickLang = (es: any, ca: any): string | null =>
 // €/unidad canónico (columnas l/kg/ud), igual que el resto de supers, para mostrar
 // "6,39 €/kg" de forma consistente (antes se leía la cadena cruda de raw.unitPrice).
 const BONAREA_COLS =
-  'id, display_name, display_name_ca, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, display_name_ca, gluten_free_label, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 // Columnas de ficha (es + ca): solo para el detalle (cargas pesadas → no en listados).
 const BONAREA_DETAIL_COLS =
   `${BONAREA_COLS}, description, ingredients, allergens, nutrition, conservation, denomination, origin, operator`
@@ -1066,6 +1088,121 @@ export async function fetchBonareaProductsByCategory(categoryId: string, limit =
   return (data ?? []).map(mapBonarea);
 }
 
+/** Recorre todas las filas etiquetadas: primera página pequeña para pintar
+ * pronto y siguientes de hasta 1000 (límite de una respuesta PostgREST). */
+async function fetchGlutenFreeLabelProducts<T>(
+  table: string, columns: string, map: (row: any) => T, signal?: AbortSignal,
+  onPage?: (page: T[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+  apply?: (query: any) => any,
+): Promise<T[]> {
+  const orderColumn = getLanguage() === 'ca' ? 'display_name_ca_norm' : 'display_name_norm';
+  const products: T[] = [];
+  let cursor: BrowseCursor | null = null;
+  do {
+    const page = await keysetPage(
+      table, columns, orderColumn, cursor, cursor == null && onPage ? 80 : 1000,
+      (query) => (apply ? apply(query) : query).eq('gluten_free_label', true), order, signal,
+    );
+    const mappedPage = page.rows.map(map);
+    products.push(...mappedPage);
+    if (mappedPage.length > 0) onPage?.(mappedPage);
+    cursor = page.nextCursor;
+  } while (cursor);
+  return products;
+}
+
+export function fetchBonpreuGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: BonpreuProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<BonpreuProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'bonpreu_products', BONPREU_COLS, mapBonpreu, signal, onPage, order,
+  );
+}
+
+export function fetchBonareaGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: BonareaProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<BonareaProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'bonarea_products', BONAREA_COLS, mapBonarea, signal, onPage, order,
+  );
+}
+
+export function fetchCarrefourGlutenFreeProducts(
+  region: RegionValue | null, signal?: AbortSignal,
+  onPage?: (page: CarrefourProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<CarrefourProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'carrefour_products', carrefourGlutenCols(region), (row) => mapCarrefour(row, region),
+    signal, onPage, order, (query) => filterRegionalAvailability(query, region),
+  );
+}
+
+export function fetchAldiGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: AldiProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<AldiProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'aldi_products', ALDI_COLS, mapAldi, signal, onPage, order,
+  );
+}
+
+export function fetchAmetllerGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: AmetllerProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<AmetllerProduct[]> {
+  return fetchGlutenFreeLabelProducts('ametller_products', AMETLLER_COLS, mapAmetller, signal, onPage, order);
+}
+
+export function fetchHiperdinoGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: HiperdinoProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<HiperdinoProduct[]> {
+  return fetchGlutenFreeLabelProducts('hiperdino_products', HIPERDINO_COLS, mapHiperdino, signal, onPage, order);
+}
+
+export function fetchEljamonGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: EljamonProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<EljamonProduct[]> {
+  return fetchGlutenFreeLabelProducts('eljamon_products', ELJAMON_COLS, mapEljamon, signal, onPage, order);
+}
+
+export async function fetchLidlGlutenFreeProducts(
+  storeId: string | null, signal?: AbortSignal, onPage?: (page: LidlProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<LidlProduct[]> {
+  if (!storeId) return [];
+  return fetchGlutenFreeLabelProducts(
+    'lidl_product_stores', LIDL_COLS, mapLidl, signal, onPage, order,
+    (query) => query.eq('store_id', storeId),
+  );
+}
+
+/** API preparada para Hipercor, aún fuera del selector de la app. El centro
+ * debe proceder del contexto de catálogo, nunca de una asociación postal inferida. */
+export interface HipercorProduct extends TapestryProduct {
+  centerId: string;
+  packaging: string | null;
+  promoName: string | null;
+  promoText: string | null;
+}
+const HIPERCOR_COLS = 'center_id, id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text';
+export async function fetchHipercorGlutenFreeProducts(
+  centerId: string, signal?: AbortSignal, onPage?: (page: HipercorProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<HipercorProduct[]> {
+  if (!centerId.trim()) return [];
+  return fetchGlutenFreeLabelProducts(
+    'hipercor_product_centers', HIPERCOR_COLS,
+    (row) => ({ ...mapTapestry(row), centerId: String(row.center_id), packaging: row.packaging ?? null, promoName: row.promo_name ?? null, promoText: row.promo_text ?? null }),
+    signal, onPage, order, (query) => query.eq('center_id', centerId).eq('available', true),
+  );
+}
+
 // ─── Consum (tabla consum_products, espejo aparte) ───────────────────────────
 // Mismo modelo que Bonpreu/Carrefour/bonÀrea (espejo + category_ids). Lo puebla
 // scripts/sync-consum.mjs (GitHub Action) desde la API REST abierta de Consum.
@@ -1074,6 +1211,7 @@ export async function fetchBonareaProductsByCategory(categoryId: string, limit =
 export interface ConsumProduct {
   id: string;                  // `code` público ("1669"), el de la URL del producto
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   packaging: string | null;    // formato del envase ("250 Gr"), derivado de description
   thumbnail: string | null;
@@ -1091,6 +1229,7 @@ const mapConsum = (r: any, postalCode: string | null = null): ConsumProduct => {
   return {
   id: r.id,
   displayName: r.display_name,
+  glutenFreeByTag: r.gluten_free_label === true,
   brand: r.brand ?? null,
   packaging: r.packaging ?? null,
   thumbnail: r.thumbnail ?? null,
@@ -1103,9 +1242,20 @@ const mapConsum = (r: any, postalCode: string | null = null): ConsumProduct => {
 };
 
 const CONSUM_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices';
+  'id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices';
 const CONSUM_DETAIL_COLS = `${CONSUM_COLS}, ean`;
 const CONSUM_OFFER_COLS = `${CONSUM_COLS}, promo_base_price`;
+
+export function fetchConsumGlutenFreeProducts(
+  region: RegionValue | null, postalCode: string | null, signal?: AbortSignal,
+  onPage?: (page: ConsumProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<ConsumProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'consum_products', CONSUM_COLS, (row) => mapConsum(row, postalCode),
+    signal, onPage, order, (query) => filterRegionalAvailability(query, region),
+  );
+}
 
 /** Búsqueda por nombre en el catálogo de Consum (server-side). */
 export async function searchConsumProducts(query: string, region: RegionValue | null, postalCode: string | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<ConsumProduct[]> {
@@ -1179,6 +1329,7 @@ export async function fetchConsumProductsByCategory(categoryId: string, region: 
 export interface DiaProduct {
   id: string;                  // object_id ("72170"), el de la URL del producto (/p/72170)
   displayName: string;         // incluye marca y formato ("... Dia 600 g")
+  glutenFreeByTag?: boolean;
   brand: string | null;
   thumbnail: string | null;
   unitPrice: number | null;    // precio con promo aplicada si la hay
@@ -1223,6 +1374,7 @@ const mapDia = (r: any, region: RegionValue | null = null): DiaProduct => {
   return {
     id: r.id,
     displayName: r.display_name,
+    glutenFreeByTag: r.gluten_free_label === true,
     brand: r.brand ?? null,
     thumbnail: r.thumbnail ?? null,
     unitPrice: regionalOffer?.p != null ? Number(regionalOffer.p) : r.unit_price != null ? Number(r.unit_price) : null,
@@ -1248,7 +1400,7 @@ const mapDia = (r: any, region: RegionValue | null = null): DiaProduct => {
 };
 
 const DIA_COLS =
-  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_base_price, offer_regions, regional_offers';
+  'id, display_name, gluten_free_label, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_base_price, offer_regions, regional_offers';
 const DIA_OFFER_COLS = DIA_COLS;
 // Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
 const DIA_DETAIL_COLS =
@@ -1282,6 +1434,18 @@ export async function fetchDiaProduct(id: string, region: RegionValue | null): P
   ).maybeSingle();
   if (error) throw error;
   return data ? mapDia(data, region) : null;
+}
+
+/** Productos de Dia con etiqueta explícita «Sin gluten» en raw.allergens. */
+export function fetchDiaGlutenFreeProducts(
+  region: RegionValue | null, signal?: AbortSignal,
+  onPage?: (page: DiaProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<DiaProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'dia_products', DIA_COLS, (row) => mapDia(row, region), signal, onPage, order,
+    (query) => filterRegionalAvailability(query, region),
+  );
 }
 
 /** Una categoría N1 de Dia con sus subcategorías (N2) con productos. */
@@ -1342,6 +1506,7 @@ export interface SorliProduct {
   priceFormat: string | null;  // precio mostrado ("3,79 €")
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,90 €/kg")
   categoryName: string | null;
+  glutenFreeByTag?: boolean;
   nutriScoreGrade: 'A' | 'B' | 'C' | 'D' | 'E' | null;
   promoName: string | null;
   promoText: string | null;
@@ -1374,6 +1539,7 @@ const mapSorli = (r: any): SorliProduct => {
     priceFormat: r.price_format ?? null,
     pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
     categoryName: r.category_name ?? null,
+    glutenFreeByTag: r.gluten_free_label === true,
     nutriScoreGrade: nutriScoreGrade(r.nutri_score),
     promoName: promoLive ? (ca && r.promo_name_ca ? r.promo_name_ca : r.promo_name) ?? null : null,
     promoText: promoLive ? (ca && r.promo_text_ca ? r.promo_text_ca : r.promo_text) ?? null : null,
@@ -1384,7 +1550,16 @@ const mapSorli = (r: any): SorliProduct => {
 };
 
 const SORLI_COLS =
-  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, nutri_score, promo_name, promo_name_ca, promo_text, promo_text_ca, promo_base_price, promo_start, promo_end';
+  'id, display_name, display_name_ca, gluten_free_label, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, nutri_score, promo_name, promo_name_ca, promo_text, promo_text_ca, promo_base_price, promo_start, promo_end';
+
+export function fetchSorliGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: SorliProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<SorliProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'sorli_products', SORLI_COLS, mapSorli, signal, onPage, order,
+  );
+}
 
 /** Búsqueda por nombre en el catálogo de Sorli (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
@@ -1467,6 +1642,7 @@ export async function fetchSorliProductsByCategory(categoryId: string, limit = 6
 export interface CondisProduct {
   id: string;                  // id de Empathy ("704048")
   displayName: string;         // incluye marca y formato ("Leche Condis semidesnatada 1 L")
+  glutenFreeByTag?: boolean;
   brand: string | null;
   ingredients: string | null;
   nutrition: string | null;
@@ -1485,6 +1661,7 @@ const mapCondis = (r: any): CondisProduct => {
   return {
     id: r.id,
     displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
+    glutenFreeByTag: r.gluten_free_label === true,
     brand: r.brand ?? null,
     ingredients: r.ingredients ?? null,
     nutrition: r.nutrition ?? null,
@@ -1499,7 +1676,7 @@ const mapCondis = (r: any): CondisProduct => {
 };
 
 const CONDIS_COLS =
-  'id, display_name, display_name_ca, brand, ingredients, nutrition, conservation, manufacturer, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, display_name_ca, gluten_free_label, brand, ingredients, nutrition, conservation, manufacturer, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 const CONDIS_OFFER_COLS =
   `${CONDIS_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 
@@ -1575,6 +1752,16 @@ export async function fetchCondisProductsByCategory(categoryId: string, limit = 
   return (data ?? []).map(mapCondis);
 }
 
+/** Productos de Condis marcados por su campo nativo raw.without_gluten. */
+export function fetchCondisGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: CondisProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<CondisProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'condis_products', CONDIS_COLS, mapCondis, signal, onPage, order,
+  );
+}
+
 // ─── Ametller Origen (tabla ametller_products, espejo aparte) ────────────────
 // Mismo modelo que bonÀrea (espejo + category_ids + ppu en columnas + FICHA
 // bilingüe es/ca). Lo puebla scripts/sync-ametller.mjs desde la SCAPI de
@@ -1584,7 +1771,8 @@ export async function fetchCondisProductsByCategory(categoryId: string, limit = 
 // SIN alérgenos: SFCC los da como códigos numéricos sin leyenda pública).
 export interface AmetllerProduct {
   id: string;                  // productId SFCC ("55274")
-  displayName: string;         // incluye marca y formato ("… Ametller Origen 150 g")
+  displayName: string;
+  glutenFreeByTag?: boolean;         // incluye marca y formato ("… Ametller Origen 150 g")
   brand: string | null;
   thumbnail: string | null;
   unitPrice: number | null;    // precio del envase
@@ -1604,6 +1792,7 @@ const mapAmetller = (r: any): AmetllerProduct => {
   const ca = getLanguage() === 'ca';
   return {
     id: r.id,
+    glutenFreeByTag: r.gluten_free_label === true,
     displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
     brand: r.brand ?? null,
     thumbnail: r.thumbnail ?? null,
@@ -1621,7 +1810,7 @@ const mapAmetller = (r: any): AmetllerProduct => {
 };
 
 const AMETLLER_COLS =
-  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, gluten_free_label, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 const AMETLLER_OFFER_COLS =
   `${AMETLLER_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 // Columnas de ficha (es + ca) + ean: solo para el detalle (no en listados).
@@ -1710,6 +1899,7 @@ export async function fetchAmetllerProductsByCategory(categoryId: string, limit 
 export interface AldiProduct {
   id: string;                  // objectID de Algolia ("970000")
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   packaging: string | null;    // salesUnit ("1 l unidad", "140 g unidad")
   thumbnail: string | null;
@@ -1722,6 +1912,7 @@ export interface AldiProduct {
 const mapAldi = (r: any): AldiProduct => ({
   id: r.id,
   displayName: r.display_name,
+  glutenFreeByTag: r.gluten_free_label === true,
   brand: r.brand ?? null,
   packaging: r.packaging ?? null,
   thumbnail: r.thumbnail ?? null,
@@ -1732,7 +1923,7 @@ const mapAldi = (r: any): AldiProduct => ({
 });
 
 const ALDI_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 const ALDI_OFFER_COLS = `${ALDI_COLS}, promo_name, promo_base_price, promo_end`;
 
 /** Búsqueda por nombre en el catálogo de Aldi (server-side). */
@@ -1808,6 +1999,7 @@ export interface LidlProduct {
   id: string;
   storeId: string;
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   packaging: string | null;
   thumbnail: string | null;
@@ -1851,6 +2043,7 @@ const mapLidl = (r: any): LidlProduct => {
     id: r.id,
     storeId: String(r.store_id),
     displayName: r.display_name,
+  glutenFreeByTag: r.gluten_free_label === true,
     brand: r.brand ?? null,
     packaging: r.packaging ?? null,
     thumbnail: r.thumbnail ?? null,
@@ -1868,7 +2061,7 @@ const mapLidl = (r: any): LidlProduct => {
     isLidlPlusOffer: promoIsLive && r.is_lidl_plus_offer === true,
   };
 };
-const LIDL_COLS = 'store_id, id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end, is_lidl_plus_offer';
+const LIDL_COLS = 'store_id, id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end, is_lidl_plus_offer';
 
 export async function searchLidlProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', storeId: string | null = null): Promise<LidlProduct[]> {
   const normalized = query.trim();
@@ -1932,6 +2125,7 @@ async function fetchLidlProductsByCategoryUncached(categoryId: string, storeId: 
 export interface GadisProduct {
   id: string;
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   packaging: string | null;
   thumbnail: string | null;
@@ -1942,12 +2136,13 @@ export interface GadisProduct {
   promoName: string | null;
 }
 const mapGadis = (r: any): GadisProduct => ({
-  id: r.id, displayName: r.display_name, brand: r.brand ?? null, packaging: r.packaging ?? null,
+  id: r.id, displayName: r.display_name, glutenFreeByTag: r.gluten_free_label === true,
+  brand: r.brand ?? null, packaging: r.packaging ?? null,
   thumbnail: r.thumbnail ?? null, unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
   priceFormat: r.price_format ?? null, pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null, promoName: r.promo_name ?? null,
 });
-const GADIS_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+const GADIS_COLS = 'id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
 const GADIS_OFFER_COLS = `${GADIS_COLS}, promo_text, promo_end, promo_group_id, promo_is_related, promo_is_coupon`;
 export async function searchGadisProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<GadisProduct[]> {
   const rows = await catalogSearchPage('search_gadis_products', GADIS_COLS, query, { limit, offset, signal, order });
@@ -1972,17 +2167,26 @@ export async function fetchGadisProductsByCategory(categoryId: string, limit = 6
   const { data, error } = await supabase.from('gadis_products').select(GADIS_COLS).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
   if (error) throw error; return (data ?? []).map(mapGadis);
 }
+export function fetchGadisGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: GadisProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<GadisProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'gadis_products', GADIS_COLS, mapGadis, signal, onPage, order,
+  );
+}
 
 // ─── Froiz (API pública servicios.froiz.com) ───────────────────────────────
 export type FroizProduct = GadisProduct;
 export type FroizCategory = GadisCategory;
 const mapFroiz = (r: any): FroizProduct => ({
-  id: r.id, displayName: r.display_name, brand: r.brand ?? null, packaging: null,
+  id: r.id, displayName: r.display_name, glutenFreeByTag: r.gluten_free_label === true,
+  brand: r.brand ?? null, packaging: null,
   thumbnail: r.thumbnail ?? null, unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
   priceFormat: r.price_format ?? null, pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null, promoName: r.promo_name ?? null,
 });
-const FROIZ_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+const FROIZ_COLS = 'id, display_name, gluten_free_label, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
 export async function searchFroizProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<FroizProduct[]> {
   const rows = await catalogSearchPage('search_froiz_products', FROIZ_COLS, query, { limit, offset, signal, order });
   return rows.map(mapFroiz);
@@ -2004,6 +2208,14 @@ export async function fetchFroizProductsByCategory(categoryId: string, limit = 6
   const { data, error } = await supabase.from('froiz_products').select(FROIZ_COLS).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
   if (error) throw error; return (data ?? []).map(mapFroiz);
 }
+export function fetchFroizGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: FroizProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<FroizProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'froiz_products', FROIZ_COLS, mapFroiz, signal, onPage, order,
+  );
+}
 
 // ─── Ahorramás (Salesforce Commerce Cloud / Demandware) ────────────────────
 // El espejo usa el surtido de referencia sin CP. Ahorramás asigna tienda por CP,
@@ -2012,12 +2224,19 @@ export type AhorramasProduct = GadisProduct;
 export type AhorramasCategory = GadisCategory;
 const mapAhorramas = (r: any): AhorramasProduct => ({
   id: r.id, displayName: r.display_name, brand: r.brand ?? null, packaging: r.packaging ?? null,
+  glutenFreeByTag: r.gluten_free_label === true,
   thumbnail: r.thumbnail ?? null, unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
   priceFormat: r.price_format ?? null, pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null, promoName: r.promo_name ?? null,
 });
-const AHORRAMAS_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+const AHORRAMAS_COLS = 'id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
 const AHORRAMAS_OFFER_COLS = `${AHORRAMAS_COLS}, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
+export function fetchAhorramasGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: AhorramasProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<AhorramasProduct[]> {
+  return fetchGlutenFreeLabelProducts('ahorramas_products', AHORRAMAS_COLS, mapAhorramas, signal, onPage, order);
+}
 export async function searchAhorramasProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<AhorramasProduct[]> {
   const rows = await catalogSearchPage('search_ahorramas_products', AHORRAMAS_COLS, query, { limit, offset, signal, order });
   return rows.map(mapAhorramas);
@@ -2049,6 +2268,7 @@ export async function fetchAhorramasProductsByCategory(categoryId: string, limit
 export interface HiperdinoProduct {
   id: string;                  // sku de Magento ("000000000003970669")
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;        // null (el nombre ya incluye marca)
   packaging: string | null;    // null (el formato va en el nombre)
   thumbnail: string | null;
@@ -2061,6 +2281,7 @@ export interface HiperdinoProduct {
 const mapHiperdino = (r: any): HiperdinoProduct => ({
   id: r.id,
   displayName: r.display_name,
+  glutenFreeByTag: r.gluten_free_label === true,
   brand: r.brand ?? null,
   packaging: r.packaging ?? null,
   thumbnail: r.thumbnail ?? null,
@@ -2071,7 +2292,7 @@ const mapHiperdino = (r: any): HiperdinoProduct => ({
 });
 
 const HIPERDINO_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 const HIPERDINO_OFFER_COLS = `${HIPERDINO_COLS}, promo_base_price`;
 
 /** Búsqueda por nombre en el catálogo de HiperDino (server-side). */
@@ -2275,6 +2496,7 @@ export async function fetchAlcampoProductsByCategory(categoryId: string, limit =
 export interface TapestryProduct {
   id: string;
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   thumbnail: string | null;
   unitPrice: number | null;
@@ -2287,6 +2509,7 @@ export interface TapestryProduct {
 const mapTapestry = (r: any): TapestryProduct => ({
   id: r.id,
   displayName: r.display_name,
+  glutenFreeByTag: r.gluten_free_label === true,
   brand: r.brand ?? null,
   thumbnail: r.thumbnail ?? null,
   unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
@@ -2296,10 +2519,24 @@ const mapTapestry = (r: any): TapestryProduct => ({
   nutrition: r.nutrition ?? null,
 });
 
-const TAPESTRY_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+const TAPESTRY_COLS = 'id, display_name, gluten_free_label, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 const TAPESTRY_OFFER_COLS =
   `${TAPESTRY_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 const TAPESTRY_DETAIL_COLS = `${TAPESTRY_COLS}, nutrition`;
+
+export function fetchEroskiGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: TapestryProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<TapestryProduct[]> {
+  return fetchGlutenFreeLabelProducts('eroski_products', TAPESTRY_COLS, mapTapestry, signal, onPage, order);
+}
+
+export function fetchCapraboGlutenFreeProducts(
+  signal?: AbortSignal, onPage?: (page: TapestryProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<TapestryProduct[]> {
+  return fetchGlutenFreeLabelProducts('caprabo_products', TAPESTRY_COLS, mapTapestry, signal, onPage, order);
+}
 
 async function searchTapestry(table: 'eroski_products' | 'caprabo_products', query: string, limit: number, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<TapestryProduct[]> {
   const rpc = table === 'eroski_products' ? 'search_eroski_products' : 'search_caprabo_products';
@@ -2382,6 +2619,7 @@ export interface PlusfrescProduct {
   priceFormat: string | null;  // precio mostrado ("2,89 €")
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,92 €/L")
   categoryName: string | null;
+  glutenFreeByTag?: boolean;
   // Ficha (solo en fetchPlusfrescProduct; null en listados/búsqueda). Bilingüe.
   description: string | null;
   ingredients: string | null;
@@ -2406,6 +2644,7 @@ const mapPlusfresc = (r: any, postalCode: string | null = null): PlusfrescProduc
     priceFormat: regional?.pf ?? r.price_format ?? null,
     pricePerUnit: regional?.ppu != null ? ppuLabel(regional.ppu, regional.ppuu) : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
     categoryName: r.category_name ?? null,
+    glutenFreeByTag: r.gluten_free_label === true,
     // Ficha (solo presente en detalle; en listados queda undefined → null).
     description: pickLang(r.description, r.description_ca),
     ingredients: pickLang(r.ingredients, r.ingredients_ca),
@@ -2416,7 +2655,19 @@ const mapPlusfresc = (r: any, postalCode: string | null = null): PlusfrescProduc
 };
 
 const PLUSFRESC_COLS =
-  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, center_prices';
+  'id, display_name, display_name_ca, gluten_free_label, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, center_prices';
+
+export function fetchPlusfrescGlutenFreeProducts(
+  postalCode: string | null, signal?: AbortSignal,
+  onPage?: (page: PlusfrescProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<PlusfrescProduct[]> {
+  return fetchGlutenFreeLabelProducts(
+    'plusfresc_products', PLUSFRESC_COLS, (row) => mapPlusfresc(row, postalCode),
+    signal, onPage, order,
+    (query) => filterCenterAvailability(query, plusfrescCenterFromPostalCode(postalCode)),
+  );
+}
 const PLUSFRESC_OFFER_COLS =
   `${PLUSFRESC_COLS}, promo_name, promo_name_ca, promo_offer_price, promo_base_price, promo_end`;
 // Columnas de ficha (es + ca): solo para el detalle (no en listados).
@@ -2498,6 +2749,7 @@ export async function fetchPlusfrescProductsByCategory(categoryId: string, posta
 export interface BmProduct {
   id: string;
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   packaging: string | null;
   thumbnail: string | null;
@@ -2512,11 +2764,12 @@ export interface BmProduct {
   promoBasePrice: number | null;
 }
 
-const BM_COLS = 'location_id, id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, cart_category_name, price_per_unit, price_per_unit_unit, promo_type, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end, available, is_new, first_seen_at';
+const BM_COLS = 'location_id, id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, category_name, cart_category_name, price_per_unit, price_per_unit_unit, promo_type, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end, available, is_new, first_seen_at';
 
 const mapBm = (row: any): BmProduct => ({
   id: row.id,
   displayName: row.display_name,
+  glutenFreeByTag: row.gluten_free_label === true,
   brand: row.brand ?? null,
   packaging: row.packaging ?? null,
   thumbnail: row.thumbnail ?? null,
@@ -2560,6 +2813,20 @@ export function resolveBmLocationId(postalCode: string | null): Promise<string |
     if (!locationId) bmLocationPromises.delete(referencePostalCode);
   }).catch(() => bmLocationPromises.delete(referencePostalCode));
   return request;
+}
+
+export async function fetchBmGlutenFreeProducts(
+  postalCode: string | null, signal?: AbortSignal,
+  onPage?: (page: BmProduct[]) => void,
+  order: Exclude<BrowseOrder, boolean> = 'priceAsc',
+): Promise<BmProduct[]> {
+  const locationId = await resolveBmLocationId(postalCode);
+  signal?.throwIfAborted();
+  if (!locationId) return [];
+  return fetchGlutenFreeLabelProducts(
+    'bm_product_locations', BM_COLS, mapBm, signal, onPage, order,
+    (query) => query.eq('location_id', locationId).eq('available', true),
+  );
 }
 
 export async function searchBmProducts(
@@ -2672,6 +2939,7 @@ export async function fetchBmProductsByCategory(
 export interface EljamonProduct {
   id: string;
   displayName: string;
+  glutenFreeByTag?: boolean;
   brand: string | null;
   packaging: string | null;
   thumbnail: string | null;
@@ -2692,13 +2960,14 @@ export interface EljamonProduct {
 }
 
 const ELJAMON_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, price_per_unit, price_per_unit_unit, category_name, promo_name, promo_text, promo_start, promo_end, promo_base_price, is_new, first_seen_at';
+  'id, display_name, gluten_free_label, brand, packaging, thumbnail, unit_price, price_format, price_per_unit, price_per_unit_unit, category_name, promo_name, promo_text, promo_start, promo_end, promo_base_price, is_new, first_seen_at';
 const ELJAMON_DETAIL_COLS = `${ELJAMON_COLS}, description, ingredients, allergens, nutrition, conservation`;
 const ELJAMON_OFFER_COLS = ELJAMON_COLS;
 
 const mapEljamon = (row: any): EljamonProduct => ({
   id: String(row.id),
   displayName: row.display_name,
+  glutenFreeByTag: row.gluten_free_label === true,
   brand: row.brand ?? null,
   packaging: row.packaging ?? null,
   thumbnail: row.thumbnail ?? null,
@@ -2944,7 +3213,7 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
     table: 'mercadona_products',
     // unit_price se añade a las columnas de búsqueda para que fetchPriceChanges
     // tenga el precio nuevo como columna (el resto de súpers ya lo llevan).
-    cols: 'id, raw, display_name_ca, category_name, category_id, unit_price',
+    cols: 'id, raw, display_name_ca, gluten_free_label, category_name, category_id, unit_price',
     toUI: (r) => mercadonaToUI(mirrorMercadonaProduct(r, getLanguage() === 'ca')),
   },
   esclat:    { table: 'bonpreu_products',   cols: BONPREU_COLS,   toUI: (r) => bonpreuToUI(mapBonpreu(r)) },
@@ -3112,6 +3381,13 @@ async function fetchWeeklyNewProductsUncached(
     // producto cae en la zona "Otros" al añadirlo (igual que los favoritos).
     const warehouse = await resolveWarehouseForPostalCode(postalCode);
     let items = (await fetchNewArrivals(warehouse ?? undefined)).map((p) => mercadonaToUI(p));
+    if (items.length) {
+      const { data, error } = await supabase.from('mercadona_products')
+        .select('id, gluten_free_label').in('id', items.map((product) => product.id));
+      if (error) throw error;
+      const glutenIds = new Set((data ?? []).filter((row: any) => row.gluten_free_label === true).map((row: any) => String(row.id)));
+      items = items.map((product) => ({ ...product, glutenFreeByTag: glutenIds.has(product.id) }));
+    }
     if (search.length >= 2) {
       items = sortByRelevance(
         items.filter((product) => matchesFeedSearch(product.name, search)),
@@ -3558,6 +3834,7 @@ export type StoreOffer = CarrefourOffer;
  * dentro del RPC antes de ranking y paginación; sin texto conservan el listado
  * keyset. El tipo se resuelve sobre la promoción final. */
 export interface OfferFilters {
+  glutenOnly?: boolean;
   /** Búsqueda por nombre (insensible a acentos, palabras en cualquier orden). */
   search?: string;
   /** Categorías seleccionadas (multi); [] = todas. */
@@ -4635,6 +4912,26 @@ async function fetchStoreOffersUncached(
   filters?: OfferFilters,
   lidlStoreId: string | null = null,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  if (filters?.glutenOnly) {
+    const unfiltered = { ...filters, glutenOnly: false };
+    const items: StoreOffer[] = [];
+    let nextCursor = cursor;
+    do {
+      const page = await fetchStoreOffersUncached(store, nextCursor, region, postalCode, limit, unfiltered, lidlStoreId);
+      if (store === 'carrefour' && page.items.length) {
+        // El RPC regional de Carrefour no incluye la etiqueta en su respuesta.
+        const { data, error } = await supabase.from('carrefour_products').select('id')
+          .in('id', page.items.map((offer) => offer.product.id)).eq('gluten_free_label', true);
+        if (error) throw error;
+        const ids = new Set((data ?? []).map((row: any) => String(row.id)));
+        items.push(...page.items.filter((offer) => ids.has(offer.product.id)));
+      } else {
+        items.push(...page.items.filter((offer) => offer.product.glutenFreeByTag));
+      }
+      nextCursor = page.nextCursor;
+    } while (nextCursor && items.length < limit);
+    return { items, nextCursor };
+  }
   if (store === 'carrefour') return fetchCarrefourOffers(cursor, region, limit, filters);
   if (filters?.search && filters.search.trim().length >= 2) {
     return fetchStoreOfferSearchPage(store, cursor, region, postalCode, limit, filters, lidlStoreId);

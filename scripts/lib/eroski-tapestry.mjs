@@ -35,6 +35,7 @@
 import { canonicalPricePerUnit } from './price.mjs';
 import { parseTapestryOfferBlock } from './retailer-offers.mjs';
 import { recordCatalogSync } from './sync-status.mjs';
+import { isGlutenFreeCategory } from './gluten-free-categories.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
@@ -481,7 +482,17 @@ export async function crawlCatalog({
     const ingest = (tiles) => {
       let added = 0;
       for (const it of tiles) {
-        if (products.has(it.item_id)) continue;
+        const existing = products.get(it.item_id);
+        if (existing) {
+          // Conservar todas las pertenencias aunque el producto ya se haya
+          // encontrado en una categoría general antes de «Sin gluten».
+          const previousIds = new Set(existing.category_ids ?? []);
+          for (const id of ancestors) {
+            if (!previousIds.has(id)) catCount.set(id, (catCount.get(id) ?? 0) + 1);
+          }
+          existing.category_ids = [...new Set([...previousIds, ...ancestors])];
+          continue;
+        }
         const row = normalize(it, { leafId, ancestors, catName, ...ctxExtra });
         if (!row) continue;
         products.set(it.item_id, row);
@@ -724,6 +735,7 @@ export async function runSync({ base, store, table, catTable }) {
     leafDelayMs: LEAF_DELAY_MS,
   });
   const rows = [...products.values()];
+  for (const row of rows) row.gluten_free_label = isGlutenFreeCategory(store, row.category_ids);
   const catOut = catRows.map((c) => ({ ...c, published: true, synced_at: runStart }));
   const noTilePct = totalLeaves ? Math.round((noTileLeaves / totalLeaves) * 100) : 0;
   log(`${rows.length} productos · ${catOut.length} categorías · ${noTileLeaves}/${totalLeaves} hojas sin tiles (${noTilePct}%) · ${shadowedLeaves} hojas solo-duplicados`);

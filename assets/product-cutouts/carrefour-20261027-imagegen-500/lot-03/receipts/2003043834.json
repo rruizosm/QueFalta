@@ -1,0 +1,15 @@
+{
+  "id": "2003043834",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/177032_00_1.jpg",
+  "sourceSha256": "bbf1589521c983c0eca2e1c35f645289b94ab39f65b18c78134a7e1fcfcb0429",
+  "outputSha256": "4ea3a2691c2315feef1c53b85dfec2af9fe945e269c1b68a7bc04356726007ce",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2003043834.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-cdea9e31-d4e3-4610-ab4f-fadfd8c9057d.png",
+  "visualReview": "Complete Nidina1 white/red tin and lid, white product retained and exterior transparent; small edge remnants.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1317307,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.126Z"
+}

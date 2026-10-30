@@ -30,6 +30,7 @@ function api(tables, error = null) {
       const builder = {
         select(columns) { call.columns = columns; return builder; },
         in(column, ids) { call.column = column; call.ids = ids; return builder; },
+        returns() { return builder; },
         abortSignal(signal) { call.signal = signal; return builder; },
         then(resolve) { return Promise.resolve({ data: (tables[table] ?? []).filter(row => call.ids.includes(row.id)), error }).then(resolve); },
       };
@@ -59,9 +60,25 @@ test('purchase products use retailer/id, preserve archived names/order/copies an
   assert.equal(result[7].id, '123_ES');
   assert.equal(result[8].id, 'same');
   assert.equal(result[8].unitPrice, undefined);
-  assert.equal(client.calls.length, 2);
-  assert.ok(client.calls.every(call => call.column === 'id' && call.columns === 'id, illustration_url' && call.signal === signal));
+  assert.equal(client.calls.length, 3);
+  assert.ok(client.calls.every(call => call.column === 'id' && call.columns.startsWith('id, illustration_url, thumbnail') && call.signal === signal));
   assert.equal(client.calls.find(call => call.table === 'mercadona_products').ids.filter(id => id === 'same').length, 1);
+});
+
+test('Carrefour purchases resolve archived numeric and fprod identities and reject excluded categories', async () => {
+  const client = api({ carrefour_products: [
+    { ...illustration('520664611'), thumbnail: 'https://example.com/original.jpg', category_name: 'Alimentación' },
+    { ...illustration('fprod123'), category_name: 'Lácteos' },
+    { ...illustration('paper'), category_name: 'Papelería' },
+    { ...illustration('bazar'), category_name: 'Otra', category_ids: ['cat20037'] },
+    { ...illustration('shoes'), category_id: 'cat20038' },
+  ] });
+  const result = await client.resolve(['520664611', 'fprod123', 'paper', 'bazar', 'shoes'].map(id => item('carrefour', id)));
+  assert.equal(result[0].store, 'carrefour');
+  assert.equal(result[0].originalImageUrl, 'https://example.com/original.jpg');
+  assert.equal(result[1].id, 'fprod123');
+  assert.deepEqual(result.slice(2), [null, null, null]);
+  assert.equal(client.calls[0].table, 'carrefour_products');
 });
 
 test('unsupported retailers, custom items and empty purchases do not query unrelated catalogues', async () => {
@@ -69,6 +86,19 @@ test('unsupported retailers, custom items and empty purchases do not query unrel
   assert.deepEqual(await client.resolve([item('aldi', '1'), item('mercadona', null), item('lidl', null)]), [null, null, null]);
   assert.deepEqual(await client.resolve([]), []);
   assert.equal(client.calls.length, 0);
+});
+
+test('purchases preserve package contents separately from stock quantity through persistence', async () => {
+  const client = api({ mercadona_products: [{ ...illustration('123'), packaging: 'Bandeja', size_instructions: { unit_size: 0.5, size_format: 'kg' } }],
+    lidl_product_master: [{ ...illustration('456_ES'), packaging: '1 L' }] });
+  const products = await client.resolve([item('mercadona', '123'), item('lidl', '456_ES')]);
+  assert.deepEqual(products.map(product => product.metaLabel), ['500 g', '1 L']);
+  const saved = layout.decodePantryLayout(layout.encodePantryLayout({ shelfCount: 4,
+    items: products.map((product, index) => ({ instanceId: `package-${index}`, product, quantity: 2,
+      ...layout.defaultPantryPlacement(index) })) }));
+  assert.deepEqual(saved.items.map(entry => [entry.product.metaLabel, entry.quantity]), [['500 g', 2], ['1 L', 2]]);
+  assert.ok(client.calls.find(call => call.table === 'mercadona_products').columns.includes('size_instructions:raw->price_instructions'));
+  assert.ok(client.calls.find(call => call.table === 'lidl_product_master').columns.includes('packaging'));
 });
 
 test('large purchases batch exact ids and allow a legacy Mercadona store_product_id', async () => {
@@ -87,7 +117,7 @@ test('catalogue failure rejects instead of mislabelling a purchase as unavailabl
   await assert.rejects(api({}, failure).resolve([item('mercadona', '1')]), error => error === failure);
 });
 
-function harness(fetchItems, resolveProducts, { addResult = true } = {}) {
+function harness(fetchItems, resolveProducts, { addResult = true, measureReady = true } = {}) {
   let cursor = 0, effectCursor = 0, refCursor = 0;
   const state = [], effects = [], refs = [], selected = [];
   const translations = { 'pantry.productUnavailable': 'Producto no disponible para añadir a la despensa',
@@ -112,6 +142,8 @@ function harness(fetchItems, resolveProducts, { addResult = true } = {}) {
     'react-native': { ActivityIndicator: 'Spinner', Image: 'Image', Pressable: 'Pressable', Text: 'Text', View: 'View',
       StyleSheet: { create: styles => styles } },
     '@expo/vector-icons/Ionicons': 'Icon',
+    './PantryImageBoundsProbe': 'PantryImageBoundsProbe',
+    '../hooks/usePantryAddMeasurements': { usePantryAddMeasurements: products => ({ ready: measureReady, bounds: new Map(products.map(p => [p.illustrationUrl, { left: .225, top: 0, right: .775, bottom: 1 }])), urls: [], onBounds() {} }) },
     '../api/purchases': { fetchPurchaseItems: fetchItems },
     '../api/pantry': { resolvePantryPurchaseProducts: resolveProducts },
     '../constants/colors': { colors: {} },
@@ -122,9 +154,9 @@ function harness(fetchItems, resolveProducts, { addResult = true } = {}) {
   }).default;
   return {
     selected,
-    render(purchaseId = 'A') {
+    render(purchaseId = 'A', section = 'pantry') {
       cursor = 0; effectCursor = 0; refCursor = 0;
-      const tree = Component({ purchaseId, onAddPurchase: products => { selected.push(products); return addResult; } });
+      const tree = Component({ purchaseId, section, onAddPurchase: products => { selected.push(products); return addResult; } });
       for (const effect of effects) if (effect.create) { effect.cleanup = effect.create(); effect.create = null; }
       return tree;
     },
@@ -217,4 +249,29 @@ test('switching purchases aborts old requests and ignores late responses', async
   assert.ok(!all.some(node => node.props.children === 'Producto A'));
   h.unmount();
   assert.equal(signals.B.aborted, true);
+});
+
+
+test('fridge purchase footer and unavailable rows describe the fridge destination', async () => {
+  const product = { id: '1', store: 'mercadona', name: 'Leche', illustrationUrl: 'https://example.com/milk.webp' };
+  const h = harness(async () => [item('mercadona', '1'), item('carrefour', '2')], async () => [product, null]);
+  h.render('A', 'fridge'); await settle();
+  const all = nodes(h.render('A', 'fridge'));
+  const add = all.find(node => node.props.testID === 'pantry-add-purchase');
+  assert.equal(add.props.accessibilityLabel, 'pantry.addFridgePurchase');
+  assert.ok(all.some(node => node.props.children === 'pantry.fridgeProductUnavailable'));
+  add.props.onPress();
+  assert.deepEqual(h.selected, [[{ product, quantity: 2 }]]);
+  h.unmount();
+});
+
+test('purchase confirmation cannot save a batch before photos have been measured', async () => {
+  const product = { id: '1', name: 'Leche', illustrationUrl: 'https://example.com/milk.webp' };
+  const h = harness(async () => [item('mercadona', '1')], async () => [product], { measureReady: false });
+  h.render(); await settle();
+  const button = nodes(h.render()).find(node => node.props.testID === 'pantry-add-purchase');
+  assert.equal(button.props.disabled, true);
+  button.props.onPress();
+  assert.deepEqual(h.selected, []);
+  h.unmount();
 });

@@ -1,7 +1,7 @@
-import type { View } from 'react-native';
+import type { ViewInstance } from 'react-native';
 import type { RecipeButtonBounds } from '../context/RecipeCreatorContext';
 
-export function measureRecipeButton(view: View | null): Promise<RecipeButtonBounds | null> {
+export function measureRecipeButton(view: ViewInstance | null): Promise<RecipeButtonBounds | null> {
   if (!view) return Promise.resolve(null);
   return new Promise((resolve) => {
     // A native node can disappear before its measure callback is delivered.

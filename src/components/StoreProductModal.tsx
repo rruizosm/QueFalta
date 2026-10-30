@@ -38,6 +38,8 @@ interface Props {
   onClose: () => void;
   /** Pantalla completa, sin borde ni sombra de hoja (cesta). */
   fullScreen?: boolean;
+  /** Redondea y recorta las esquinas superiores de la hoja. */
+  roundedTop?: boolean;
   /** Etiqueta contextual superpuesta en la imagen principal (p. ej. Novedad). */
   badgeLabel?: string;
   /** Si un resultado del comparador no existe en la zona activa, permite abrir
@@ -97,6 +99,7 @@ export default function StoreProductModal({
   target,
   onClose,
   fullScreen = false,
+  roundedTop = false,
   badgeLabel,
   fallbackToGlobalCatalog = false,
 }: Props) {
@@ -269,12 +272,13 @@ export default function StoreProductModal({
     <Modal visible transparent animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
       {/* fullScreen (cesta) cubre toda la pantalla. El detalle anidado conserva
           el formato de hoja y despeja la barra de estado. */}
-      <View style={fullScreen ? styles.sheetFull : [styles.sheet, { top: sheetTop }]}>{content}</View>
+      <View style={fullScreen ? styles.sheetFull : [styles.sheet, { top: sheetTop }, roundedTop && styles.roundedSheet]}>{content}</View>
     </Modal>
   );
 }
 
 const themedStyles = () => StyleSheet.create({
+  roundedSheet: { borderTopLeftRadius: 30, borderTopRightRadius: 30, overflow: 'hidden' },
   sheet: {
     position: 'absolute',
     left: 0, right: 0, bottom: 0,

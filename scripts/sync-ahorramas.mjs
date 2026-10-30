@@ -10,6 +10,7 @@ import {
 import { createAhorramasRequester } from './lib/ahorramas-http.mjs';
 import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { isGlutenFreeCategory } from './lib/gluten-free-categories.mjs';
 
 const BASE = 'https://www.ahorramas.com';
 const ROOTS = new Set(['alimentacion', 'frescos', 'bebidas', 'lacteos', 'limpieza', 'cuidado-personal', 'congelados', 'hogar', 'bebe', 'mascotas']);
@@ -154,6 +155,8 @@ async function main() {
       const pageRows = productTiles(page, path);
       for (const row of pageRows) {
         categoryProductIds.add(row.id);
+        const previous = products.get(row.id);
+        row.category_ids = [...new Set([...(previous?.category_ids ?? []), ...row.category_ids])];
         products.set(row.id, row);
       }
       if (pageCount > 1 && categoryProductIds.size === before && pageRows.length > 0) {
@@ -174,6 +177,7 @@ async function main() {
     if (seen.size % 25 === 0) console.log(`[ahorramas] ${seen.size} categorías · ${products.size} productos`);
   }
   const rows = [...products.values()];
+  for (const row of rows) row.gluten_free_label = isGlutenFreeCategory('ahorramas', row.category_ids);
   for (const row of rows) for (const id of row.category_ids) { const category = categories.get(id); if (category) category.product_count++; }
   console.log(`[ahorramas] ${rows.length} productos · ${categories.size} categorías · ${rows.filter((row) => row.promo_name).length} ofertas`);
   if (DRY) return;

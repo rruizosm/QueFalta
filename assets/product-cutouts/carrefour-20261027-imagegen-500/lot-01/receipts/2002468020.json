@@ -1,0 +1,17 @@
+{
+  "id": "2002468020",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/958496_00_1.jpg",
+  "sourceSha256": "66d8dd8108c8da47bd4485e899a4fcca0931d9cd7a61b6749aa9adfda6b5b284",
+  "outputSha256": "380a3c99f9585b3f0a32173ccd32f0ec103ac348454d81272381e9cb4b05ae27",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2002468020.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-4e2c4224-3366-496a-8259-8cb58c8b0492.png",
+  "visualReview": "Whole Nestle Manzana Zanahoria y Mango90g pouch,90g and6meses markings retained, same fruit and bear illustration and white cap; external background transparent.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 1303034,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:44.353Z"
+}

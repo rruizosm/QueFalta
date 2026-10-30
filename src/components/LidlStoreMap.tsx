@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { CompatibleWebView as WebView, type WebViewHandle } from './CompatibleWebView';
 import type { LidlStoreCandidate } from '../api/lidlStores';
 import { fetchPostalLocation } from '../api/postalLocation';
 import { lidlMapHtml, mapJson } from '../lib/lidlMap';
@@ -16,7 +16,7 @@ export default function LidlStoreMap({ stores, postalCode, selectedStoreId, onSe
   onSelect: (id: string) => void;
 }) {
   const styles = useThemedStyles(themedStyles);
-  const web = useRef<WebView>(null);
+  const web = useRef<WebViewHandle>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [postalMissing, setPostalMissing] = useState(false);

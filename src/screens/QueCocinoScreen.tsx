@@ -143,7 +143,7 @@ export default function QueCocinoScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       {!glassAvailable && header}
 
       <ScrollView tabBarScroll

@@ -1,0 +1,10 @@
+{
+  "indexing": "Zero-based indices of manifest.products and manifest.reserves",
+  "root": [
+    { "lot": "lot-01", "productIndices": [147, 166], "reserveIndices": [0, 1], "acceptedTarget": 20, "status": "generated" },
+    { "lot": "lot-03", "productIndices": [116, 165], "reserveIndices": [0, 9], "acceptedTarget": 50, "status": "in-progress" }
+  ],
+  "carrefour_lot_01": { "lot": "lot-01", "productIndices": [0, 146], "reserveIndices": [2, 49], "acceptedTarget": 147 },
+  "carrefour_lot_02": { "lot": "lot-02", "productIndices": [0, 166], "reserveIndices": [0, 49], "acceptedTarget": 167 },
+  "carrefour_lot_03": { "lot": "lot-03", "productIndices": [0, 115], "reserveIndices": [10, 49], "acceptedTarget": 116 }
+}

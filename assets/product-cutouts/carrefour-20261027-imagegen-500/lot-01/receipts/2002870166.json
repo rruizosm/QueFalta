@@ -1,0 +1,16 @@
+{
+  "id": "2002870166",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/895384_00_1.jpg",
+  "sourceSha256": "35bc68441951ff26b60185d3d5f92b2a246a914dfc618b0889faa280ee3b6e78",
+  "outputSha256": "1c5e0221ea32f852b6d3ef037627546e81b16fb10e5b6a4d024680df58c52352",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2002870166.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-363afa5a-294c-4190-a974-0a26047189c2.png",
+  "visualReview": "Product complete with correct recognizable packaging, brand and variant; genuine transparent exterior. Printed pack quantities 4x100g,2L,1.5L retained where visible. Minor generated edge/print differences.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1434014,
+  "sourceBytes": 22319,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:40:31.680Z"
+}

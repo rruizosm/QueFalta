@@ -1,3 +1,4 @@
+import type { TextInputInstance } from 'react-native';
 /** Paso 1 (OBLIGATORIO) — Elegir @usuario y zona por código postal. No se puede
  *  avanzar sin un @ válido/libre y una región resuelta. */
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -42,7 +43,7 @@ export default function UsernameScreen() {
   });
   const [saving, setSaving] = useState(false);
   const validationRequest = useRef(0);
-  const usernameInput = useRef<TextInput>(null);
+  const usernameInput = useRef<TextInputInstance>(null);
 
   const focusUsername = useCallback(() => {
     usernameInput.current?.focus();

@@ -4,18 +4,23 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { fetchPurchaseItems } from '../api/purchases';
 import { resolvePantryPurchaseProducts } from '../api/pantry';
 import type { NewListItem } from '../api/lists';
-import type { PantryProduct, PantryPurchaseProduct } from '../lib/pantryLayout';
+import type { PantryProduct, PantryPurchaseProduct, PantrySection } from '../lib/pantryLayout';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 
+import PantryImageBoundsProbe from './PantryImageBoundsProbe';
+import { usePantryAddMeasurements } from '../hooks/usePantryAddMeasurements';
+import type { PantryVisibleBounds } from '../lib/pantryVisibleBounds';
+
 interface PurchaseProduct { item: NewListItem; product: PantryProduct | null }
 
 /** Purchase detail for pantry selection. Profile history keeps its prices/actions. */
-export default function PantryPurchaseProducts({ purchaseId, onAddPurchase }: {
+export default function PantryPurchaseProducts({ purchaseId, onAddPurchase, section = 'pantry' }: {
   purchaseId: string;
-  onAddPurchase: (products: readonly PantryPurchaseProduct[]) => boolean;
+  section?: PantrySection;
+  onAddPurchase: (products: readonly PantryPurchaseProduct[], bounds?: ReadonlyMap<string, PantryVisibleBounds>) => boolean;
 }) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
@@ -36,6 +41,8 @@ export default function PantryPurchaseProducts({ purchaseId, onAddPurchase }: {
     return () => controller.abort();
   }, [purchaseId, attempt]);
 
+  const measurements = usePantryAddMeasurements((rows ?? []).flatMap(row => row.product ? [row.product] : []));
+
   if (error) return <View style={styles.status}>
     <Text style={styles.notice} accessibilityRole="alert">{t('history.detailError')}</Text>
     <Pressable style={styles.retry} onPress={() => setAttempt((value) => value + 1)} accessibilityRole="button">
@@ -46,7 +53,7 @@ export default function PantryPurchaseProducts({ purchaseId, onAddPurchase }: {
   if (!rows.length) return <Text style={[styles.notice, styles.status]}>{t('history.noDetail')}</Text>;
 
   const available = rows.flatMap(({ item, product }): PantryPurchaseProduct[] => product ? [{ product, quantity: item.quantity }] : []);
-  return <View testID="pantry-purchase-products">{rows.map(({ item, product }, index) => (
+  return <View testID="pantry-purchase-products"><PantryImageBoundsProbe key={measurements.attempt} urls={measurements.urls} onBounds={measurements.onBounds} />{rows.map(({ item, product }, index) => (
     <View key={index} style={styles.row}
       testID={`pantry-purchase-product-${index}`}>
       {item.imageUrl ? <Image source={{ uri: item.imageUrl }} style={styles.thumbnail} resizeMode="contain" />
@@ -54,21 +61,24 @@ export default function PantryPurchaseProducts({ purchaseId, onAddPurchase }: {
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={2}>{item.productName}</Text>
         <Text style={styles.quantity}>{item.quantity} {item.unit ?? 'ud'}</Text>
-        {!product && <Text style={styles.notice}>{t('pantry.productUnavailable')}</Text>}
+        {!product && <Text style={styles.notice}>{t(section === 'fridge' ? 'pantry.fridgeProductUnavailable' : 'pantry.productUnavailable')}</Text>}
       </View>
     </View>
   ))}
+    {measurements.failed && <View><Text style={styles.notice} accessibilityRole="alert">{t('pantry.measureError')}</Text>
+      <Pressable onPress={measurements.retry} accessibilityRole="button" style={styles.retry}><Text style={styles.retryText}>{t('common.retry')}</Text></Pressable></View>}
     {noSpace && <Text style={styles.notice} accessibilityRole="alert">{t('pantry.noSpace')}</Text>}
     <Pressable testID="pantry-add-purchase" accessibilityRole="button"
-      accessibilityLabel={t('pantry.addPurchase')} accessibilityState={{ disabled: !available.length }}
-      disabled={!available.length} onPress={() => {
-        if (!available.length || adding.current) return;
+      accessibilityLabel={t(section === 'fridge' ? 'pantry.addFridgePurchase' : 'pantry.addPurchase')} accessibilityState={{ disabled: !available.length || !measurements.ready }}
+      disabled={!available.length || !measurements.ready} onPress={() => {
+        if (!available.length || !measurements.ready || adding.current) return;
         adding.current = true;
-        if (!onAddPurchase(available)) { adding.current = false; setNoSpace(true); }
-      }} style={({ pressed }) => [styles.addPurchase, !available.length && styles.addPurchaseDisabled,
+        if (!onAddPurchase(available, measurements.bounds)) { adding.current = false; setNoSpace(true); }
+      }} style={({ pressed }) => [styles.addPurchase, (!available.length || !measurements.ready) && styles.addPurchaseDisabled,
         pressed && styles.addPurchasePressed]}>
       <Ionicons name="basket-outline" size={16} color={colors.white} />
-      <Text style={styles.addPurchaseText}>{t('pantry.addPurchase')}</Text>
+      {available.length > 0 && !measurements.ready && !measurements.failed && <ActivityIndicator color={colors.white} />}
+      <Text style={styles.addPurchaseText}>{t(available.length > 0 && !measurements.ready && !measurements.failed ? 'pantry.measuringProducts' : section === 'fridge' ? 'pantry.addFridgePurchase' : 'pantry.addPurchase')}</Text>
     </Pressable>
   </View>;
 }

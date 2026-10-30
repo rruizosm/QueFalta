@@ -1,0 +1,17 @@
+{
+  "id": "2001780220",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/945397_00_1.jpg",
+  "sourceSha256": "c268361f8563928590aba38f9ebe76fed54abf20e98ea9b934f904eb79ecff88",
+  "outputSha256": "fb9f66c7261793c13a53ff20040e5dd94bc2dca40cd43eeddf68ee865b865ce4",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2001780220.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-ff7d8ff4-8687-455a-b73c-969e95b5e381.png",
+  "visualReview": "Same Vitakraft Vegetal Clean Papel pet-litter bag,25L visible on side; original pet illustration, handle and full bag retained; external background and handle hole transparent.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 1371591,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.938Z"
+}

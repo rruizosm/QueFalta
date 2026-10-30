@@ -1,0 +1,15 @@
+{
+  "id": "520660501",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/722524_00_1.jpg",
+  "sourceSha256": "3705ebb75f8cd15e8b33551206ce5cac6fdea2c42eb18a68493147ff6ce36500",
+  "outputSha256": "24468f7797fbdf03d45598e37b318d252bc13fc692bc07f87a801897eea90365",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660501.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-ce27dd2f-5f6f-4836-8ef2-70d4ae185fac.png",
+  "visualReview": "Complete Coca-Cola zero500ml bottle, cap and bottom inside frame; label and volume preserved, alpha exterior.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 609753,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.394Z"
+}

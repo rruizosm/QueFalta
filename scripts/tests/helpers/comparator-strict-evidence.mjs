@@ -22,8 +22,9 @@ const AUTHORIZED_SUCCESSORS = {
     beforePerformance: '078695507db8cc52d318a93cfd5a09b033a4f300e95aff7256f66efe13b6e5fa',
     beforeBm: 'c23ec155765095c0bf03fa2f7e34da418bf35fbe7b2268e491bdebfcb0b8cc29',
     beforeEljamon: '6dbf7453cff4b4453b99cb9cbe1e9873c51179f306f4d1571a1fa57b0b45db84',
-    to: '8a2744301b69145b7050d48e293c238b36c1e928d97e8c19e24d3db8ca0692db',
-    reason: 'Lidl-specific detail resolution, session caching, BM location-specific detail support on 2026-09-20, then El Jamón detail routing in the owner-requested full-branch merge on 2026-09-28',
+    beforeOctober30Publication: '8a2744301b69145b7050d48e293c238b36c1e928d97e8c19e24d3db8ca0692db',
+    to: '28c3b0484d8b6a2a1194a45cc9954712573c1ff0e6f00bded82f0eb5785cf00a',
+    reason: 'Owner-published cf346108 adds optional rounded sheet corners; retailer detail routing is unchanged; Lidl-specific detail resolution, session caching, BM location-specific detail support on 2026-09-20, then El Jamón detail routing in the owner-requested full-branch merge on 2026-09-28',
   },
   'src/api/catalog.ts': {
     from: 'bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05',
@@ -37,8 +38,9 @@ const AUTHORIZED_SUCCESSORS = {
     beforeEljamon: '5235e20af5c2ddc940ec75036f600a478eb5a57175ac84f031b2621260982769',
     beforeOctoberIntegration: '73a34f066bec549986e54623f6f36007edc306cf13c371037834a76d73cc1d2d',
     beforeMacCatalogChanges: '45938c5ce3fcee4927b3176d364f7d81da80380a2d749245ae6994d3b87a2d06',
-    to: 'ca50abc78b0e27ddb5e8441816ad9c98e98428fefc3b00f45f0d3686d5941422',
-    reason: 'Carrefour paginated offer RPC through main 8149d84, followed by Mac catalog integration in cba85df; current bytes verified during the 2026-10-21 Mac/Windows merge',
+    beforeOctober30Publication: 'ca50abc78b0e27ddb5e8441816ad9c98e98428fefc3b00f45f0d3686d5941422',
+    to: '2cfa7ed225791e8c54a2e60eaf8f5cdd4b2bca16b0c02868827e297cf7d9a811',
+    reason: 'Owner-published cf346108 adds materialized gluten-free filters, lightweight Bonpreu lists and price pagination; historical receipts remain immutable; Carrefour paginated offer RPC through main 8149d84, followed by Mac catalog integration in cba85df; current bytes verified during the 2026-10-21 Mac/Windows merge',
   },
 };
 

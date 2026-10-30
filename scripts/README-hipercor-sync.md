@@ -1,5 +1,13 @@
 # Sync de Hipercor
 
+La clasificación sin gluten por nombre se guarda en `hipercor_product_master`
+y en el espejo legado, y se expone en `hipercor_product_centers` sin añadir una
+columna a precios. La regla común está en `lib/gluten-free-names.mjs`;
+`20261022125140_name_gluten_free_catalogs.sql` ya está aplicada.
+La consulta progresiva por centro está preparada; el usuario ha pospuesto la
+incorporación de Hipercor al selector de la app. Ver
+[reglas y validación](README-gluten-free-names.md).
+
 El estado completo de la integración, las tablas y las decisiones de arquitectura
 están en [`HIPERCOR.md`](../HIPERCOR.md).
 

@@ -1,0 +1,15 @@
+{
+  "id": "520660358",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/029195_00_1.jpg",
+  "sourceSha256": "8fd43144d4018d0da7f759ac30ec2cc75720266d843f4a3e61bb148e0e838af7",
+  "outputSha256": "4247421f2afb90ff58f9d5744b39587ebcc02e98fc1eeeeb80ba91ecec47cc56",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660358.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-aa2f5b9f-0dd3-4b95-8278-ff619fe9b716.png",
+  "visualReview": "Complete Capicua suave olive-pomace oil1L bottle with black cap, original green/yellow oil and white-green label, transparent exterior.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 555353,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.373Z"
+}

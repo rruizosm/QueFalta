@@ -169,7 +169,7 @@ export default function EditProfileScreen() {
       behavior="padding"
     >
       <View style={styles.container}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} />
 
         <ProfileSubscreenHeader
           title={t('editProfile.title')}

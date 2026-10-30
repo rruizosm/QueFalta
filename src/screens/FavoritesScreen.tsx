@@ -19,7 +19,7 @@ import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../consta
 import type { FavoriteCategory } from '../types';
 import StoreProductList from '../components/StoreProductList';
 import StoreDropdown from '../components/StoreDropdown';
-import { type ViewMode } from '../components/ViewModeToggle';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
 import ActionSheet from '../components/ActionSheet';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
@@ -377,26 +377,7 @@ export default function FavoritesScreen() {
             </View>
 
             <View style={styles.prodViewGroup}>
-              {glassAvailable || Platform.OS === 'android' ? (
-                <SlidingSegments
-                  compact dense emphasized transparentTrack={Platform.OS === 'android'}
-                  segments={[
-                    { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
-                    { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
-                  ]}
-                  value={viewMode}
-                  onChange={(value) => setViewMode(value as ViewMode)}
-                />
-              ) : (
-                <View style={[styles.viewToggle, styles.prodToggleDense]}>
-                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'list' && styles.viewBtnOn]} onPress={() => setViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')}>
-                    <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'grid' && styles.viewBtnOn]} onPress={() => setViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')}>
-                    <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
-                  </TouchableOpacity>
-                </View>
-              )}
+              <ViewModeToggle value={viewMode} onChange={setViewMode} />
             </View>
           </>
         )}
@@ -505,7 +486,7 @@ export default function FavoritesScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && chrome}
 

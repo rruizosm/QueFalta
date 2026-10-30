@@ -24,7 +24,8 @@ import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
 import StoreDropdown from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import { type ViewMode } from '../components/ViewModeToggle';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
+import CatalogFilterButton from '../components/CatalogFilterButton';
 import SlidingSegments from '../components/SlidingSegments';
 import ProductFilterSheet, {
   PRICE_RANGES,
@@ -131,7 +132,7 @@ export default function OffersScreen() {
     () => storeOptions.filter((option) => !catalogStoreRequiresPlus(option.key, isPremium)),
     [isPremium, storeOptions],
   );
-  const { store, setStore } = useCatalogStore();
+  const { store, setStore, glutenOnly, setGlutenOnly } = useCatalogStore();
 
   const [items, setItems] = useState<StoreOffer[]>([]);
   const [cursor, setCursor] = useState<BrowseCursor | null>(null);
@@ -156,7 +157,7 @@ export default function OffersScreen() {
   const [productSearchExpanded, setProductSearchExpanded] = useState(false);
   const [queryInHeader, setQueryInHeader] = useState(false);
   const [sortPaywallVisible, setSortPaywallVisible] = useState(false);
-  const sheetFiltersActive = category.length > 0 || selectedOfferTypes.length > 0
+  const sheetFiltersActive = glutenOnly || category.length > 0 || selectedOfferTypes.length > 0
     || priceRange != null
     || (store === 'all' && filterStores.length > 0);
   const resultFiltersActive = sheetFiltersActive;
@@ -254,6 +255,7 @@ export default function OffersScreen() {
   }, [store]);
 
   const filters: OfferFilters = useMemo(() => ({
+    glutenOnly,
     search: debouncedQuery,
     categories: store === 'all' ? [] : category,
     offerTypes: store === 'all' ? [] : selectedOfferTypes as OfferType[],
@@ -261,7 +263,7 @@ export default function OffersScreen() {
     priceMax: priceRange != null ? PRICE_RANGES[priceRange].max : null,
     sort,
     pricePerUnitSort,
-  }), [store, debouncedQuery, category, selectedOfferTypes, priceRange, sort, pricePerUnitSort]);
+  }), [store, debouncedQuery, category, selectedOfferTypes, priceRange, sort, pricePerUnitSort, glutenOnly]);
 
   const availableStoreKeys = useMemo(() => stores.map((option) => option.key), [stores]);
   const offerStores = useMemo(
@@ -678,50 +680,11 @@ export default function OffersScreen() {
               ) : fallbackSortSegments(true)}
               </View>
 
-              {glassAvailable || Platform.OS === 'android' ? (
-                <SlidingSegments
-                  compact dense emphasized allowReselect
-                  transparentTrack={Platform.OS === 'android'}
-                  segments={[
-                    { key: 'filters', icon: 'options-outline', accessibilityLabel: t('filters.a11yOpen') },
-                  ]}
-                  value={sheetFiltersActive ? 'filters' : null}
-                  onChange={() => setFilterOpen(true)}
-                />
-              ) : (
-                <TouchableOpacity
-                  style={[styles.filterBtn, sheetFiltersActive && styles.filterBtnOn]}
-                  onPress={() => setFilterOpen(true)}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('filters.a11yOpen')}
-                >
-                  <Ionicons name="options-outline" size={20} color={sheetFiltersActive ? colors.white : colors.inkSoft} />
-                </TouchableOpacity>
-              )}
+              <CatalogFilterButton active={sheetFiltersActive} onPress={() => setFilterOpen(true)}
+                accessibilityLabel={t('filters.a11yOpen')} />
 
               <View style={styles.prodViewGroup}>
-              {glassAvailable || Platform.OS === 'android' ? (
-                <SlidingSegments
-                  compact dense emphasized
-                  transparentTrack={Platform.OS === 'android'}
-                  segments={[
-                    { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
-                    { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
-                  ]}
-                  value={viewMode}
-                  onChange={(value) => setViewMode(value as ViewMode)}
-                />
-              ) : (
-                <View style={[styles.viewToggle, styles.prodToggleDense]}>
-                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'list' && styles.viewBtnOn]} onPress={() => setViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')} accessibilityState={{ selected: viewMode === 'list' }}>
-                    <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'grid' && styles.viewBtnOn]} onPress={() => setViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')} accessibilityState={{ selected: viewMode === 'grid' }}>
-                    <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
-                  </TouchableOpacity>
-                </View>
-              )}
+                <ViewModeToggle value={viewMode} onChange={setViewMode} />
               </View>
             </>
           )}
@@ -747,7 +710,7 @@ export default function OffersScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && chrome}
 
@@ -771,7 +734,10 @@ export default function OffersScreen() {
 
       {/* Hoja de facetas: súper, tipo, categoría y rango de precio. */}
       <ProductFilterSheet
+        animateOptions
         visible={filterOpen}
+        glutenOnly={glutenOnly}
+        onGlutenOnlyChange={setGlutenOnly}
         onClose={() => setFilterOpen(false)}
         categories={categoriesKey ? categoriesCache[categoriesKey] ?? [] : []}
         category={category}

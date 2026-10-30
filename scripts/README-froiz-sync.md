@@ -7,6 +7,10 @@ productivo se lanza desde Windows mediante el wrapper local:
 .\scripts\run-froiz-sync.ps1
 ```
 
+El sync rellena `gluten_free_label` con la señal nativa
+`raw.properties.is_glutenfree` en cada upsert. El backfill de productos
+existentes está en `supabase/migrations/20261022130000_froiz_gadis_gluten_free_labels.sql`.
+
 El wrapper carga indirectamente las credenciales de `.env.local`, conserva los
 14 logs más recientes en `scripts/logs/` y, si el sync termina con código 0,
 ejecuta `sync-comparator-embedding-catalog.mjs` limitado a `STORES=froiz`.

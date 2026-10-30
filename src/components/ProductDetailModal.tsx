@@ -78,6 +78,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
   const [mirrorEan, setMirrorEan] = useState<string | null>(cachedDetail?.mirror.ean ?? null);
   const [mirrorNutrition, setMirrorNutrition] = useState<unknown | null>(cachedDetail?.mirror.nutrition ?? null);
   const [mirrorCategoryName, setMirrorCategoryName] = useState<string | null>(cachedDetail?.mirror.categoryName ?? null);
+  const [mirrorGlutenFree, setMirrorGlutenFree] = useState(cachedDetail?.mirror.glutenFreeByName ?? false);
 
   useEffect(() => {
     if (!productId) { setProduct(null); return; }
@@ -87,6 +88,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
       setMirrorEan(cached.mirror.ean);
       setMirrorNutrition(cached.mirror.nutrition);
       setMirrorCategoryName(cached.mirror.categoryName);
+      setMirrorGlutenFree(cached.mirror.glutenFreeByName ?? false);
       setLoading(false);
       setError(false);
       setQty(1);
@@ -98,6 +100,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
     setMirrorEan(null);
     setMirrorNutrition(null);
     setMirrorCategoryName(null);
+    setMirrorGlutenFree(false);
     setQty(1);
     let cancelled = false;
     (async () => {
@@ -118,6 +121,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
           setMirrorEan(mirror.ean);
           setMirrorNutrition(mirror.nutrition);
           setMirrorCategoryName(mirror.categoryName);
+          setMirrorGlutenFree(mirror.glutenFreeByName);
         }
       } catch {
         if (!cancelled) setError(true);
@@ -198,8 +202,8 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
         productName: product.display_name,
         quantity: qty,
         unit: 'ud',
-        // La 1ª categoría del detalle es la N1 de Mercadona → zona de la lista.
-        categoryName: product.categories?.[0]?.name ?? null,
+        // El último nivel de la ruta del producto es su subcategoría propia.
+        categoryName: product.categories?.at(-1)?.name ?? null,
         unitPrice: pi?.unit_price != null ? parseFloat(pi.unit_price) : null,
         imageUrl: photo ?? product.thumbnail ?? null,
         mercadonaProductId: product.id,
@@ -220,7 +224,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
 
   return (
     <View style={styles.overlay}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} />
 
         {/* Header */}
         <View style={[styles.header, { paddingTop: topInset }]}>
@@ -266,6 +270,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
               items={[
                 { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), nutritionInfo: nutrition.info },
                 { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: clean(d?.description) },
+                { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: mirrorGlutenFree ? t('product.glutenFreeDescription') : null },
                 { key: 'info', icon: 'information-circle-outline', title: t('product.sections.info'), text: clean(d?.counter_info) },
                 { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: clean(ingredients) },
                 { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: clean(d?.storage_instructions) },

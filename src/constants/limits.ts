@@ -21,6 +21,8 @@ export const PRICE_COMPARISON_ENABLED = true;
 
 /** Cupos incluidos en una cuenta gratuita. Alertas y comparador tienen gate servidor;
  * el de cestas de grupo se aplica de momento en el cliente. */
+/** Cupo independiente para Despensa y Nevera. */
+export const FREE_PANTRY_SHELF_LIMIT = 2;
 export const FREE_PRICE_ALERT_LIMIT = 1;
 export const FREE_COMPARATOR_SEARCH_LIMIT = 3;
 /** Número de cestas de grupo disponibles sin Plus. Unirse y crear sigue libre. */

@@ -11,7 +11,6 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
-  Image,
   RefreshControl,
   LayoutAnimation,
   Platform,
@@ -25,6 +24,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -802,7 +802,7 @@ export default function ListScreen() {
   return (
     <View style={styles.container}>
       <AmbientBubbleBackdrop showGradient={false} />
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && (
         <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
@@ -834,7 +834,15 @@ export default function ListScreen() {
                       accessibilityState={{ expanded: !section.storeCollapsed }}
                     >
                       {meta.icon ? (
-                        <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
+                        <Image
+                          source={meta.icon}
+                          placeholder={meta.icon}
+                          style={styles.storeHeaderIcon}
+                          contentFit="cover"
+                          placeholderContentFit="cover"
+                          cachePolicy="memory-disk"
+                          transition={0}
+                        />
                       ) : (
                         <Ionicons name="pricetag-outline" size={14} color={colors.inkSoft} />
                       )}
@@ -851,11 +859,11 @@ export default function ListScreen() {
                     <CompletedZoneHeader
                       completed={zoneCompleted}
                       collapsed={section.zoneCollapsed}
-                      label={t(`zones.${section.zone.key}`)}
+                      label={section.zone.label}
                       emoji={section.zone.emoji}
                       count={`${section.zoneInCart}/${section.zoneCount}`}
                       onPress={() => handleZonePress(section)}
-                      accessibilityLabel={t('list.toggleZoneA11y', { zone: t(`zones.${section.zone.key}`) })}
+                      accessibilityLabel={t('list.toggleZoneA11y', { zone: section.zone.label })}
                     />
                   )}
                 </View>
@@ -1014,6 +1022,9 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
   // `onLayout` llega después del primer dibujo. Si la zona ya estaba completa,
   // ese primer frame debe tener también su aspecto final; cuando conocemos el
   // ancho, las capas animadas lo sustituyen en el mismo render.
+  // No montar las capas con ancho cero: su translateX sería 0 incluso para
+  // una zona pendiente. Actualizar después el rango y la opacidad por drivers
+  // distintos podía revelar el fondo de completado durante un frame.
   const completedBeforeMeasurement = completed && width === 0;
 
   useEffect(() => {
@@ -1041,13 +1052,12 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ expanded: !collapsed }}
     >
-      <Animated.View
+      {width > 0 && <Animated.View
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, styles.zoneHeaderDone, {
-          opacity: width > 0 ? 1 : 0,
           transform: [{ translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [-width, 0] }) }],
         }]}
-      />
+      />}
       <Text style={styles.zoneHeaderEmoji}>{emoji}</Text>
       <Text style={[styles.zoneHeaderText, completedBeforeMeasurement && styles.zoneHeaderTextDone]}>{label}</Text>
       <Text style={[styles.zoneHeaderCount, completedBeforeMeasurement && styles.zoneHeaderTextDone]}>{count}</Text>
@@ -1056,11 +1066,11 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
         size={13}
         color={completedBeforeMeasurement ? '#ffffff' : colors.inkFaint}
       />
-      <Animated.View
+      {width > 0 && <Animated.View
         pointerEvents="none"
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
-        style={[StyleSheet.absoluteFill, { overflow: 'hidden', opacity: width > 0 ? 1 : 0,
+        style={[StyleSheet.absoluteFill, { overflow: 'hidden',
           transform: [{ translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [-width, 0] }) }],
         }]}
       >
@@ -1072,7 +1082,7 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
         <Text style={[styles.zoneHeaderCount, styles.zoneHeaderTextDone]}>{count}</Text>
         <Ionicons name={collapsed ? 'chevron-forward' : 'chevron-down'} size={13} color="#ffffff" />
         </Animated.View>
-      </Animated.View>
+      </Animated.View>}
     </TouchableOpacity>
   );
 }
@@ -1378,7 +1388,7 @@ const themedStyles = () => StyleSheet.create({
   itemSeparator: { height: 2 },
   itemRow: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 13, paddingVertical: 12,
+    paddingHorizontal: 13, paddingVertical: 8,
     gap: 10,
   },
   checkbox: {
@@ -1440,7 +1450,7 @@ const themedStyles = () => StyleSheet.create({
   footerAction: {
     flex: 1, minWidth: 0,
     flexDirection: 'row', alignItems: 'center', gap: 7,
-    paddingHorizontal: 12, paddingVertical: 8,
+    paddingHorizontal: 12, paddingVertical: 0,
   },
   footerActionContent: { flex: 1, minWidth: 0 },
   footerActionTitle: {

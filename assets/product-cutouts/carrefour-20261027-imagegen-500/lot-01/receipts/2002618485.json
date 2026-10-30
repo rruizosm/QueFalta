@@ -1,0 +1,17 @@
+{
+  "id": "2002618485",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/001443_00_1.jpg",
+  "sourceSha256": "c4d8be9e332874ef4bf21c2ba1d947190c5fa5fe9751230d3519ad57d1b09be3",
+  "outputSha256": "32a08cb4109830f85723abdf386a7a1dcdb700b509b59f01c6375ffeeb3d6e09",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2002618485.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-ff5e21a3-85dd-4e1a-b5e3-9983650406c2.png",
+  "visualReview": "Whole pale-blue Denenes Original gel shampoo bottle, characteristic wavy silhouette, label and cap retained; external alpha transparent and white label remains opaque.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 696823,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:44.373Z"
+}

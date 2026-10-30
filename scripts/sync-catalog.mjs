@@ -33,6 +33,7 @@ import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { PROVINCE_COMMUNITY } from './lib/province-community.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { hasGlutenFreeName } from './lib/gluten-free-names.mjs';
 import { createSharedCooldown } from './lib/mercadona-rate-limit.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -401,6 +402,7 @@ async function main() {
   console.log(`[sync] ${caNames.size} nombres en català`);
   for (const row of products.values()) {
     row.display_name_ca = caNames.get(row.id) ?? null;
+    row.gluten_free_label = hasGlutenFreeName(row.display_name, row.display_name_ca);
   }
 
   // 2c) Exclusividad regional: de los almacenes donde aparece cada producto. Si no

@@ -262,6 +262,7 @@ function normalize(p) {
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.state ? p.state === 'ACTIVE' : true,
     published: true,
+    gluten_free_label: p.without_gluten === 1 || p.without_gluten === '1' || p.without_gluten === true,
     raw: p,
     synced_at: runStart,
   };

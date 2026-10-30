@@ -53,6 +53,10 @@ interface Props<K extends string> {
   height?: number;
   /** Segmentos cuadrados de ancho fijo y solo icono (p. ej. lista/cuadrícula). */
   compact?: boolean;
+  /** Solo iconos pulsables, sin pista ni fondo de selección. */
+  iconsOnly?: boolean;
+  /** Muestra solo la opción actual y avanza a la siguiente al pulsarla. */
+  currentOnly?: boolean;
   /** Variante más estrecha para filas con varios controles compactos. */
   dense?: boolean;
   /** Refuerza el perímetro para selectores principales sobre Liquid Glass. */
@@ -76,7 +80,7 @@ function hexToRgba(hex: string, a: number): string {
 }
 
 export default function SlidingSegments<K extends string>({
-  segments, value, onChange, style, height, compact = false, dense = false, emphasized = false,
+  segments, value, onChange, style, height, compact = false, iconsOnly = false, currentOnly = false, dense = false, emphasized = false,
   condensed = false, transparentTrack = false, opaqueSelection = false,
   allowReselect = false, activationDirection,
 }: Props<K>) {
@@ -105,7 +109,9 @@ export default function SlidingSegments<K extends string>({
       return;
     }
     if (activeX == null || activeW <= 0) return;
-    const target = activeX;
+    // onLayout incluye el borde de la pista; la capa absoluta ya parte
+    // de su cara interior. Descontarlo evita desplazar el círculo 1 pt.
+    const target = activeX - (compact && dense ? 1 : 0);
     if (reducedMotion) {
       translateX.setValue(target);
       stretch.setValue(0);
@@ -137,7 +143,7 @@ export default function SlidingSegments<K extends string>({
       Animated.timing(stretch, { toValue: 1, duration: 170, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       Animated.spring(stretch, { toValue: 0, useNativeDriver: true, stiffness: 120, damping: 9, mass: 0.7 }),
     ]).start();
-  }, [active, activeW, activeX, activationDirection, reducedMotion, stretch, translateX]);
+  }, [active, activeW, activeX, activationDirection, compact, dense, reducedMotion, stretch, translateX]);
 
   const scaleX = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const scaleY = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.92] });
@@ -180,15 +186,16 @@ export default function SlidingSegments<K extends string>({
         emphasized && emphasizedTrackColors,
         transparentTrack && styles.trackTransparent,
         opaqueSelection && { backgroundColor: colors.white, borderColor: colors.border },
-        !emphasized && style,
+        iconsOnly && styles.iconsOnlyTrack,
+        (!emphasized || iconsOnly) && style,
       ]}
     >
-      {emphasized && !transparentTrack && scheme !== 'dark' && (
+      {!iconsOnly && emphasized && !transparentTrack && scheme !== 'dark' && (
         <View pointerEvents="none" style={styles.trackHighlight} />
       )}
 
       {/* Píldora deslizante de acento. */}
-      {activeW > 0 && active >= 0 && (
+      {!iconsOnly && activeW > 0 && active >= 0 && (
         <Animated.View
           pointerEvents="none"
           style={[
@@ -215,27 +222,28 @@ export default function SlidingSegments<K extends string>({
       )}
 
       {segments.map((s, i) => {
+        if (currentOnly && i !== Math.max(0, active)) return null;
         const focused = i === active;
-        const color = focused ? (opaqueSelection ? '#fff' : accent) : colors.inkSoft;
+        const color = focused ? (opaqueSelection && !iconsOnly ? '#fff' : accent) : colors.inkSoft;
         return (
           <Pressable
             key={s.key}
-            style={[styles.seg, compact && styles.segCompact, dense && styles.segDense]}
+            style={[styles.seg, compact && styles.segCompact, dense && styles.segDense, iconsOnly && styles.iconsOnlySegment]}
             onLayout={(e) => onSegmentLayout(i, e)}
             accessibilityRole="button"
             accessibilityState={{ selected: focused }}
             accessibilityLabel={s.accessibilityLabel ?? s.label}
             onPress={() => {
-              if (!focused || allowReselect) {
+              if (currentOnly || !focused || allowReselect) {
                 Haptics.selectionAsync();
-                onChange(s.key);
+                onChange(currentOnly ? segments[(i + 1) % segments.length].key : s.key);
               }
             }}
           >
             {s.icon ? (
               <Ionicons
                 name={s.icon}
-                size={s.label ? 13 : 19}
+                size={s.label ? 13 : iconsOnly ? 22 : 19}
                 color={color}
                 style={s.icon === 'grid' && !s.label ? styles.gridIconOptical : undefined}
               />
@@ -257,7 +265,7 @@ export default function SlidingSegments<K extends string>({
     </View>
   );
 
-  if (!emphasized) return track;
+  if (!emphasized || iconsOnly) return track;
 
   return (
     <View
@@ -287,6 +295,11 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.55)',
     overflow: 'hidden',
   },
+  iconsOnlyTrack: {
+    height: 44, padding: 0, borderWidth: 0,
+    backgroundColor: 'transparent', justifyContent: 'space-between',
+  },
+  iconsOnlySegment: { flex: 0, width: 44, minHeight: 44 },
   // Compact: la pista se ciñe a su contenido (segmentos de ancho fijo).
   trackCompact: { alignSelf: 'center' },
   emphasizedShell: {
@@ -330,11 +343,11 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)',
     overflow: 'hidden',
   },
-  // El segmento dense mide 32 pt y empieza tras borde + padding (4 pt).
-  // Usar el mismo inset vertical crea un círculo 32×32 concéntrico.
+  // La posición absoluta parte de dentro del borde: PAD deja 4 pt exteriores
+  // por lado y produce un círculo 32×32 en la pista de 40 pt.
   pillDenseCompact: {
-    top: PAD + 1,
-    bottom: PAD + 1,
+    top: PAD,
+    bottom: PAD,
     borderRadius: DENSE_COMPACT_SEG_W / 2,
   },
   pillEmphasized: { borderRadius: EMPHASIZED_PILL_RADIUS },

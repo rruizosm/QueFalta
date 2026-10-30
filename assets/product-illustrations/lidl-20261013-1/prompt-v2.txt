@@ -1,4 +1,0 @@
-Use case: background-extraction
-Edit target: the illustrated Leyma Natura semi-skimmed milk carton in the supplied image.
-Keep the carton artwork, LEYMA NATURA logo, SEMIDESNATADA label, blue cow, white cap and 1L text unchanged.
-Remove absolutely all of the fuzzy gray, beige and green exterior glow and cast shadow around the carton. Every pixel outside the clean carton silhouette must be fully transparent, not translucent colored haze. Preserve opaque white carton areas. No floor, no backdrop, no glow, no halo, no shadow, no checkerboard pixels. Show the entire carton with a small even fully transparent margin, keep its printed illustration style.

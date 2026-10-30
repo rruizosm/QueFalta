@@ -21,7 +21,7 @@ export default function BootLoader() {
       accessibilityLabel={t('common.loading')}
       accessibilityState={{ busy: true }}
     >
-      <StatusBar barStyle="dark-content" backgroundColor={LOGO_BG} />
+      <StatusBar barStyle="dark-content" />
       <Image source={LOGO} resizeMode="contain" style={styles.logo} accessible={false} />
     </View>
   );

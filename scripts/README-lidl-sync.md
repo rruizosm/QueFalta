@@ -1,5 +1,14 @@
 # Sync Lidl
 
+## Sin gluten por nombre (2026-10-22)
+
+La normalización y `lidlProductMasterRow` escriben `gluten_free_label` mediante
+`lib/gluten-free-names.mjs`. La bandera vive en `lidl_product_master` y se
+proyecta en `lidl_product_stores`; no se duplica en precios. El espejo legado
+también conserva el booleano. La carga del filtro respeta la tienda elegida.
+Migración aplicada: `20261022125140_name_gluten_free_catalogs.sql`.
+Ver [reglas y validación](README-gluten-free-names.md).
+
 ## Barrido semanal en Windows (preparado, pendiente de instalar)
 
 El barrido completo pasa a `scripts/run-lidl-fleet.ps1`, como los syncs locales

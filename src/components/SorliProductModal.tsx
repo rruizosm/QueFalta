@@ -100,7 +100,7 @@ export default function SorliProductModal({ product, onClose, topInset = 16, bad
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -144,6 +144,7 @@ export default function SorliProductModal({ product, onClose, topInset = 16, bad
          *  en el listado; se muestra la categoría con el mismo diseño de tarjeta. */}
         <ProductInfoSections
           items={[
+            ...(product.glutenFreeByTag ? [{ key: 'glutenFree', icon: 'barley-off' as const, title: t('catalog.glutenFree'), text: t('product.glutenFreeDescription') }] : []),
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}
         />

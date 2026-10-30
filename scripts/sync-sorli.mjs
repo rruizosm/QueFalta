@@ -299,6 +299,8 @@ function normalize(p) {
     promo_start: offer?.promo_start ?? null,
     promo_end: offer?.promo_end ?? null,
     nutri_score: nutriScoreGrade(p),
+    gluten_free_label: Array.isArray(p.agrupaciones)
+      && p.agrupaciones.some((group) => String(group?.idAgrupacion ?? '') === '4'),
     available: p.desactivado !== true,
     published: true,
     raw: p,

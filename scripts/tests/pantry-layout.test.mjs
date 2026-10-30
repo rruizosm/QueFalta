@@ -19,8 +19,14 @@ const layout = load('lib/pantryLayout');
 const decodeItems = (raw) => layout.decodePantryLayout(raw).items;
 const encodeItems = (items) => layout.encodePantryLayout({ items, shelfCount: 3 });
 const product = { id: '10699', name: 'Leche entera sin lactosa Hacendado', illustrationUrl: 'https://example.com/milk.png' };
+// This fixture is a measured narrow carton; unknown images are tested separately.
+const cartonBounds = { left: .225, top: 0, right: .775, bottom: 1 };
+const measuredSlot = (index, shelfIndex = 0, shelfCount = 3) => layout.compactPantryRow(
+  Array.from({ length: Math.min(4, index) + 1 }, () => ({ x: 0, y: 0, size: .28, visibleBounds: cartonBounds })), shelfIndex, shelfCount).at(-1);
+const measuredDefault = (index, shelfCount = 3) => measuredSlot(index % 5, Math.floor(index / 5) % shelfCount, shelfCount);
 const item = (overrides = {}) => ({ instanceId: 'milk-1', product,
-  ...layout.clampPantryPlacement({ x: 0.3, y: 0, size: 0.28 }), ...overrides });
+  visibleBounds: cartonBounds, boundsImageUrl: product.illustrationUrl,
+  ...measuredDefault(0), ...overrides });
 
 test('shelf names and emojis round-trip without touching products or requiring a new layout version', () => {
   const saved = { items: [item()], shelfCount: 4 };
@@ -45,26 +51,26 @@ test('damaged shelf labels do not prevent recovering the inventory', () => {
 });
 
 test('extra shelves and their products survive storage, including empty shelves and legacy layouts', () => {
-  assert.deepEqual(layout.decodePantryLayout(null), { items: [], shelfCount: 3 });
+  assert.deepEqual(layout.decodePantryLayout(null), { items: [], shelfCount: 2 });
   assert.deepEqual(layout.decodePantryLayout(JSON.stringify({ version: 1, items: [item()] })),
     { items: [item()], shelfCount: 3 });
   for (const shelfCount of [4, 6, 12]) {
-    const items = [item(), item({ instanceId: 'last-shelf', ...layout.pantrySlotPlacement(2, shelfCount - 1, shelfCount) })];
+    const items = [item(), item({ instanceId: 'last-shelf', ...measuredSlot(0, shelfCount - 1, shelfCount) })];
     for (const entries of [[], items]) {
       const saved = { items: entries, shelfCount };
       assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(saved)), saved);
     }
     assert.equal(layout.availablePantrySlots([], shelfCount).length, shelfCount * 5);
-    assert.equal(layout.availablePantrySlots(items, shelfCount).length, shelfCount * 5 - 2);
+    assert.equal(layout.availablePantrySlots(items, shelfCount).length, shelfCount * 5 - 4);
   }
-  for (const shelfCount of [null, -1, 0, 2, 4.5, '4']) {
+  for (const shelfCount of [null, -1, 0, 4.5, '4']) {
     assert.equal(layout.decodePantryLayout(JSON.stringify({ version: 1, items: [], shelfCount })).shelfCount, 3);
   }
 });
 
 test('adding a fourth shelf recovers overflow and preserves existing product placements', () => {
-  const existing = Array.from({ length: 15 }, (_, i) => item({ instanceId: `full-${i}`, ...layout.defaultPantryPlacement(i) }));
-  const overflow = item({ instanceId: 'overflow' });
+  const existing = Array.from({ length: 15 }, (_, i) => item({ instanceId: `full-${i}`, ...measuredDefault(i) }));
+  const overflow = item({ instanceId: 'overflow', pendingPlacement: true });
   assert.equal(layout.arrangePantryItems([...existing, overflow]).unplaced.length, 1);
   const result = layout.arrangePantryItems([...existing, overflow], 4);
   assert.equal(result.unplaced.length, 0);
@@ -76,7 +82,7 @@ test('adding a fourth shelf recovers overflow and preserves existing product pla
 
 test('new products cycle through all three shelves', () => {
   for (let index = 0; index < 20; index++) {
-    const placement = layout.defaultPantryPlacement(index);
+    const placement = measuredDefault(index);
     const bottom = placement.y + placement.size * layout.PANTRY_ASPECT_RATIO / 2;
     assert.ok(Math.abs(bottom - layout.PANTRY_SHELF_SURFACE_YS[Math.floor(index / 5) % 3]) < 1e-10);
     assert.deepEqual(layout.clampPantryPlacement(placement), placement);
@@ -108,7 +114,7 @@ test('saved sizes are normalized inside the active shelf bounds', () => {
 
 test('legacy floating placements are anchored on read and write without removing products', () => {
   const legacy = [item({ y: 0.8 }), item({ instanceId: 'milk-2', x: 1, y: 0.1, size: 0.65 })];
-  const expected = legacy.map((entry) => ({ ...entry, ...layout.clampPantryPlacement(entry) }));
+  const expected = layout.normalizePantryItems(legacy);
   assert.deepEqual(decodeItems(JSON.stringify({ version: 1, items: legacy })), expected);
   assert.deepEqual(JSON.parse(encodeItems(legacy)).items, expected);
   assert.deepEqual(legacy.map((entry) => entry.y), [0.8, 0.1]);
@@ -116,17 +122,17 @@ test('legacy floating placements are anchored on read and write without removing
 
 function assertSeparated(items) {
   for (let shelfIndex = 0; shelfIndex < 3; shelfIndex++) {
-    const sorted = items.filter((item) => layout.pantryShelfIndex(item) === shelfIndex).sort((a, b) => a.x - b.x);
+    const sorted = items.filter((item) => layout.pantryShelfIndex(item) === shelfIndex).sort((a, b) => a.x - layout.pantryHorizontalExtents(a).left - (b.x - layout.pantryHorizontalExtents(b).left));
     for (let i = 0; i < sorted.length; i++) {
       const entry = sorted[i];
-      const entryWidth = layout.pantryProductWidth(entry.size);
-      assert.ok(entry.x - entryWidth / 2 >= layout.PANTRY_SHELF_INSET - 1e-9);
-      assert.ok(entry.x + entryWidth / 2 <= 1 - layout.PANTRY_SHELF_INSET + 1e-9);
+      const extent = layout.pantryHorizontalExtents(entry);
+      assert.ok(entry.x - extent.left >= layout.PANTRY_SHELF_INSET - 1e-9);
+      assert.ok(entry.x + extent.right <= 1 - layout.PANTRY_SHELF_INSET + 1e-9);
       assert.ok(Math.abs(entry.y + entry.size * layout.PANTRY_ASPECT_RATIO / 2 - layout.PANTRY_SHELF_SURFACE_YS[shelfIndex]) < 1e-9);
       const ceiling = shelfIndex === 0 ? 0 : layout.PANTRY_SHELF_SURFACE_YS[shelfIndex - 1] + layout.PANTRY_SHELF_CLEARANCE_Y;
       assert.ok(entry.y - entry.size * layout.PANTRY_ASPECT_RATIO / 2 >= ceiling - 1e-9);
-      if (i) assert.ok(entry.x - entryWidth / 2 >= sorted[i - 1].x
-        + layout.pantryProductWidth(sorted[i - 1].size) / 2 + layout.PANTRY_PRODUCT_GAP - 1e-9);
+      if (i) assert.ok(entry.x - extent.left >= sorted[i - 1].x
+        + layout.pantryHorizontalExtents(sorted[i - 1]).right + layout.PANTRY_PRODUCT_GAP - 1e-9);
     }
   }
 }
@@ -137,9 +143,9 @@ test('five slots per shelf expose only free add targets on that shelf', () => {
   assert.deepEqual(slots.map((slot) => slot.x), [...slots.map((slot) => slot.x)].sort((a, b) => a - b));
   assert.ok(layout.PANTRY_PRODUCT_FRAME_RATIO < 1);
   assert.equal(layout.availablePantrySlots([]).length, 15);
-  assert.equal(layout.availablePantrySlots([slots[2]]).length, 14);
+  assert.equal(layout.availablePantrySlots([slots[2]]).length, 12);
   assert.equal(layout.availablePantrySlots(slots).length, 10);
-  assertSeparated(slots);
+  assertSeparated(layout.arrangePantryItems(slots.map((placement, i) => item({ ...placement, visibleBounds: undefined, instanceId: `unknown-${i}` }))).placed);
 });
 
 test('collision snaps to the closest fitting gap on either side, leaving neighbours untouched', () => {
@@ -174,7 +180,7 @@ test('uses a farther gap when the nearer one is too small, including exact fits'
 test('a full or fragmented shelf rejects placements that do not fit', () => {
   const occupied = Array.from({ length: layout.PANTRY_SLOT_COUNT }, (_, index) => item({
     instanceId: `copy-${index}`,
-    ...layout.pantrySlotPlacement(index),
+    ...measuredSlot(index),
   }));
   const snapshot = structuredClone(occupied);
   assert.equal(layout.findPantryPlacement(item(), occupied), null);
@@ -217,7 +223,7 @@ test('many normalized legacy placements never overlap, change neighbours, or lea
 });
 
 test('saved placement survives reload, preserves copies, and ignores malformed items', () => {
-  const items = [item(), item({ instanceId: 'milk-2', x: 0.75 })];
+  const items = [item(), item({ instanceId: 'milk-2', ...measuredDefault(1) })];
   assert.deepEqual(decodeItems(encodeItems(items)), items);
   const raw = JSON.stringify({ version: 1, items: [...items, item(), item({ instanceId: 'invalid', product: { ...product, illustrationUrl: 'file:///secret.png' } }), item({ instanceId: 'null-x', x: null })] });
   assert.deepEqual(decodeItems(raw), items);
@@ -226,20 +232,20 @@ test('saved placement survives reload, preserves copies, and ignores malformed i
 });
 
 test('a full top shelf uses the next shelf without moving or shrinking its products', () => {
-  const top = Array.from({ length: 5 }, (_, i) => item({ instanceId: `top-${i}`, ...layout.pantrySlotPlacement(i) }));
+  const top = Array.from({ length: 5 }, (_, i) => item({ instanceId: `top-${i}`, ...measuredSlot(i) }));
   const snapshot = structuredClone(top);
-  assert.equal(layout.findPantryPlacement(layout.defaultPantryPlacement(0), top), null);
-  const sixth = layout.findPantryPlacementOnAnyShelf(layout.defaultPantryPlacement(0), top);
+  assert.equal(layout.findPantryPlacement(item(measuredDefault(0)), top), null);
+  const sixth = layout.findPantryPlacementOnAnyShelf(item(measuredDefault(0)), top);
   assert.equal(sixth.shelfIndex, 1);
   assert.equal(sixth.size, layout.PANTRY_DEFAULT_SIZE);
   assert.deepEqual(top, snapshot);
   const all = [...top];
   for (let i = 5; i < 15; i++) {
-    const placement = layout.findPantryPlacementOnAnyShelf(layout.defaultPantryPlacement(i), all);
+    const placement = layout.findPantryPlacementOnAnyShelf(item(measuredDefault(i)), all);
     assert.ok(placement);
     all.push(item({ instanceId: `added-${i}`, ...placement }));
   }
-  assert.equal(layout.findPantryPlacementOnAnyShelf(layout.defaultPantryPlacement(15), all), null);
+  assert.equal(layout.findPantryPlacementOnAnyShelf(item(measuredDefault(15)), all), null);
   assert.equal(layout.availablePantrySlots(all).length, 0);
   assertSeparated(all);
   assert.deepEqual(decodeItems(encodeItems(all)), all);
@@ -262,16 +268,16 @@ test('lower shelves collide independently and reject a too-tall transfer without
 
 test('legacy top-shelf overflow recovers without displacing saved lower-shelf owners', () => {
   const legacy = Array.from({ length: 6 }, (_, i) => {
-    const entry = item({ instanceId: `legacy-${i}`, ...layout.pantrySlotPlacement(i % 5) });
+    const entry = item({ instanceId: `legacy-${i}`, ...measuredSlot(i % 5) });
     delete entry.shelfIndex;
     return entry;
   });
-  const owner = item({ instanceId: 'middle-owner', ...layout.pantrySlotPlacement(0, 1) });
+  const owner = item({ instanceId: 'middle-owner', ...measuredSlot(0, 1) });
   const saved = decodeItems(JSON.stringify({ version: 1, items: [...legacy, owner] }));
   assert.equal(saved.length, 7);
   assert.deepEqual(saved.find((entry) => entry.instanceId === owner.instanceId), owner);
-  assert.equal(saved.find((entry) => entry.instanceId === 'legacy-5').shelfIndex, 1);
-  for (const entry of saved.filter((entry) => /^legacy-[0-4]$/.test(entry.instanceId))) assert.equal(entry.shelfIndex, 0);
+  assert.equal(saved.filter(entry => entry.instanceId.startsWith('legacy-') && entry.shelfIndex === 1).length, 1);
+  assert.equal(saved.filter(entry => entry.instanceId.startsWith('legacy-') && entry.shelfIndex === 0).length, 5);
   assertSeparated(saved);
   assert.deepEqual(decodeItems(encodeItems(saved)), saved);
 });
@@ -291,7 +297,7 @@ test('device storage is isolated by account; later edits cannot be overtaken by 
     },
   });
   const first = storage.writePantryLayout('alice', { items: [item()], shelfCount: 3 });
-  const second = storage.writePantryLayout('alice', { items: [item({ x: 0.6 })], shelfCount: 4 });
+  const second = storage.writePantryLayout('alice', { items: [item({ quantity: 9 })], shelfCount: 4 });
   const bob = storage.writePantryLayout('bob', { items: [], shelfCount: 5 });
   let readDone = false;
   const reading = storage.readPantryLayout('alice').then((value) => { readDone = true; return value; });
@@ -304,7 +310,7 @@ test('device storage is isolated by account; later edits cannot be overtaken by 
   assert.equal(started.length, 3);
   gates[2]();
   await second;
-  assert.equal((await reading).items[0].x, 0.6);
+  assert.equal((await reading).items[0].quantity, 9);
   assert.equal((await reading).shelfCount, 4);
   assert.deepEqual(await storage.readPantryLayout('bob'), { items: [], shelfCount: 5 });
 });
@@ -373,7 +379,7 @@ test('only published illustrated products are paginated, even after many unillus
 test('large separated pantries preserve item identity and placements through normalization', () => {
   const shelfCount = 100;
   const items = Array.from({ length: shelfCount * 5 }, (_, i) => item({ instanceId: `large-${i}`,
-    ...layout.defaultPantryPlacement(i, shelfCount) }));
+    ...measuredDefault(i, shelfCount) }));
   const before = structuredClone(items);
   const arranged = layout.arrangePantryItems(items, shelfCount);
   assert.deepEqual(arranged.unplaced, []);
@@ -403,16 +409,16 @@ test('fridge storage is separate per section and account, retaining the original
   assert.equal(storage.pantryStorageKey('alice'), '@pantry_layout:v1:alice');
   assert.equal(storage.pantryStorageKey('alice', 'pantry'), '@pantry_layout:v1:alice');
   assert.equal(storage.pantryStorageKey('alice', 'fridge'), '@fridge_layout:v1:alice');
-  assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), { items: [], shelfCount: 3 });
-  const cold = { items: [item({ ...layout.pantrySlotPlacement(3, 2) })], shelfCount: 4 };
+  assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), { items: [], shelfCount: 2 });
+  const cold = { items: [item({ ...measuredSlot(0, 2) })], shelfCount: 4 };
   await storage.writePantryLayout('alice', cold, 'fridge');
   assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), cold);
   assert.deepEqual(await storage.readPantryLayout('alice'), pantryLayout);
   assert.equal(saved.get('@pantry_layout:v1:alice'), pantryRaw, 'fridge edits must not even rewrite the cupboard');
-  assert.deepEqual(await storage.readPantryLayout('bob', 'fridge'), { items: [], shelfCount: 3 });
+  assert.deepEqual(await storage.readPantryLayout('bob', 'fridge'), { items: [], shelfCount: 2 });
   await storage.writePantryLayout('bob', { items: [], shelfCount: 8 }, 'fridge');
   assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), cold);
-  assert.deepEqual(await storage.readPantryLayout('bob'), { items: [], shelfCount: 3 });
+  assert.deepEqual(await storage.readPantryLayout('bob'), { items: [], shelfCount: 2 });
 });
 
 test('fridge writes stay ordered across remount reads without blocking cupboard writes', async () => {
@@ -428,7 +434,7 @@ test('fridge writes stay ordered across remount reads without blocking cupboard 
     },
   });
   const first = storage.writePantryLayout('alice', { items: [item()], shelfCount: 3 }, 'fridge');
-  const moved = { items: [item({ ...layout.pantrySlotPlacement(4, 3, 4) })], shelfCount: 4 };
+  const moved = { items: [item({ ...measuredSlot(0, 3, 4) })], shelfCount: 4 };
   const second = storage.writePantryLayout('alice', moved, 'fridge');
   let readDone = false;
   const remounted = storage.readPantryLayout('alice', 'fridge').then((value) => { readDone = true; return value; });
@@ -458,7 +464,7 @@ test('a corrupt fridge does not prevent reading the cupboard and failed saves ca
   });
   await assert.rejects(storage.readPantryLayout('alice', 'fridge'));
   assert.deepEqual(await storage.readPantryLayout('alice'), pantry);
-  const fridge = { items: [item({ ...layout.pantrySlotPlacement(2, 1) })], shelfCount: 3 };
+  const fridge = { items: [item({ ...measuredSlot(0, 1) })], shelfCount: 3 };
   await assert.rejects(storage.writePantryLayout('alice', fridge, 'fridge'));
   fail = false;
   await storage.writePantryLayout('alice', fridge, 'fridge');
@@ -468,7 +474,7 @@ test('a corrupt fridge does not prevent reading the cupboard and failed saves ca
 
 test('editable stock and notes survive storage without migrating legacy entries or merging copies', () => {
   const original = item();
-  const edited = item({ instanceId: 'milk-2', ...layout.defaultPantryPlacement(3), quantity: 7, notes: 'Abierto\nReservar para mañana' });
+  const edited = item({ instanceId: 'milk-2', ...measuredDefault(1), quantity: 7, notes: 'Abierto\nReservar para mañana' });
   const saved = { shelfCount: 3, items: [original, edited] };
   assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(saved)), saved);
   assert.equal(layout.pantryQuantity(original.quantity), 1);
@@ -485,13 +491,141 @@ test('editable stock and notes survive storage without migrating legacy entries 
 
 test('Lidl products and legacy Mercadona copies survive persistence without confusing their store', () => {
   const lidl = item({ instanceId: 'lidl-copy', product: { ...product, id: '8806215264107_ES', store: 'lidl' },
-    ...layout.defaultPantryPlacement(1) });
-  const legacy = item({ ...layout.defaultPantryPlacement(0) });
+    ...measuredDefault(1) });
+  const legacy = item({ ...measuredDefault(0) });
   const explicitMercadona = item({ instanceId: 'mercadona-copy', product: { ...product, store: 'mercadona' },
-    ...layout.defaultPantryPlacement(2) });
+    ...measuredDefault(2) });
   assert.deepEqual(decodeItems(encodeItems([legacy, lidl, explicitMercadona])), [legacy, lidl, explicitMercadona]);
-  for (const invalid of [{ ...product, store: 'carrefour' }, { ...product, id: '8806215264107_ES' },
+  for (const invalid of [{ ...product, store: 'aldi' }, { ...product, id: '8806215264107_ES' },
     { ...product, id: '../bad', store: 'lidl' }]) {
     assert.deepEqual(decodeItems(JSON.stringify({ version: 1, items: [item({ product: invalid })] })), []);
   }
+});
+
+test('all five Carrefour catalogue ID formats survive persistence and malformed ids are rejected', () => {
+  for (const id of ['520664611', 'fprod12345', 'prod1000001', 'VC4A-10018407', 'VC4AECOMM-10018407']) {
+    const saved = item({ product: { ...product, store: 'carrefour', id }, ...measuredDefault(0) });
+    assert.deepEqual(decodeItems(encodeItems([saved])), [saved]);
+  }
+  for (const id of ['../bad', 'fprod', '123_ES', '13*7690', 'VC4AECOMM-', 'VC4A-../10']) {
+    assert.deepEqual(decodeItems(JSON.stringify({ version: 1, items: [item({ product: { ...product, store: 'carrefour', id } })] })), []);
+  }
+});
+
+test('insert shelf between Galletas and Botes shifts stock and signs together and survives reload', () => {
+  const saved = { shelfCount: 4, kitchenLocations: ['Armario'], shelfLabels: {
+    0: { name: 'Galletas', emoji: '🍪' }, 2: { name: 'Botes', emoji: '🥫' },
+    3: { name: 'Otros', emoji: null },
+  }, items: [0, 1, 2, 3].map(index => item({ instanceId: `shelf-${index}`,
+    ...measuredSlot(0, index, 4), quantity: 2, notes: 'Conservar', kitchenLocation: 'Armario', expiryDate: '2027-01-01' })) };
+  const original = structuredClone(saved);
+  const next = layout.insertPantryShelfBelow(saved, 1);
+  assert.equal(next.shelfCount, 5);
+  assert.deepEqual(next.items.map(i => i.shelfIndex), [0, 1, 3, 4]);
+  assert.deepEqual(next.shelfLabels, { 0: saved.shelfLabels[0], 3: saved.shelfLabels[2], 4: saved.shelfLabels[3] });
+  for (let i = 0; i < saved.items.length; i++) {
+    const { y, shelfIndex, ...details } = next.items[i];
+    const { y: _y, shelfIndex: _shelfIndex, ...previous } = saved.items[i];
+    assert.deepEqual(details, previous);
+    assert.equal(y, layout.pantryShelfSurfaceY(shelfIndex) - next.items[i].size * layout.PANTRY_ASPECT_RATIO / 2);
+  }
+  assert.deepEqual(next.kitchenLocations, saved.kitchenLocations);
+  assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(next)), next);
+  assert.deepEqual(saved, original);
+});
+
+test('insert shelf handles first, last, unnamed and empty shelves and rejects stale indices', () => {
+  const saved = { shelfCount: 3, items: [item()] };
+  for (const index of [0, 2]) {
+    const next = layout.insertPantryShelfBelow(saved, index);
+    assert.equal(next.shelfCount, 4);
+    assert.deepEqual(next.items, saved.items);
+    assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(next)), next);
+  }
+  const empty = { shelfCount: 3, items: [] };
+  assert.deepEqual(layout.insertPantryShelfBelow(empty, 0), { shelfCount: 4, items: [] });
+  for (const index of [-1, 3, NaN, 0.5]) assert.equal(layout.insertPantryShelfBelow(saved, index), saved);
+});
+
+
+test('removing an empty middle shelf moves lower stock and signs up without losing details', () => {
+  const saved = { shelfCount: 4, kitchenLocations: ['Cocina'], shelfLabels: {
+    0: { name: 'Galletas', emoji: '🍪' }, 1: { name: 'Vacía', emoji: null },
+    2: { name: 'Botes', emoji: '🥫' }, 3: { name: 'Otros', emoji: null },
+  }, items: [0, 2, 3].map(index => item({ instanceId: `row-${index}`,
+    ...measuredSlot(0, index, 4), quantity: 7, expiryDate: '2027-01-01', notes: 'Guardar', kitchenLocation: 'Cocina' })) };
+  const original = structuredClone(saved);
+  assert.deepEqual(layout.removablePantryShelfIndices(saved), [0, 1, 2, 3]);
+  const next = layout.removePantryShelf(saved, 1);
+  assert.equal(next.shelfCount, 3);
+  assert.deepEqual(next.shelfLabels, { 0: saved.shelfLabels[0], 1: saved.shelfLabels[2], 2: saved.shelfLabels[3] });
+  assert.deepEqual(next.items, saved.items.map(entry => entry.shelfIndex === 0 ? entry : {
+    ...entry, shelfIndex: entry.shelfIndex - 1,
+    y: layout.pantryShelfSurfaceY(entry.shelfIndex - 1) - entry.size * layout.PANTRY_ASPECT_RATIO / 2,
+  }));
+  assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(next)), next);
+  assert.deepEqual(saved, original);
+});
+
+test('empty first and last shelves can be removed down to one and remain removed after reload', () => {
+  for (const index of [0, 2]) {
+    const saved = { shelfCount: 3, items: [item({ ...measuredSlot(0, 1) })] };
+    const next = layout.removePantryShelf(saved, index);
+    assert.equal(next.shelfCount, 2);
+    assert.deepEqual(next.items.map(i => i.shelfIndex), [index === 0 ? 0 : 1]);
+    assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(next)), next);
+  }
+  let empty = { shelfCount: 3, items: [] };
+  for (const shelfCount of [2, 1]) {
+    empty = layout.removePantryShelf(empty, 0);
+    assert.equal(empty.shelfCount, shelfCount);
+    assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(empty)), empty);
+  }
+  assert.equal(layout.removePantryShelf(empty, 0), empty);
+  assert.deepEqual(layout.removablePantryShelfIndices(empty), []);
+  assert.equal(layout.insertPantryShelfBelow(empty, 0).shelfCount, 2);
+});
+
+test('removing occupied first, middle and last shelves deletes all their stock and preserves neighbours', () => {
+  for (const index of [0, 1, 2]) {
+    const saved = { shelfCount: 3, kitchenLocations: ['Cocina'],
+      shelfLabels: Object.fromEntries([0, 1, 2].map(i => [i, { name: `Balda ${i}`, emoji: null }])),
+      items: [0, 1, 2].flatMap(i => [false, true].map(pendingPlacement => item({
+        instanceId: `${i}-${pendingPlacement}`, ...measuredSlot(pendingPlacement ? 1 : 0, i),
+        ...(pendingPlacement ? { pendingPlacement: true } : {}), quantity: 5, notes: 'Conservar', expiryDate: '2027-01-01', kitchenLocation: 'Cocina',
+      }))) };
+    const original = structuredClone(saved);
+    const next = layout.removePantryShelf(saved, index);
+    assert.equal(next.shelfCount, 2);
+    assert.equal(next.items.length, 4);
+    assert.deepEqual(next.items, layout.normalizePantryItems(saved.items.filter(entry => entry.shelfIndex !== index).map(entry =>
+      entry.shelfIndex < index ? entry : { ...entry, shelfIndex: entry.shelfIndex - 1,
+        y: layout.pantryShelfSurfaceY(entry.shelfIndex - 1) - entry.size * layout.PANTRY_ASPECT_RATIO / 2 }), 2));
+    assert.deepEqual(Object.values(next.shelfLabels).map(label => label.name),
+      [0, 1, 2].filter(i => i !== index).map(i => `Balda ${i}`));
+    assert.deepEqual(next.kitchenLocations, saved.kitchenLocations);
+    assert.deepEqual(layout.decodePantryLayout(layout.encodePantryLayout(next)), next);
+    assert.deepEqual(saved, original);
+  }
+});
+
+test('legacy top-shelf products are deleted, while invalid indices and the last shelf remain protected', () => {
+  const saved = { shelfCount: 3, items: [item({ shelfIndex: undefined })] };
+  assert.deepEqual(layout.removePantryShelf(saved, 0).items, []);
+  for (const index of [-1, 3, NaN, .5]) assert.equal(layout.removePantryShelf(saved, index), saved);
+  assert.deepEqual(layout.removablePantryShelfIndices(saved), [0, 1, 2]);
+  const last = { ...saved, shelfCount: 1 };
+  assert.equal(layout.removePantryShelf(last, 0), last);
+});
+
+test('sign ownership is derived from shelf order, stops at the next sign and follows label edits', () => {
+  const labels = { 1: { name: 'Desayuno', emoji: null }, 3: { name: '', emoji: '🥫' } };
+  assert.deepEqual([0, 1, 2, 3, 4].map(index => layout.pantryShelfGroupIndex(index, 5, labels)), [null, 1, 1, 3, 3]);
+  for (const index of [-1, 5, 1.5, NaN]) assert.equal(layout.pantryShelfGroupIndex(index, 5, labels), null);
+  assert.equal(layout.pantryShelfGroupIndex(2, 5), null);
+  const saved = { items: [], shelfCount: 5, shelfLabels: labels };
+  const removed = layout.updatePantryShelfLabel(saved, 3, null);
+  assert.equal(layout.pantryShelfGroupIndex(4, 5, removed.shelfLabels), 1);
+  const inserted = layout.updatePantryShelfLabel(saved, 2, { name: 'Nuevo', emoji: null });
+  assert.equal(layout.pantryShelfGroupIndex(2, 5, inserted.shelfLabels), 2);
 });

@@ -1,0 +1,15 @@
+{
+  "id": "2001651103",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/941495_00_1.jpg",
+  "sourceSha256": "87f70be1d97e2a7765c47c8be694bd840793e088e3057aa0224cb6f655368f54",
+  "outputSha256": "0234bc2ca2d667cae4423ba8476abe85fbe8b80f2c09d65daad38ec3a581d173",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2001651103.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-9a7512e5-c5c2-4b1c-a217-454dd544bd92.png",
+  "visualReview": "Complete low Monix casserole32cm black pot, glass lid and both orange handles; transparent backdrop and no floor shadow.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 779814,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.084Z"
+}

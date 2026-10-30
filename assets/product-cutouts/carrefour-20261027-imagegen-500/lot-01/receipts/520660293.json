@@ -1,0 +1,16 @@
+{
+  "id": "520660293",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/000016_00_1.jpg",
+  "sourceSha256": "f008c170ab44f21526ac6e77859985ae97459b322771e44fa4b9a07543eb2d59",
+  "outputSha256": "d90da45df691017c8f7964b8ac5cdbf045ab3bb7007204858f0f617dafa6e1ec",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660293.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-11be853c-75b5-43d8-88e9-d1e0e070b31c.png",
+  "visualReview": "Rejected: source is Carbonell750ml, output changed quantity to500ml. Preserve rejected output, replace with exclusive reserve.",
+  "validAlpha": true,
+  "visualReviewAccepted": false,
+  "bytes": 533954,
+  "sourceBytes": 6445,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.964Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "2002870081",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/542015_00_1.jpg",
+  "sourceSha256": "52267c83232000350776b1b1b7f8092df79268b532932ed44d412ec99147ef95",
+  "outputSha256": "0a5e66ebcb91ad29e7ffd5d6a4ead0abb57bb80c388ee0477be17f3650fe0f84",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2002870081.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-ea9dbe12-ecd4-46fe-9120-9c08f227ecfe.png",
+  "visualReview": "Compared with original source: complete same product and package, branding and key quantity retained, no wrong item or lost part; real external transparency and pale product surfaces preserved. Minor generative fine-detail changes remain within accepted sample behavior.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1261,
+  "height": 1247,
+  "bytes": 1736892,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:44.438Z"
+}

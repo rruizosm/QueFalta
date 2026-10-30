@@ -125,7 +125,7 @@ export default function NotificationsScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       <ProfileSubscreenHeader title={t('notifications.title')} icon="notifications-outline" headerTop={headerTop} />
       <ScrollView
         showsVerticalScrollIndicator={false}

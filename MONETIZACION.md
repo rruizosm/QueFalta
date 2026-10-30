@@ -38,10 +38,12 @@ de implementación; no un comportamiento ya desplegado.
 | Alertas personalizadas de precio y ofertas | 1 alerta | Ilimitadas |
 | Estadísticas personales de compra (supermercados, categorías y productos) | — | ✅ |
 | Puesto propio y mejores puestos de Palabra de hoy en ranking general | 🔒; podio y números de puesto visibles, resto difuminado desde el 4.º | ✅; Grupo siempre libre |
+| Baldas en Despensa y Nevera | 2 en cada apartado (4 en total) | Ilimitadas |
 | Extra cosmético: accents exclusivos | — | ✅ |
 
-## Beneficios comunicados en el paywall (2026-08-11)
+## Beneficios comunicados en el paywall (actualizado 2026-10-29)
 
+- **Productos ilimitados en la despensa:** baldas ilimitadas en Despensa y Nevera (free: dos por apartado). Los inventarios existentes se conservan al superar el cupo; ampliar requiere Plus.
 - Activar y consultar las cestas de todos los grupos sin el límite gratuito de 3.
 - Ordenar los productos por precio unitario para comparar por kg, litro o unidad.
 - Consultar el catálogo Lidl, sus novedades, ofertas y cambios de precio.

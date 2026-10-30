@@ -1,0 +1,15 @@
+{
+  "id": "2007970286",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/964837_00_1.jpg",
+  "sourceSha256": "8359a2a6da4c482b6f78e4e7ab3e5c9893e2498e4af814114ea2fbbd45ad86a6",
+  "outputSha256": "91b841f820af3659b13c59628146185286ac51871be2da76494d621f040491f1",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2007970286.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-c93177cc-83f9-4a20-bc40-3092c449ac17.png",
+  "visualReview": "Complete Purina Adventuros Sticks buffalo120g bag, labeling and stick window preserved, hanging slot clear.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1860326,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.242Z"
+}

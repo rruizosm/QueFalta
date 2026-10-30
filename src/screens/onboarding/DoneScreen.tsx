@@ -54,7 +54,7 @@ export default function DoneScreen({ route }: Props) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.blue} />
+      <StatusBar barStyle="light-content" />
       <AmbientBubbleBackdrop showGradient={false} onBlue />
       <ScrollView
         style={styles.scroll}

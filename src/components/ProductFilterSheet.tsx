@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type ComponentProps } from 'react';
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import {
-  PanResponder, ScrollView, View, Text, Image, Modal, Pressable,
-  TouchableOpacity, StyleSheet,
+  Animated as ModalAnimated, Easing as ModalEasing, PanResponder, ScrollView, View, Text, Image, Modal, Pressable,
+  TouchableOpacity, StyleSheet, useWindowDimensions,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,8 +14,10 @@ import { CATALOG_STORES } from '../constants/stores';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
 import { limitsApply } from '../constants/limits';
 import HardShadow from './HardShadow';
+import GlutenFilterOption from './GlutenFilterOption';
 import PaywallModal from './PaywallModal';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -26,6 +28,37 @@ export interface FilterGroup {
   label: string;
   options: FilterOption[];
   loading?: boolean;
+}
+
+function CategoryExpansion({ open, reducedMotion, children }: { open: boolean; reducedMotion: boolean; children: ReactNode }) {
+  const height = useSharedValue(0);
+  const progress = useSharedValue(0);
+  useEffect(() => {
+    progress.set(withTiming(open ? 1 : 0, {
+      duration: reducedMotion ? 0 : 240, easing: Easing.inOut(Easing.cubic),
+    }));
+  }, [open, reducedMotion, progress]);
+  // La medida puede variar mientras un subgrupo se despliega. Seguirla sin
+  // reiniciar el timing evita encadenar expansiones y pausas en el contenedor.
+  const transition = useAnimatedStyle(() => ({
+    height: height.value * progress.value, opacity: progress.value,
+  }));
+  return <Animated.View style={[{ overflow: 'hidden' }, transition]} pointerEvents={open ? 'auto' : 'none'}
+    accessibilityElementsHidden={!open} importantForAccessibility={open ? 'auto' : 'no-hide-descendants'}>
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+      onLayout={({ nativeEvent }) => height.set(nativeEvent.layout.height)}>{children}</View>
+  </Animated.View>;
+}
+
+function FilterChevron({ open, reducedMotion }: { open: boolean; reducedMotion: boolean }) {
+  const progress = useSharedValue(open ? 1 : 0);
+  useEffect(() => {
+    progress.set(withTiming(open ? 1 : 0, {
+      duration: reducedMotion ? 0 : 240, easing: Easing.inOut(Easing.cubic),
+    }));
+  }, [open, reducedMotion, progress]);
+  const rotation = useAnimatedStyle(() => ({ transform: [{ rotate: `${progress.value * 180}deg` }] }));
+  return <Animated.View style={rotation}><Ionicons name="chevron-down" size={17} color={colors.inkSoft} /></Animated.View>;
 }
 
 /** Rangos de precio ofrecidos (min exclusivo, max inclusivo; max null = sin tope).
@@ -47,6 +80,9 @@ export const PRICE_CHANGE_RANGES: { min: number; max: number | null }[] = [
 ];
 
 interface Props {
+  animateOptions?: boolean;
+  glutenOnly?: boolean;
+  onGlutenOnlyChange?: (value: boolean) => void;
   visible: boolean;
   onClose: () => void;
   /** Categorías disponibles en la lista actual (únicas, ya ordenadas). */
@@ -94,7 +130,7 @@ interface Props {
  * "Todas"/vacío = sin filtro para esa faceta.
  */
 export default function ProductFilterSheet({
-  visible, onClose,
+  visible, onClose, glutenOnly = false, onGlutenOnlyChange, animateOptions = false,
   categories, category, onCategory,
   priceRange, onPriceRange,
   sort, onSort,
@@ -112,6 +148,30 @@ export default function ProductFilterSheet({
   const { t } = useTranslation();
   const { isPremium, loading: profileLoading } = useProfile();
   const reducedMotion = useReducedMotion();
+  const { height: windowHeight } = useWindowDimensions();
+  const [presented, setPresented] = useState(visible);
+  const [sheetHeight, setSheetHeight] = useState(0);
+  const sheetMeasured = sheetHeight > 0;
+  const transition = useRef(new ModalAnimated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) setPresented(true);
+  }, [visible]);
+
+  useEffect(() => {
+    if (!presented || !sheetMeasured) return;
+    const animation = ModalAnimated.timing(transition, {
+      toValue: visible ? 1 : 0,
+      duration: reducedMotion ? 0 : visible ? 280 : 220,
+      easing: visible ? ModalEasing.out(ModalEasing.cubic) : ModalEasing.inOut(ModalEasing.quad),
+      useNativeDriver: true,
+    });
+    animation.start(({ finished }) => {
+      if (finished && !visible) setPresented(false);
+    });
+    return () => animation.stop();
+  }, [visible, presented, sheetMeasured, reducedMotion, transition]);
+
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -124,9 +184,8 @@ export default function ProductFilterSheet({
   const closingRef = useRef(false);
   const closeRef = useRef<() => void>(() => {});
 
-  // El cierre cambia el estado inmediatamente y deja toda la transición al
-  // Modal nativo. Así nunca hay dos animaciones ni un callback tardío capaz de
-  // volver a mostrar la hoja.
+  // Solicita el cierre una sola vez; el modal permanece montado hasta que
+  // acaban el desplazamiento de la hoja y el fundido del fondo.
   closeRef.current = () => {
     if (closingRef.current) return;
     closingRef.current = true;
@@ -162,10 +221,11 @@ export default function ProductFilterSheet({
     },
     onPanResponderTerminationRequest: () => false,
   })).current;
-  const hasFilters = category.length > 0 || priceRange != null || priceChangeRange != null
+  const hasFilters = glutenOnly || category.length > 0 || priceRange != null || priceChangeRange != null
     || (showSortControls && (sort != null || pricePerUnitSort != null))
     || selectedOfferTypes.length > 0 || selectedStores.length > 0;
   const clearAll = () => {
+    onGlutenOnlyChange?.(false);
     onCategory([]);
     onPriceRange(null);
     if (showSortControls) onSort(null);
@@ -298,11 +358,15 @@ export default function ProductFilterSheet({
         )}
       </View>
       <Text style={plusAppearance ? styles.visualSectionTitle : styles.sectionTitle}>{label}</Text>
-      <Ionicons name={collapsed ? 'chevron-down' : 'chevron-up'} size={17} color={colors.inkSoft} />
+      {animateOptions ? <FilterChevron open={!collapsed} reducedMotion={reducedMotion} />
+        : <Ionicons name={collapsed ? 'chevron-down' : 'chevron-up'} size={17} color={colors.inkSoft} />}
     </TouchableOpacity>;
   };
 
   const sectionOpen = (label: string) => !(collapsedSections[label] ?? false);
+  const sectionOptions = (label: string, children: ReactNode) => animateOptions
+    ? <CategoryExpansion open={sectionOpen(label)} reducedMotion={reducedMotion}>{children}</CategoryExpansion>
+    : sectionOpen(label) ? children : null;
 
   const storeIcon = (key: string) => CATALOG_STORES.find((store) => store.key === key)?.icon ?? null;
   const storeChip = (value: string, label: string, on: boolean, onPress: () => void) => (
@@ -334,7 +398,7 @@ export default function ProductFilterSheet({
     return (
       <>
         {sectionHeading(title, categoryIcons ? 'grid-outline' : 'pricetag-outline')}
-        <View style={styles.groupList}>
+        {sectionOptions(title, <View style={styles.groupList}>
           {groups.map((group) => {
             const count = group.options.filter((option) => selected.includes(option.value)).length;
             const expanded = activeGroup === group.key;
@@ -353,9 +417,11 @@ export default function ProductFilterSheet({
                   {storeIcon(group.key) ? <Image source={storeIcon(group.key) as number} style={styles.groupStoreLogo} resizeMode="contain" /> : null}
                   <Text style={styles.groupName}>{group.label}</Text>
                   {count > 0 && <Text style={styles.groupCount}>{count}</Text>}
-                  <Ionicons name={expanded ? 'chevron-up' : 'chevron-forward'} size={18} color={colors.inkSoft} />
+                  {animateOptions ? <FilterChevron open={expanded} reducedMotion={reducedMotion} />
+                    : <Ionicons name={expanded ? 'chevron-up' : 'chevron-forward'} size={18} color={colors.inkSoft} />}
                 </TouchableOpacity>
-                {expanded && (
+                {(expanded || categoryIcons || animateOptions) && (
+                  <CategoryExpansion open={expanded} reducedMotion={categoryIcons || animateOptions ? reducedMotion : true}>
                   <View style={styles.groupExpanded}>
                     {group.loading ? (
                       <Text style={styles.groupLoading}>{t('common.loading')}</Text>
@@ -376,11 +442,12 @@ export default function ProductFilterSheet({
                       </View>
                     )}
                   </View>
+                  </CategoryExpansion>
                 )}
               </View>
             );
           })}
-        </View>
+        </View>)}
       </>
     );
   };
@@ -388,16 +455,24 @@ export default function ProductFilterSheet({
   return (
     <>
       <Modal
-      visible={visible}
+      visible={presented}
       transparent
-      animationType={reducedMotion ? 'none' : 'slide'}
+      animationType="none"
       statusBarTranslucent
       onRequestClose={() => closeRef.current()}
     >
       <View style={styles.modalRoot}>
-        <Pressable style={styles.backdrop} onPress={() => closeRef.current()} accessible={false} />
-        <View
-          style={[styles.sheet, { paddingBottom: insets.bottom + 3 }]}
+        <ModalAnimated.View style={[styles.backdrop, { opacity: transition }]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => closeRef.current()} accessible={false} />
+        </ModalAnimated.View>
+        <ModalAnimated.View
+          onLayout={({ nativeEvent }) => setSheetHeight(nativeEvent.layout.height)}
+          style={[styles.sheet, {
+            paddingBottom: insets.bottom + 3,
+            transform: [{ translateY: transition.interpolate({
+              inputRange: [0, 1], outputRange: [sheetHeight || windowHeight, 0],
+            }) }],
+          }]}
           accessibilityViewIsModal
         >
         <View style={styles.dragHandleArea} {...dragResponder.panHandlers}>
@@ -423,32 +498,37 @@ export default function ProductFilterSheet({
         </View>
 
         <ScrollView style={[styles.scroll, plusAppearance && styles.scrollPlus]} showsVerticalScrollIndicator={false}>
+          {onGlutenOnlyChange && (
+            <View style={styles.chipWrap}>
+              <GlutenFilterOption layout="section" selected={glutenOnly} onPress={() => onGlutenOnlyChange(!glutenOnly)} />
+            </View>
+          )}
           {stores.length > 1 && onStores && (
             <>
               {sectionHeading(t('filters.supermarket'), 'storefront-outline', true)}
-              {sectionOpen(t('filters.supermarket')) && <View style={styles.chipWrap}>
+              {sectionOptions(t('filters.supermarket'), <View style={styles.chipWrap}>
                 {chip(t('common.all'), selectedStores.length === 0, () => onStores([]))}
                 {stores.map((option) =>
                   storeChip(option.value, option.label, selectedStores.includes(option.value), () => toggleStore(option.value)),
                 )}
-              </View>}
+              </View>)}
             </>
           )}
           {/* Orden por precio (primero en los listados que lo admiten). */}
           {showPriceControls && showSortControls ? (
             <>
               {sectionHeading(t('filters.sort'), 'swap-vertical-outline', stores.length <= 1)}
-              {sectionOpen(t('filters.sort')) && <View style={styles.chipWrap}>
+              {sectionOptions(t('filters.sort'), <View style={styles.chipWrap}>
                 {chip(t('filters.priceAsc'), sort === 'asc', () => onSort(sort === 'asc' ? null : 'asc'))}
                 {chip(t('filters.priceDesc'), sort === 'desc', () => onSort(sort === 'desc' ? null : 'desc'))}
-              </View>}
+              </View>)}
             </>
           ) : null}
 
           {showSortControls && onPricePerUnitSort ? (
             <>
               {sectionHeading(t('filters.unitPriceSort'), 'unitPrice', !showPriceControls && stores.length <= 1)}
-              {sectionOpen(t('filters.unitPriceSort')) && (unitPriceSortLocked ? (
+              {sectionOptions(t('filters.unitPriceSort'), unitPriceSortLocked ? (
                 <View style={styles.chipWrap}>
                   {lockedUnitPriceChip(t('filters.priceAsc'), 'asc')}
                   {lockedUnitPriceChip(t('filters.priceDesc'), 'desc')}
@@ -475,7 +555,7 @@ export default function ProductFilterSheet({
           {offerTypeGroups.length === 0 && offerTypes.length > 1 && onOfferTypes && (
             <>
               {sectionHeading(t('filters.offerType'), 'pricetag-outline')}
-              {sectionOpen(t('filters.offerType')) && <View style={styles.chipWrap}>
+              {sectionOptions(t('filters.offerType'), <View style={styles.chipWrap}>
                 {chip(t('filters.all'), selectedOfferTypes.length === 0, () => onOfferTypes([]))}
                 {offerTypes.map((option) =>
                   chip(
@@ -484,7 +564,7 @@ export default function ProductFilterSheet({
                     () => toggleOfferType(option.value),
                   ),
                 )}
-              </View>}
+              </View>)}
             </>
           )}
 
@@ -503,19 +583,19 @@ export default function ProductFilterSheet({
           {categoryGroups.length === 0 && categories.length > 1 && (
             <>
               {sectionHeading(t('filters.category'), 'grid-outline')}
-              {sectionOpen(t('filters.category')) && <View style={styles.chipWrap}>
+              {sectionOptions(t('filters.category'), <View style={styles.chipWrap}>
                 {categoryAllChip(category.length === 0, () => onCategory([]))}
                 {categories.map((c) =>
                   categoryChip(c, c, category.includes(c), () => toggleCategory(c)),
                 )}
-              </View>}
+              </View>)}
             </>
           )}
 
           {onPriceChangeRange ? (
             <>
               {sectionHeading(t('filters.priceChange'), 'trending-up-outline', !showPriceControls && categories.length <= 1 && categoryGroups.length === 0)}
-              {sectionOpen(t('filters.priceChange')) && <View style={styles.chipWrap}>
+              {sectionOptions(t('filters.priceChange'), <View style={styles.chipWrap}>
                 {PRICE_CHANGE_RANGES.map((r, i) =>
                   chip(
                     changeRangeLabel(r),
@@ -523,7 +603,7 @@ export default function ProductFilterSheet({
                     () => onPriceChangeRange(priceChangeRange === i ? null : i),
                   ),
                 )}
-              </View>}
+              </View>)}
             </>
           ) : null}
 
@@ -531,11 +611,11 @@ export default function ProductFilterSheet({
           {showPriceControls ? (
             <>
               {sectionHeading(t('filters.price'), 'wallet-outline')}
-              {sectionOpen(t('filters.price')) && <View style={styles.chipWrap}>
+              {sectionOptions(t('filters.price'), <View style={styles.chipWrap}>
                 {PRICE_RANGES.map((r, i) =>
                   chip(rangeLabel(r), priceRange === i, () => onPriceRange(priceRange === i ? null : i)),
                 )}
-              </View>}
+              </View>)}
             </>
           ) : null}
         </ScrollView>
@@ -562,7 +642,7 @@ export default function ProductFilterSheet({
             )}
           </TouchableOpacity>
         </View>
-        </View>
+        </ModalAnimated.View>
       </View>
       </Modal>
       <PaywallModal

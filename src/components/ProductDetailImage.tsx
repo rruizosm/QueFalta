@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Pressable, View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, Text, StyleSheet, type StyleProp, type ViewStyle, type ViewInstance } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
@@ -23,7 +23,7 @@ interface Props {
 export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget, emptyMessage }: Props) {
   const { t } = useTranslation();
   const [viewerVisible, setViewerVisible] = useState(false);
-  const imageRef = useRef<View>(null);
+  const imageRef = useRef<ViewInstance>(null);
   const imageProgress = useSharedValue(0);
   const fallback = emptyMessage ? <Text style={styles.emptyMessage}>{emptyMessage}</Text> : null;
   const hasUsableImage = Boolean(uri && productImageSource(uri));

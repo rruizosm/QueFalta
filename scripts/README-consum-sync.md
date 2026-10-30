@@ -1,5 +1,10 @@
 # Sync de Consum — espejo del catálogo en Supabase
 
+`gluten_free_label` se recalcula desde las categorías exclusivas 2717 (pasta),
+5016 (pan) y 5338 (cerveza sin gluten), conservando todas las pertenencias de
+las distintas zonas. Reglas en `lib/gluten-free-categories.mjs`. La app filtra
+por la bandera y conserva disponibilidad regional y precios zonales.
+
 Consum expone una **API REST JSON abierta** (sin auth, sin cookies, sin Cloudflare):
 la integración más limpia de los cinco súpers. Es además el **único que da EAN y
 marca estructurados**, y trae el **precio de oferta** separado del normal.

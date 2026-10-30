@@ -110,7 +110,7 @@ export default function PlusfrescProductModal({ product, onClose, topInset = 16,
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -139,6 +139,8 @@ export default function PlusfrescProductModal({ product, onClose, topInset = 16,
         {/* Ficha del producto (de la API de Plusfresc; null si sin dato) */}
         <ProductInfoSections
           items={[
+            { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: product.description },
+            ...(product.glutenFreeByTag ? [{ key: 'glutenFree', icon: 'barley-off' as const, title: t('catalog.glutenFree'), text: t('product.glutenFreeDescription') }] : []),
             { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'allergens', icon: 'alert-circle-outline', title: t('product.sections.allergens'), text: product.allergens },

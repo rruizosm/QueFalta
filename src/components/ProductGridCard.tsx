@@ -12,6 +12,7 @@ export default function ProductGridCard({
   uri,
   name,
   price,
+  metaLabel,
   priceChange,
   emoji,
   rounded = false,
@@ -21,12 +22,14 @@ export default function ProductGridCard({
   onPress,
   selectionState,
   selectionActionAppearance,
+  selectionAllowDeselect = false,
   accessibilityLabel,
 }: {
   width: number;
   uri: string | null;
   name: string;
   price: string;
+  metaLabel?: string | null;
   priceChange?: { prevLabel: string; direction: 'up' | 'down' } | null;
   emoji?: string;
   /** Variante redondeada para las superficies principales del catálogo. */
@@ -39,6 +42,7 @@ export default function ProductGridCard({
   onPress: () => void;
   selectionState?: 'available' | 'selected';
   selectionActionAppearance?: 'glass';
+  selectionAllowDeselect?: boolean;
   accessibilityLabel?: string;
 }) {
   const styles = useThemedStyles(themedStyles);
@@ -88,6 +92,7 @@ export default function ProductGridCard({
       </View>
     ) : null}
     <Text style={styles.name} numberOfLines={2}>{name}</Text>
+    {!!metaLabel && <Text style={styles.packageLabel}>{metaLabel}</Text>}
     {priceChange ? (
       <View style={styles.changeRow}>
         <Text style={styles.previousPrice}>{priceChange.prevLabel}</Text>
@@ -103,15 +108,15 @@ export default function ProductGridCard({
     ) : price ? <Text style={styles.price}>{price}</Text> : null}
     </>;
   if (selectionState && selectionActionAppearance === 'glass') {
-    return <Pressable style={cardStyle} onPress={onPress} disabled={selectionState === 'selected'}
+    return <Pressable style={cardStyle} onPress={onPress} disabled={selectionState === 'selected' && !selectionAllowDeselect}
       accessibilityRole="button" accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ selected: selectionState === 'selected', disabled: selectionState === 'selected' }}>
+      accessibilityState={{ selected: selectionState === 'selected', disabled: selectionState === 'selected' && !selectionAllowDeselect }}>
       {({ pressed }) => content(pressed)}
     </Pressable>;
   }
   return <TouchableOpacity style={cardStyle} activeOpacity={0.7} onPress={onPress}
-    disabled={selectionState === 'selected'} accessibilityRole="button" accessibilityLabel={accessibilityLabel}
-    accessibilityState={selectionState ? { selected: selectionState === 'selected', disabled: selectionState === 'selected' } : undefined}>
+    disabled={selectionState === 'selected' && !selectionAllowDeselect} accessibilityRole="button" accessibilityLabel={accessibilityLabel}
+    accessibilityState={selectionState ? { selected: selectionState === 'selected', disabled: selectionState === 'selected' && !selectionAllowDeselect } : undefined}>
     {content()}
   </TouchableOpacity>;
 }
@@ -188,6 +193,7 @@ const themedStyles = () => StyleSheet.create({
   },
   placeholderEmoji: { fontSize: 26 },
   name: { fontSize: 11.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 14, minHeight: 28 },
+  packageLabel: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, lineHeight: 15, marginTop: 2 },
   price: { fontSize: 12, fontFamily: fonts.bold, color: colors.accent, marginTop: 2 },
   changeRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 5, marginTop: 2 },
   previousPrice: {

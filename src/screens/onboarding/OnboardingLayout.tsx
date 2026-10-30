@@ -119,7 +119,7 @@ export default function OnboardingLayout({
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {glassAvailable ? (
         <GlassSurface fallbackColor={colors.paper} style={styles.chromeGlass}>

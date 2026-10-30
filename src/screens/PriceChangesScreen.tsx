@@ -20,7 +20,8 @@ import StoreProductList from '../components/StoreProductList';
 import StoreDropdown from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
-import { type ViewMode } from '../components/ViewModeToggle';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
+import CatalogFilterButton from '../components/CatalogFilterButton';
 import ProductFilterSheet, {
   PRICE_CHANGE_RANGES,
   type FilterGroup,
@@ -88,7 +89,7 @@ export default function PriceChangesScreen() {
     () => storeOptions.filter((option) => !catalogStoreRequiresPlus(option.key, isPremium)),
     [isPremium, storeOptions],
   );
-  const { store, setStore } = useCatalogStore();
+  const { store, setStore, glutenOnly, setGlutenOnly } = useCatalogStore();
   const [direction, setDirection] = useState<Direction>('down');
 
   // Filtros locales sobre las páginas cargadas. Las categorías de "Todos" se
@@ -101,7 +102,7 @@ export default function PriceChangesScreen() {
   const [productSearchExpanded, setProductSearchExpanded] = useState(false);
   const [queryInHeader, setQueryInHeader] = useState(false);
   const [sortPaywallVisible, setSortPaywallVisible] = useState(false);
-  const sheetFiltersActive = category.length > 0 || priceChangeRange != null;
+  const sheetFiltersActive = glutenOnly || category.length > 0 || priceChangeRange != null;
   const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
   const activeSortSegment: ChangeSortSegment = pricePerUnitSort
     ? `pricePerUnit${pricePerUnitSort === 'asc' ? 'Asc' : 'Desc'}`
@@ -294,6 +295,7 @@ export default function PriceChangesScreen() {
     const range = priceChangeRange != null ? PRICE_CHANGE_RANGES[priceChangeRange] : null;
     const words = stripAccents(query).trim().split(/\s+/).filter((word) => word.length >= 2);
     return allChanges.filter(({ product, deltaPct }) => {
+      if (glutenOnly && !product.glutenFreeByTag) return false;
       if (words.length > 0) {
         const name = stripAccents(product.name);
         if (!words.every((word) => name.includes(word))) return false;
@@ -311,7 +313,7 @@ export default function PriceChangesScreen() {
       }
       return true;
     });
-  }, [allChanges, category, priceChangeRange, query, store]);
+  }, [allChanges, category, priceChangeRange, query, store, glutenOnly]);
 
   const loadMore = useCallback(() => {
     if (loading || loadingMoreRef.current) return;
@@ -355,12 +357,12 @@ export default function PriceChangesScreen() {
   // resultados a los primeros 50 cambios cargados.
   useEffect(() => {
     const searching = stripAccents(query).trim().split(/\s+/).some((word) => word.length >= 2);
-    if (!searching || loading || loadingMore) return;
+    if ((!searching && !glutenOnly) || loading || loadingMore) return;
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
     if (requestedStores.some((storeKey) => cache[cacheKeyFor(storeKey)]?.nextOffset != null)) {
       loadMore();
     }
-  }, [cache, cacheKeyFor, loadMore, loading, loadingMore, query, store, stores]);
+  }, [cache, cacheKeyFor, loadMore, loading, loadingMore, query, store, stores, glutenOnly]);
 
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →
@@ -536,40 +538,11 @@ export default function PriceChangesScreen() {
                 ) : fallbackSortSegments(true)}
               </View>
 
-              {glassAvailable || Platform.OS === 'android' ? (
-                <SlidingSegments
-                  compact dense emphasized allowReselect transparentTrack={Platform.OS === 'android'}
-                  segments={[{ key: 'filters', icon: 'options-outline', accessibilityLabel: t('priceChanges.filterA11y') }]}
-                  value={sheetFiltersActive ? 'filters' : null}
-                  onChange={() => setFilterOpen(true)}
-                />
-              ) : (
-                <TouchableOpacity style={[styles.filterBtn, sheetFiltersActive && styles.filterBtnOn]} onPress={() => setFilterOpen(true)} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={t('priceChanges.filterA11y')}>
-                  <Ionicons name="options-outline" size={20} color={sheetFiltersActive ? colors.white : colors.inkSoft} />
-                </TouchableOpacity>
-              )}
+              <CatalogFilterButton active={sheetFiltersActive} onPress={() => setFilterOpen(true)}
+                accessibilityLabel={t('priceChanges.filterA11y')} />
 
               <View style={styles.prodViewGroup}>
-                {glassAvailable || Platform.OS === 'android' ? (
-                  <SlidingSegments
-                    compact dense emphasized transparentTrack={Platform.OS === 'android'}
-                    segments={[
-                      { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
-                      { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
-                    ]}
-                    value={viewMode}
-                    onChange={(value) => setViewMode(value as ViewMode)}
-                  />
-                ) : (
-                  <View style={[styles.viewToggle, styles.prodToggleDense]}>
-                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'list' && styles.viewBtnOn]} onPress={() => setViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')}>
-                      <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'grid' && styles.viewBtnOn]} onPress={() => setViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')}>
-                      <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
-                    </TouchableOpacity>
-                  </View>
-                )}
+                <ViewModeToggle value={viewMode} onChange={setViewMode} />
               </View>
             </>
           )}
@@ -595,7 +568,7 @@ export default function PriceChangesScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && chrome}
 
@@ -618,7 +591,10 @@ export default function PriceChangesScreen() {
       />
 
       <ProductFilterSheet
+        animateOptions
         visible={filterOpen}
+        glutenOnly={glutenOnly}
+        onGlutenOnlyChange={setGlutenOnly}
         onClose={() => setFilterOpen(false)}
         categories={categories}
         category={category}

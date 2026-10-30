@@ -1,0 +1,15 @@
+{
+  "id": "2003043933",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/558483_00_1.jpg",
+  "sourceSha256": "2b1a3efa30e1bf8fb20b3a4891de0e6d1cc93957c2a7c665b940f610472fb0ca",
+  "outputSha256": "cbc650cc0db4ca01bfecb9e705595f6da0702f1496d4702ebfbc6a6e6966ec36",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2003043933.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-ee7ea77a-def1-4593-85c7-6577fe61d9d2.png",
+  "visualReview": "Complete Blemil Plus3 green growth milk tin with white lid matching source, real transparent exterior; small edge remnants.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1543694,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.189Z"
+}

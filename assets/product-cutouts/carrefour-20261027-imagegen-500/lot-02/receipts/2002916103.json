@@ -1,0 +1,17 @@
+{
+  "id": "2002916103",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/363876_00_1.jpg",
+  "sourceSha256": "6539b7dc7594eed6d23fa7fa2e32c82ca4b783e7d05f99fb193464832ea21949",
+  "outputSha256": "14f9f552d7fc12c7f95a11b1550c139b79a03f4a273abcbd3dfb9f75fb4ada2b",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2002916103.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-3bef-70f2-96db-97196e0282fe/exec-9f4a48a5-c754-47d6-8c7f-d42bdc63c254.png",
+  "validAlpha": true,
+  "bytes": 1580773,
+  "withinBucketLimit": true,
+  "visualReviewAccepted": false,
+  "visualReview": "Rejected: ImageGen added broad diffuse gray and colored glow around bottle sets; background is not a clean isolated product.",
+  "rejected": true,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:44.841Z"
+}

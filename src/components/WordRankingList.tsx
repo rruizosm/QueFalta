@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -48,7 +49,7 @@ function RankingRow({ row, height, locked, onUnlock }: { row: WordRank; height: 
   const styles = useThemedStyles(themedStyles);
   const { scheme } = useTheme();
   const { t, lang } = useTranslation();
-  const targetRef = useRef<View>(null);
+  const targetRef = useRef<ViewInstance>(null);
   const [hovered, setHovered] = useState(false);
   const hidden = locked && row.rank >= 4;
   const glass = WORD_RANKING_GLASS[scheme];

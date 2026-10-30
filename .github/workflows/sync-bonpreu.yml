@@ -17,13 +17,14 @@ concurrency:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    # Playwright 1.60.0 no admite Chromium en Ubuntu 26.04 (ubuntu-latest).
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22.23.2'
       # Bonpreu exige navegador real (AWS WAF). El lockfile fija Playwright y
       # Chromium para evitar que un `npm install playwright` cambie el fingerprint.
       - run: npm ci && npx playwright install --with-deps chromium

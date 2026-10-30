@@ -98,7 +98,7 @@ export default function AddMemberScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity

@@ -33,10 +33,11 @@ jobs:
         run: npm run lint
 
       - name: Tests
+        id: tests
         run: npm test 2>&1 | tee test-output.log
 
       - name: Upload test output on failure
-        if: failure()
+        if: failure() && steps.tests.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: quality-test-output

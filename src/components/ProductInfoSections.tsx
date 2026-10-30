@@ -7,6 +7,7 @@ import Animated, {
   Easing, useAnimatedStyle, useDerivedValue, withTiming,
 } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -24,7 +25,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 export interface ProductInfoItem {
   /** Clave estable para el `key` de React. */
   key: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: keyof typeof Ionicons.glyphMap | 'barley-off';
   title: string;
   /** Texto de la característica. Si viene vacío/nulo, la fila no se pinta. */
   text?: string | null;
@@ -107,7 +108,9 @@ function Row({ item }: { item: ProductInfoItem }) {
     >
       <View style={styles.row}>
         <View style={styles.iconWrap}>
-          <Ionicons name={item.icon} size={20} color={colors.accent} />
+          {item.icon === 'barley-off'
+            ? <MaterialCommunityIcons name="barley-off" size={20} color={colors.accent} />
+            : <Ionicons name={item.icon} size={20} color={colors.accent} />}
         </View>
         <View style={styles.body}>
           <Text style={styles.title}>{item.title}</Text>

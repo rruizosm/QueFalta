@@ -1,0 +1,17 @@
+{
+  "id": "2000750151",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/340461_00_1.jpg",
+  "sourceSha256": "cd8f6b16c6467e65775e25b2e62b10fcdce29691f23a0799166f75de2978343e",
+  "outputSha256": "35d77954f95504eb2e5714c3b02dc1ff0efdd3417086d5234b5c973e577d9960",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2000750151.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-e4d7ea3e-de8a-464e-9d92-922327f39bfe.png",
+  "visualReview": "Same Carrefour mineral cat litter bag; 7L/4.7kg quantity retained, cat drawing and blue tray retained; external background transparent. Top handles follow original source crop.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 1412103,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.917Z"
+}

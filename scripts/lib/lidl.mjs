@@ -1,4 +1,5 @@
 import { canonicalPricePerUnit, toNumber } from './price.mjs';
+import { hasGlutenFreeName } from './gluten-free-names.mjs';
 
 const round4 = (value) => Math.round(value * 10000) / 10000;
 
@@ -272,6 +273,7 @@ export function normalizeLidlProduct(product, category) {
     retailer_product_id: id || null,
     ean: null,
     display_name: displayName,
+    gluten_free_label: hasGlutenFreeName(displayName),
     brand: String(product?.brand ?? '').trim() || null,
     packaging: String(product?.subtitle ?? '').trim() || parsed.packaging,
     thumbnail: String(product?.imageUrl ?? '').trim() || null,
@@ -314,6 +316,7 @@ export function lidlProductMasterRow(row) {
     retailer_product_id: row.retailer_product_id,
     ean: row.ean,
     display_name: row.display_name,
+    gluten_free_label: hasGlutenFreeName(row.display_name),
     brand: row.brand,
     packaging: row.packaging,
     thumbnail: row.thumbnail,

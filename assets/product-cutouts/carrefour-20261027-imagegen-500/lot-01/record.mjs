@@ -1,0 +1,20 @@
+import {readFile,writeFile,copyFile,readdir,unlink} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {PNG} from 'pngjs';
+const root='assets/product-cutouts/carrefour-20261027-imagegen-500/lot-01';
+const [id,native,review]=process.argv.slice(2);
+const manifest=JSON.parse(await readFile(root+'/manifest.json'));
+const product=[...manifest.products,...manifest.reserves].find(p=>p.id===id);
+if(!product||!native.startsWith('/Users/rruizosmaalohacloud/.codex/generated_images/')||!review)throw new Error('Invalid args');
+const out=await readFile(native);const p=PNG.sync.read(out);let zero=0,nonzero=0;
+for(let i=3;i<p.data.length;i+=4){if(p.data[i]===0)zero++;else nonzero++;}
+if(!zero||!nonzero||out.length>3145728)throw new Error('Invalid output alpha or size '+id+' bytes '+out.length);
+await readFile(root+'/prompts/'+id+'.txt');await copyFile(native,root+'/images/'+id+'.png');
+const sha=x=>createHash('sha256').update(x).digest('hex');
+const receipt={id,sourceUrl:product.thumbnail,sourceSha256:sha(await readFile(root+'/sources/'+id+'.jpg')),outputSha256:sha(out),tool:'image_gen__imagegen',promptFile:'prompts/'+id+'.txt',nativeOutputPath:native,visualReview:review,visualReviewAccepted:true,validAlpha:true,width:p.width,height:p.height,bytes:out.length};
+await writeFile(root+'/receipts/'+id+'.json',JSON.stringify(receipt,null,2)+'\n');
+await unlink(root+'/sources/'+id+'.jpg');receipt.sourceDeleted=true;
+await writeFile(root+'/receipts/'+id+'.json',JSON.stringify(receipt,null,2)+'\n');
+const completed=(await readdir(root+'/receipts')).filter(f=>f.endsWith('.json'));
+await writeFile(root+'/progress.json',JSON.stringify({target:147,receiptCount:completed.length,status:'generating'},null,2)+'\n');
+console.log(JSON.stringify({id,bytes:out.length,receiptCount:completed.length}));

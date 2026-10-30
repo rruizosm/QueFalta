@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-27",
+  "status": "linked_verified",
+  "products": [
+    {
+      "id": "520660281",
+      "sha256": "27c35ddba1560bd5dcf6dc1abfd7c4ed6cb65e1e917629ebdf20526570655b0c",
+      "newUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520660281/27c35ddba1560bd5.png",
+      "previousUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520660281/4550b4f0c54a9bd9.png",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/447877_00_1.jpg",
+      "bytes": 466268,
+      "objectPath": "carrefour/520660281/27c35ddba1560bd5.png"
+    },
+    {
+      "id": "520664611",
+      "sha256": "fbec58894ce1f67fe85eda3f2e66fad17200e9038d51f3454c1d87c0c6a23319",
+      "newUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520664611/fbec58894ce1f67f.png",
+      "previousUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520664611/1714447b4ceee495.png",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/271289_00_1.jpg",
+      "bytes": 1361442,
+      "objectPath": "carrefour/520664611/fbec58894ce1f67f.png"
+    },
+    {
+      "id": "521001754",
+      "sha256": "cdb59dc316a2cd36144c2031bfef72e4338e05ce76685f855fd70a93a4d2f4f3",
+      "newUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521001754/cdb59dc316a2cd36.png",
+      "previousUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521001754/90983a058e56e96f.png",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/097592_00_1.jpg",
+      "bytes": 602286,
+      "objectPath": "carrefour/521001754/cdb59dc316a2cd36.png"
+    },
+    {
+      "id": "521002680",
+      "sha256": "dcfe2bfa099fd09f582f80a002779f5f5bb13df7d26d8d93b991efc807c65bc5",
+      "newUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521002680/dcfe2bfa099fd09f.png",
+      "previousUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521002680/e3836bd04ff1bd3f.png",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/228290_00_1.jpg",
+      "bytes": 2449002,
+      "objectPath": "carrefour/521002680/dcfe2bfa099fd09f.png"
+    },
+    {
+      "id": "521003205",
+      "sha256": "53cc3a0b94b1873b111df8695e95cc0e1d02d4c1c38a0d1164e9f4deb49debe7",
+      "newUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521003205/53cc3a0b94b1873b.png",
+      "previousUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521003205/b89440732ad55f65.png",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/231548_00_1.jpg",
+      "bytes": 1796461,
+      "objectPath": "carrefour/521003205/53cc3a0b94b1873b.png"
+    }
+  ],
+  "verifiedWithPublicClient": true,
+  "previousObjectsPreserved": true,
+  "originalThumbnailsPreserved": true
+}

@@ -38,6 +38,11 @@ también [`supabase/migrations/bonarea_product_detail.sql`](../supabase/migratio
 (columnas anulables + `detail_synced_at`). Sin ella, el sync intentará escribir columnas
 inexistentes en la pasada de ficha y fallará el upsert.
 
+La bandera «sin gluten» se crea con
+[`20261022075606_bonarea_bonpreu_gluten_free_label.sql`](../supabase/migrations/20261022075606_bonarea_bonpreu_gluten_free_label.sql).
+Es una columna generada desde `raw.caracteristiques` y se actualiza sola cuando
+este sync hace upsert; no se incluye en el payload de escritura.
+
 ## 2. Service_role key en `.env.local`
 
 Igual que Carrefour: añade en `MercaAppMobile/.env.local` (gitignored) la línea

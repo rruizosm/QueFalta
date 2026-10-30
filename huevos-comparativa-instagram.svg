@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffaf0"/><stop offset="1" stop-color="#f4f0e7"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="7" stdDeviation="11" flood-color="#21302c" flood-opacity=".11"/></filter>
+    <style>
+      .sans{font-family:Arial,Helvetica,sans-serif}.title{font-size:47px;font-weight:800;letter-spacing:-1.5px;fill:#183b31}.subtitle{font-size:16px;font-weight:600;letter-spacing:2px;fill:#668076}.store{font-size:24px;font-weight:800}.price{font-size:46px;font-weight:800;letter-spacing:-1px;fill:#183b31}.label{font-size:15px;font-weight:700;fill:#63756e}.small{font-size:13px;font-weight:600;fill:#78877f}
+    </style>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <text class="sans subtitle" x="540" y="70" text-anchor="middle">COMPARATIVA DE PRECIOS · MADRID</text>
+  <text class="sans title" x="540" y="127" text-anchor="middle">¿Dónde cuesta menos</text>
+  <text class="sans title" x="540" y="180" text-anchor="middle">la docena de huevos?</text>
+  <text class="sans small" x="540" y="211" text-anchor="middle">12 unidades · huevos clase M/L · marcas propias</text>
+
+  <!-- Cuadrante Mercadona -->
+  <g filter="url(#shadow)"><rect x="52" y="252" width="474" height="348" rx="24" fill="#fff"/></g>
+  <g class="sans"><text x="82" y="299" font-size="27" font-weight="800" fill="#4b8f3c">Mercadona</text><text class="label" x="82" y="326">HUEVOS MEDIANOS M · HACENDADO</text>
+    <image href="https://prod-mercadona.imgix.net/images/96ba986bc89d7298da0a7605824227a9.jpg?fit=crop&amp;h=300&amp;w=300" x="80" y="345" width="178" height="178" preserveAspectRatio="xMidYMid meet"/>
+    <text class="price" x="282" y="435">2,85 €</text><text class="label" x="285" y="463">la docena</text><rect x="282" y="490" width="210" height="38" rx="19" fill="#eef5ea"/><text x="387" y="515" text-anchor="middle" font-size="13" font-weight="800" fill="#477b38">2,85 € / DOCENA</text>
+  </g>
+
+  <!-- Cuadrante Carrefour -->
+  <g filter="url(#shadow)"><rect x="554" y="252" width="474" height="348" rx="24" fill="#fff"/></g>
+  <g class="sans"><text x="584" y="299" font-size="27" font-weight="800" fill="#0756a5">Carrefour</text><text class="label" x="584" y="326">HUEVOS FRESCOS L · EL MERCADO</text>
+    <image href="https://static.carrefour.es/hd_350x_/img_pim_food/307927_00_1.jpg" x="582" y="345" width="178" height="178" preserveAspectRatio="xMidYMid meet"/>
+    <text class="price" x="784" y="435">3,05 €</text><text class="label" x="787" y="463">la docena</text><rect x="784" y="490" width="210" height="38" rx="19" fill="#eef2f6"/><text x="889" y="515" text-anchor="middle" font-size="13" font-weight="800" fill="#0756a5">3,05 € / DOCENA</text>
+  </g>
+
+  <!-- Cuadrante Lidl -->
+  <g filter="url(#shadow)"><rect x="52" y="622" width="474" height="348" rx="24" fill="#fff" stroke="#25a96a" stroke-width="4"/></g>
+  <g class="sans"><rect x="78" y="642" width="184" height="32" rx="16" fill="#168a56"/><text x="170" y="664" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">EL MÁS ECONÓMICO</text>
+    <text x="82" y="711" font-size="27" font-weight="800" fill="#0050aa">Lidl</text><text class="label" x="82" y="738">HUEVOS FRESCOS M · 12 UNIDADES</text>
+    <image href="https://mam.cdn.schwarz/m/2415668_m.png?t=1902958&amp;im=Resize%3d(384)" x="80" y="755" width="178" height="178" preserveAspectRatio="xMidYMid meet"/>
+    <text class="price" x="282" y="845">2,84 €</text><text class="label" x="285" y="873">la docena</text><rect x="282" y="900" width="210" height="38" rx="19" fill="#e9f7ef"/><text x="387" y="925" text-anchor="middle" font-size="13" font-weight="800" fill="#168a56">AHORRAS HASTA 0,21 €</text>
+  </g>
+
+  <!-- Cuadrante DIA -->
+  <g filter="url(#shadow)"><rect x="554" y="622" width="474" height="348" rx="24" fill="#fff"/></g>
+  <g class="sans"><text x="584" y="669" font-size="27" font-weight="900" fill="#d5222b">DIA</text><text class="label" x="584" y="696">HUEVOS MEDIANOS M · DIA</text>
+    <image href="https://www.dia.es/product_images/274010/274010_ISO_0_ES.jpg" x="582" y="715" width="178" height="178" preserveAspectRatio="xMidYMid meet"/>
+    <text class="price" x="784" y="805">2,85 €</text><text class="label" x="787" y="833">la docena</text><rect x="784" y="860" width="210" height="38" rx="19" fill="#fbecee"/><text x="889" y="885" text-anchor="middle" font-size="13" font-weight="800" fill="#bb1c2b">2,85 € / DOCENA</text>
+  </g>
+
+  <text class="sans small" x="540" y="1023" text-anchor="middle">Precios del catálogo QuéFalta · consulta del 19–21 oct 2026 · pueden variar por tienda</text>
+</svg>

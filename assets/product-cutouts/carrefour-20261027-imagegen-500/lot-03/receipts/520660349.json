@@ -1,0 +1,15 @@
+{
+  "id": "520660349",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/000018_00_1.jpg",
+  "sourceSha256": "3b0f577b62761f9028036c05f2f222e787004f928bd1eefa38cf772700a51dae",
+  "outputSha256": "a9a5c3e8d9821fc39f8ceb83a12e4bc30f1be5428534b1256692b9afec1756ef",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660349.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-7e664b60-58bf-44ab-b4c6-5e6aee1b7f5b.png",
+  "visualReview": "Rejected: orange bottle cap extends to image top and appears clipped compared with source. Do not publish.",
+  "validAlpha": true,
+  "visualReviewAccepted": false,
+  "bytes": 683276,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.047Z"
+}

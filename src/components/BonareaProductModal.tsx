@@ -108,7 +108,7 @@ export default function BonareaProductModal({ product, onClose, topInset = 16, b
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -138,6 +138,7 @@ export default function BonareaProductModal({ product, onClose, topInset = 16, b
         <ProductInfoSections
           items={[
             { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: product.description },
+            { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: product.glutenFreeByTag ? t('product.glutenFreeDescription') : null },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'allergens', icon: 'alert-circle-outline', title: t('product.sections.allergens'), text: product.allergens },
             { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },

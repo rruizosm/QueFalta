@@ -55,6 +55,7 @@ import {
 } from './lib/bm-nutrition.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { isGlutenFreeCategory } from './lib/gluten-free-categories.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -483,6 +484,15 @@ async function main() {
           categoryId: productNavigation.categoryId,
           sourcePathIds: productNavigation.sourcePathIds,
         };
+      }
+      if (current) {
+        const previousCategories = Array.isArray(current.raw.categories) ? current.raw.categories : [];
+        const incomingCategories = Array.isArray(rawProduct.categories) ? rawProduct.categories : [];
+        const categories = new Map(previousCategories.map((category) => [String(category.id), category]));
+        for (const category of incomingCategories) categories.set(String(category.id), category);
+        current.raw.categories = [...categories.values()];
+        current.gluten_free_label = current.gluten_free_label
+          || isGlutenFreeCategory('bm', [...categories.keys(), ...(productNavigation?.sourcePathIds ?? [])]);
       }
       const locationRow = bmLocationPriceRow(normalized, location.shippingZoneId, runStart);
       locationPriceById.set(locationRow.id, locationRow);

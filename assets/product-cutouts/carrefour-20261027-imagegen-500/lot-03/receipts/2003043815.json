@@ -1,0 +1,15 @@
+{
+  "id": "2003043815",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/095229_00_1.jpg",
+  "sourceSha256": "5d1875489953ba0f6680b6dd2fd50758057a62f9a4a4e78e226646cd401ebddd",
+  "outputSha256": "3ace485d63e1df6166099066b7be5b1b52c8b2294824b2b2cda3742dcac34f38",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2003043815.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-6d89c93d-bd37-43ed-a4b2-f16f25f4fba7.png",
+  "visualReview": "Reviewed: complete Nestlé Yogolino 6m natural 4x100g pack, white cups remain opaque; real transparent external background. Minor generative packaging detail changes like accepted sample.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1556026,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.029Z"
+}

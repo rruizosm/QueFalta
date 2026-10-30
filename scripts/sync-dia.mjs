@@ -423,6 +423,10 @@ function normalize(p) {
     regional_offers: {},
     available: typeof p.units_in_stock === 'number' ? p.units_in_stock > 0 : true,
     published: true,
+    gluten_free_label: Array.isArray(p.allergens) && p.allergens.some((allergen) => {
+      const label = String(allergen?.name ?? '').trim().toLocaleLowerCase('es');
+      return label === 'sin gluten' || label === 'sense gluten';
+    }),
     raw: p,
     synced_at: runStart,
   };

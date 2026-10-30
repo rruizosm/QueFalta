@@ -1,0 +1,16 @@
+{
+  "id": "520661170",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/037080_00_1.jpg",
+  "sourceSha256": "623eae7964e5f486cf2a5909fcf51f457c6da86352673a6550be3d7da9f4b726",
+  "outputSha256": "a0288fe912911229d3fde7e9c1bb4155300887f67d36f9cfb521b554df8197ab",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520661170.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-33a766a1-b1f4-4f81-9ed5-8716be3448ad.png",
+  "visualReview": "Correct complete bottle/carton, brand and product variant retained; transparent exterior, minor generated print/edge variations as in approved sample.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 584929,
+  "sourceBytes": 8619,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.968Z"
+}

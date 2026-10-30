@@ -1,0 +1,15 @@
+{
+  "id": "2003043913",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/440664_00_1.jpg",
+  "sourceSha256": "4f9b2c48a898337e841b6a0c0897ea03b9ccaae55d134439471cbbaf7b1aa08f",
+  "outputSha256": "0a7e6ff434884ac9ed62ae285deea75faa38c4369f4f45c89bd1add324a826cd",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2003043913.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-b2a4e5d4-95a5-4831-9472-cfaee0922b52.png",
+  "visualReview": "Reviewed: complete blue/gold Almirón galletitas box; logo, baby bear, biscuits and 6m labeling recognizable; external background removed. Minor generative texture changes.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1412970,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.033Z"
+}

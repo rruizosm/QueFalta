@@ -38,6 +38,10 @@ El sync la normaliza sin repetir el crawl:
 Producto de Aquí) se conservan en `raw` para features futuras. Los precios son
 los de la tienda por defecto de la sesión de invitado (como Consum).
 
+El sync guarda `gluten_free_label` desde la agrupación explícita con
+`idAgrupacion = 4` («Sin Gluten»), conservando también la lista original en
+`raw.agrupaciones`.
+
 ## Requisitos previos (una vez)
 
 Si la tabla `sorli_products` ya existÃ­a, ejecutar tambiÃ©n `supabase/migrations/sorli_nutri_score.sql` antes de lanzar el sync. Esta columna se incluye ya en `sorli_catalog.sql` para instalaciones nuevas.

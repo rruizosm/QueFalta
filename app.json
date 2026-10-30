@@ -1,15 +1,16 @@
 {
   "expo": {
-    "name": "QuéFalta",
+    "name": "Que\u0301Falta",
     "slug": "quefalta",
     "version": "1.4.0",
-    "sdkVersion": "57.0.0",
+    "sdkVersion": "58.0.0",
     "scheme": "quefalta",
     "orientation": "default",
     "icon": "./assets/quefalta-blue.png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
+      "appleTeamId": "LX4BLQDZS4",
       "bundleIdentifier": "com.quefalta.app",
       "usesAppleSignIn": true,
       "associatedDomains": [

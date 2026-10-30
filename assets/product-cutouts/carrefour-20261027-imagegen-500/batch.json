@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-27",
+  "target": 500,
+  "method": "built-in ImageGen per product photograph",
+  "excludedCategories": [
+    "Papelería",
+    "Bazar",
+    "Calzado"
+  ],
+  "lots": [
+    {
+      "lot": "lot-01",
+      "target": 167
+    },
+    {
+      "lot": "lot-02",
+      "target": 167
+    },
+    {
+      "lot": "lot-03",
+      "target": 166
+    }
+  ],
+  "baselineProducts": [
+    {
+      "id": "520660281",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520660281/27c35ddba1560bd5.png"
+    },
+    {
+      "id": "520664611",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520664611/fbec58894ce1f67f.png"
+    },
+    {
+      "id": "521001754",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521001754/cdb59dc316a2cd36.png"
+    },
+    {
+      "id": "521002680",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521002680/dcfe2bfa099fd09f.png"
+    },
+    {
+      "id": "521003205",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521003205/53cc3a0b94b1873b.png"
+    }
+  ],
+  "selectionSha256": "999cac616b3429b392446e16f8db6edfd5fcd7077a18718eed8ada1096fa2841"
+}

@@ -103,7 +103,7 @@ export default function AppearanceScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <ProfileSubscreenHeader title={t('appearance.title')} icon="color-palette-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 

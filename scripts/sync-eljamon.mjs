@@ -20,6 +20,8 @@ import { chromium } from 'playwright';
 import { markStale } from './lib/stale.mjs';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { hasGlutenFreeName } from './lib/gluten-free-names.mjs';
+import { prepareEljamonPublication } from './lib/eljamon-publication.mjs';
 
 const BASE = 'https://www.supermercadoseljamon.com';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
@@ -514,30 +516,32 @@ async function main() {
     await browser.close();
   }
 
-  const rows = [...products.values()];
-  const categoryRows = [...categories.values()].map((category) => ({ ...category, product_count: rows.filter((product) => product.category_ids.includes(category.id)).length, published: true, synced_at: runStart }));
+  const { rows, categoryRows, excluded } = prepareEljamonPublication(products.values(), categories.values(), runStart);
+  for (const product of excluded) console.warn(`[eljamon] producto excluido ${product.id}: ${product.reason} (${product.display_name})`);
+  for (const row of rows) row.gluten_free_label = hasGlutenFreeName(row.display_name);
   const report = {
     store,
     root_categories_requested: Math.min(MAX_CATEGORIES, ROOT_CATEGORIES.length),
     pages_read: crawl.reduce((sum, item) => sum + item.pagesRead, 0),
     pages_expected: crawl.reduce((sum, item) => sum + (item.expectedTotal || 0), 0),
     products: rows.length,
+    products_extracted: products.size,
+    excluded_products: excluded.length,
     categories: categoryRows.length,
     offers: rows.filter((row) => row.promo_name).length,
     new_products: rows.filter((row) => row.is_new).length,
     missing_prices: rows.filter((row) => row.unit_price == null).length,
     enriched_details: rows.filter((row) => Object.hasOwn(row, 'nutrition')).length,
     category_resolution: categoryResolution,
-    unresolved_categories: rows.filter((row) => row.raw?.category_resolution === 'unresolved' || row.category_ids.length < 2).length,
+    unresolved_categories: excluded.length,
   };
-  console.log(`[eljamon] ${report.products} productos · ${report.categories} categorías · ${report.offers} ofertas · ${report.new_products} nuevos`);
-  await saveSnapshot({ source: BASE, synced_at: runStart, common_catalog: true, report, crawl, categories: categoryRows, products: rows });
+  console.log(`[eljamon] ${report.products} productos · ${report.categories} categorías · ${report.offers} ofertas · ${report.new_products} nuevos · ${report.excluded_products} excluidos`);
+  await saveSnapshot({ source: BASE, synced_at: runStart, common_catalog: true, report, crawl, categories: categoryRows, products: rows, excluded_products: excluded });
 
   if (DRY_RUN) return;
   const completeRoots = MAX_CATEGORIES >= ROOT_CATEGORIES.length && MAX_PAGES === Infinity;
   if (!completeRoots) throw new Error('publicación bloqueada: MAX_CATEGORIES/MAX_PAGES limitan el catálogo');
   if (rows.length < MIN_PRODUCTS) throw new Error(`publicación bloqueada: ${rows.length} productos (< MIN_PRODUCTS=${MIN_PRODUCTS})`);
-  if (report.unresolved_categories) throw new Error(`publicación bloqueada: ${report.unresolved_categories} productos sin subcategoría resuelta`);
   await upsert('eljamon_categories', categoryRows);
   await upsert('eljamon_products', rows);
   await markStale({ url: SUPABASE_URL, key: SERVICE_ROLE, table: 'eljamon_products', runStart });

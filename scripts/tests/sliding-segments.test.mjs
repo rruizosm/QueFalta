@@ -9,8 +9,8 @@ const source = readFileSync(
 
 test('centra el fondo seleccionado de los segmentos compactos densos', () => {
   assert.match(source, /compact && dense && styles\.pillDenseCompact/);
-  assert.match(source, /pillDenseCompact:\s*\{[\s\S]*?top:\s*PAD \+ 1/);
-  assert.match(source, /pillDenseCompact:\s*\{[\s\S]*?bottom:\s*PAD \+ 1/);
+  assert.match(source, /pillDenseCompact:\s*\{[\s\S]*?top:\s*PAD,/);
+  assert.match(source, /pillDenseCompact:\s*\{[\s\S]*?bottom:\s*PAD,/);
   assert.match(source, /pillDenseCompact:\s*\{[\s\S]*?borderRadius:\s*DENSE_COMPACT_SEG_W \/ 2/);
   assert.doesNotMatch(source, /CenteredOptionsIcon|optionsIconOptical/);
 });

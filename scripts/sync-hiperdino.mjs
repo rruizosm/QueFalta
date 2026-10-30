@@ -42,6 +42,7 @@ import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
 import { normalizeHiperdinoPriceData } from './lib/hiperdino-price.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { hasGlutenFreeName } from './lib/gluten-free-names.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -152,6 +153,7 @@ function normalize(it) {
     retailer_product_id: String(it.sku),          // código interno HiperDino (NO EAN)
     ean: validGlobalGtin(it.ean),
     display_name: (it.name || '').trim(),
+    gluten_free_label: hasGlutenFreeName(it.name),
     brand: null,                                   // Magento no expone marca aparte; va en el nombre
     packaging: null,                               // el formato ("380 g") va en el nombre
     thumbnail: imageOf(it.sku),

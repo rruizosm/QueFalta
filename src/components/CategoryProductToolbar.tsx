@@ -6,11 +6,12 @@ import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { catalogBrowserStyles } from './catalogBrowserStyles';
 import CatalogFilterSheet from './CatalogFilterSheet';
+import CatalogFilterButton from './CatalogFilterButton';
 import CatalogSearchField from './CatalogSearchField';
 import { glassAvailable } from './GlassSurface';
 import PaywallModal from './PaywallModal';
 import SlidingSegments, { type Segment } from './SlidingSegments';
-import type { ViewMode } from './ViewModeToggle';
+import ViewModeToggle, { type ViewMode } from './ViewModeToggle';
 
 export type CategoryProductSort = 'relevance' | 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'pricePerUnitDesc';
 
@@ -59,10 +60,6 @@ export default function CategoryProductToolbar({ query, onQueryChange, sort, onS
       { key: 'pricePerUnitAsc' as const, label: '€/u↑', accessibilityLabel: t('catalog.sortPricePerUnitAsc') },
       { key: 'pricePerUnitDesc' as const, label: '€/u↓', accessibilityLabel: t('catalog.sortPricePerUnitDesc') },
     ] : []),
-  ];
-  const viewSegments: Segment<ViewMode>[] = [
-    { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
-    { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
   ];
   const segmentControl = <K extends string,>(segments: Segment<K>[], value: K, onChange: (key: K) => void) =>
     glassAvailable || Platform.OS === 'android'
@@ -113,17 +110,9 @@ export default function CategoryProductToolbar({ query, onQueryChange, sort, onS
       {segmentControl(sortSegments, sort, selectSort)}
       {unitPriceSortLocked && lockedUnitSort}
     </View>
-    {glutenFilterEnabled && (glassAvailable || Platform.OS === 'android'
-      ? <SlidingSegments compact dense emphasized allowReselect transparentTrack={Platform.OS === 'android'}
-          segments={[{ key: 'filters', icon: 'options-outline', accessibilityLabel: t('product.filterA11y') }]}
-          value={glutenOnly ? 'filters' : null} onChange={() => setFilterOpen(true)} />
-      : <TouchableOpacity style={[styles.filterBtn, glutenOnly && styles.filterBtnOn]}
-          onPress={() => setFilterOpen(true)} activeOpacity={0.8}
-          accessibilityRole="button" accessibilityLabel={t('product.filterA11y')}
-          accessibilityState={{ selected: glutenOnly }}>
-          <Ionicons name="options-outline" size={20} color={glutenOnly ? colors.white : colors.inkSoft} />
-        </TouchableOpacity>)}
-    <View style={styles.prodViewGroup}>{segmentControl(viewSegments, viewMode, onViewModeChange)}</View>
+    {glutenFilterEnabled && <CatalogFilterButton active={glutenOnly} onPress={() => setFilterOpen(true)}
+      accessibilityLabel={t('product.filterA11y')} />}
+    <View style={styles.prodViewGroup}><ViewModeToggle value={viewMode} onChange={onViewModeChange} /></View>
   </>;
 
   return <>

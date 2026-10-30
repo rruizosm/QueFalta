@@ -1,0 +1,15 @@
+{
+  "id": "520660497",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/651822_00_1.jpg",
+  "sourceSha256": "75dc348b164b38ac8113fad71fa13d30651cc204f33e589f63f050809c97ed72",
+  "outputSha256": "e43aba873d6e25a664b2f7bea9210e0412a1da6c0f0e15eb14e07aec4113ecd6",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660497.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-c3df2e9b-9414-4b73-a733-47f6ccc50202.png",
+  "visualReview": "Complete Coca-Cola zero 2L bottle and black cap, red label and all visible product edges inside transparent canvas.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 565161,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.049Z"
+}

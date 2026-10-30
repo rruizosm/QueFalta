@@ -45,3 +45,10 @@ ciclos silenciosos sin recortar la cobertura del surtido.
 
 El workflow corre diariamente a las 06:00 UTC. Si cambia el HTML o la
 paginación, el guardarraíl evita despublicar el catálogo anterior.
+
+## Clasificación sin gluten
+
+El sync conserva la unión de categorías de cada producto antes de rellenar
+`gluten_free_label`. Usa las ramas exclusivas de galletas, cereales y harina
+sin gluten de `lib/gluten-free-categories.mjs`. «Pasta integral y sin gluten»
+queda excluida porque mezcla ambos tipos. La bandera se recalcula en cada run.

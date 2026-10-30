@@ -1,3 +1,4 @@
+import type { ScrollViewInstance } from 'react-native';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
@@ -127,7 +128,7 @@ export default function RecipeForm({ navigation, editingRecipe = null, origin = 
   const [draftQuantity, setDraftQuantity] = useState('');
   const [steps, setSteps] = useState<RecipeStepDraft[]>(() => recipeSteps(editingRecipe));
   const nextStepId = useRef(editingRecipe?.steps.length ?? 1);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const scrollToNewStep = useRef(false);
   const [focusedStep, setFocusedStep] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);

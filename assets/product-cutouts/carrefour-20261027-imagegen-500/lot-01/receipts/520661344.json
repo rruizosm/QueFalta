@@ -1,0 +1,17 @@
+{
+  "id": "520661344",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/668340_00_1.jpg",
+  "sourceSha256": "e1242e4cb3b193b3e7705c24b4cb80842bf2206dbddcd158daba77498017412c",
+  "outputSha256": "11a78e9f8f39e399eab0bb5b15b245cb77e38799505ad21b9b2a02b8eb13274c",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520661344.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-a2a1ae7b-8ba4-47b3-88e9-85384759be04.png",
+  "visualReview": "Whole Saer Brau Sin beer six-pack,6x25cl visible, purple carrier and green bottles retained; complete silhouette and external transparent background.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 2466240,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:44.671Z"
+}

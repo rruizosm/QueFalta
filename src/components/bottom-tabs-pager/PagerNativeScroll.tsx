@@ -1,8 +1,8 @@
 // Like the RN classes, these exports provide both a ref type and a component
-// value so existing useRef<ScrollView>/FlatList<Item> consumers keep their types.
+// value so existing useRef<ScrollViewInstance>/FlatList<Item> consumers keep their types.
 /* eslint-disable @typescript-eslint/no-redeclare */
-import { createElement, forwardRef, isValidElement, useContext, useMemo, type ReactElement, type RefAttributes } from 'react';
-import { FlatList, ScrollView, SectionList, StyleSheet, type FlatListProps, type ScrollViewProps, type SectionListProps } from 'react-native';
+import { createElement, forwardRef, useContext, useMemo, type ReactElement, type RefAttributes } from 'react';
+import { FlatList, SectionList, StyleSheet, type FlatListProps, type ScrollViewProps, type ScrollViewInstance, type SectionListProps } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useTabBarScroll } from '../../hooks/useTabBarScroll';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -40,12 +40,12 @@ function useScrollBehavior({ tabBarScroll, ...props }: ScrollViewProps & ScrollB
     onScroll: scroll.onScroll,
   };
 }
-function footerElement(footer: FlatListProps<unknown>['ListFooterComponent']) {
-  return isValidElement(footer) ? footer : footer ? createElement(footer) : null;
+function footerElement(footer: FlatListProps<unknown>['ListFooterComponent'] | null) {
+  return typeof footer === 'function' ? createElement(footer) : footer ?? null;
 }
 
-export type PagerNativeScrollView = ScrollView;
-export const PagerNativeScrollView = forwardRef<ScrollView, ScrollViewProps & ScrollBehavior>(function PagerNativeScrollView({ tabBarScroll, ...props }, ref) {
+export type PagerNativeScrollView = ScrollViewInstance;
+export const PagerNativeScrollView = forwardRef<ScrollViewInstance, ScrollViewProps & ScrollBehavior>(function PagerNativeScrollView({ tabBarScroll, ...props }, ref) {
   const gesture = useScrollGesture(props.horizontal);
   const { spacer, ...behavior } = useScrollBehavior({ ...props, tabBarScroll });
   const view = <Animated.ScrollView {...props} ref={ref} {...behavior} scrollEventThrottle={16}

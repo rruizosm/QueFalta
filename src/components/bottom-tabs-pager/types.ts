@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { Feather } from '@expo/vector-icons';
-import type { PanGesture } from 'react-native-gesture-handler';
+import type { LegacyPanGesture as PanGesture } from 'react-native-gesture-handler';
 
 export type PageContext = {
   topInset: number;

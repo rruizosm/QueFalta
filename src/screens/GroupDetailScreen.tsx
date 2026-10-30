@@ -287,7 +287,7 @@ export default function GroupDetailScreen() {
         )}
         <View style={styles.zoneHeader}>
           <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
-          <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
+          <Text style={styles.zoneHeaderText}>{section.zone.label}</Text>
         </View>
       </View>
     );
@@ -326,7 +326,7 @@ export default function GroupDetailScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} />
         {!glassAvailable && header}
         <ActivityIndicator
           size="large"
@@ -347,7 +347,7 @@ export default function GroupDetailScreen() {
   if (error || !group) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} />
         {!glassAvailable && header}
         <View style={[styles.centerBox, glassAvailable && { paddingTop: headerHeight }]}>
           <Text style={styles.emptyText}>{t('group.detailLoadError')}</Text>
@@ -368,7 +368,7 @@ export default function GroupDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && header}
 

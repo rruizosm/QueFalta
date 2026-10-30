@@ -1,0 +1,15 @@
+{
+  "id": "2010201218",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/967782_00_1.jpg",
+  "sourceSha256": "0a57fd5818b4a0b8df2eded76908e100c69b063141184fb818f187951c06c460",
+  "outputSha256": "33313b49d4801918e3b4078512ba8ca756ca92d51f7daf21cef31b898b1fe500",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2010201218.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-9ce25673-8e8d-419d-9601-102af430ee10.png",
+  "visualReview": "Rejected: ImageGen returned tin on opaque grey studio background rather than transparency.",
+  "validAlpha": true,
+  "visualReviewAccepted": false,
+  "bytes": 2088092,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.044Z"
+}

@@ -103,7 +103,7 @@ export default function ConsumProductModal({ product, onClose, topInset = 16, ba
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -135,6 +135,7 @@ export default function ConsumProductModal({ product, onClose, topInset = 16, ba
          *  mismo diseño de tarjeta que el resto de súpers. */}
         <ProductInfoSections
           items={[
+            { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: product.glutenFreeByTag ? t('product.glutenFreeDescription') : null },
             { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), nutritionInfo: nutrition.info },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}

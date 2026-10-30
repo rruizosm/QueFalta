@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-27",
+  "table": "carrefour_products",
+  "column": "illustration_url",
+  "excludedCategories": [
+    "Papelería",
+    "Bazar",
+    "Calzado"
+  ],
+  "verified": true,
+  "products": [
+    {
+      "id": "520664611",
+      "name": "Caldo casero de pollo natural Original Carrefour sin gluten y sin lactosa brik 1 l.",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520664611/1714447b4ceee495.png",
+      "sha256": "1714447b4ceee4953acfebcb38faf530bc1254a3f2b0e293a81e1e29a11786fa",
+      "bytes": 102174
+    },
+    {
+      "id": "520660281",
+      "name": "Aceite de oliva virgen extra ecológico Carrefour Bio 500 ml.",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/520660281/4550b4f0c54a9bd9.png",
+      "sha256": "4550b4f0c54a9bd9e0bcf70f60afa4a28320b5371f5305aaea535f033ef3c355",
+      "bytes": 32073
+    },
+    {
+      "id": "521002680",
+      "name": "Galletas horneadas Carrefour Original 500 g.",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521002680/e3836bd04ff1bd3f.png",
+      "sha256": "e3836bd04ff1bd3fdbaa743a0934fb0e19b44290b8bff48460080070b823ad1d",
+      "bytes": 175524
+    },
+    {
+      "id": "521003205",
+      "name": "Leche condensada Carrefour 397 g.",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521003205/b89440732ad55f65.png",
+      "sha256": "b89440732ad55f65e61ba167ca2eea3812593ec73c88cccf45a59b8556b9d9ee",
+      "bytes": 142325
+    },
+    {
+      "id": "521001754",
+      "name": "Cera para terrazo y baldosa Carrefour 1 l.",
+      "url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/carrefour/521001754/90983a058e56e96f.png",
+      "sha256": "90983a058e56e96f78e91533d94da57a93f927bd9a484a00d84d04f4eb98d68e",
+      "bytes": 56558
+    }
+  ]
+}

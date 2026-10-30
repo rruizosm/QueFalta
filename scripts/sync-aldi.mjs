@@ -240,6 +240,9 @@ function normalize(h) {
     price_per_unit_unit: ppu?.unit ?? null,
     available: h.isAvailable !== false,
     published: true,
+    gluten_free_label: Array.isArray(h.assets) && h.assets.some((asset) =>
+      asset?.type === 'certificate'
+      && asset?.url === 'https://s7g10.scene7.com/is/image/aldinord/07_Sin_gluten'),
     raw: h,
     synced_at: runStart,
     _cats: Array.isArray(h.categoryIDs) ? h.categoryIDs.map(String) : [],

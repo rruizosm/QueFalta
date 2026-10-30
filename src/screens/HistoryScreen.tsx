@@ -1,3 +1,4 @@
+import type { PantryVisibleBounds } from '../lib/pantryVisibleBounds';
 import { useCallback, useMemo, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
@@ -23,7 +24,7 @@ import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
 import PaywallModal from '../components/PaywallModal';
 import { GroupCartLimitError } from '../lib/groupCartLimit';
-import type { PantryPurchaseProduct } from '../lib/pantryLayout';
+import type { PantryPurchaseProduct, PantrySection } from '../lib/pantryLayout';
 import PantryPurchaseProducts from '../components/PantryPurchaseProducts';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -36,10 +37,11 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 interface HistoryScreenProps {
   /** Present the history inside a product picker, returning to that picker. */
   onBack?: () => void;
-  onAddPantryPurchase?: (products: readonly PantryPurchaseProduct[]) => boolean;
+  pantrySection?: PantrySection;
+  onAddPantryPurchase?: (products: readonly PantryPurchaseProduct[], bounds?: ReadonlyMap<string, PantryVisibleBounds>) => boolean;
 }
 
-export default function HistoryScreen({ onBack, onAddPantryPurchase }: HistoryScreenProps = {}) {
+export default function HistoryScreen({ onBack, onAddPantryPurchase, pantrySection = 'pantry' }: HistoryScreenProps = {}) {
   const styles = useThemedStyles(themedStyles);
   const reducedMotion = useReducedMotion();
   const screenHeaderTop = useHeaderTopPadding(52);
@@ -140,7 +142,7 @@ export default function HistoryScreen({ onBack, onAddPantryPurchase }: HistorySc
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <ProfileSubscreenHeader title={t(onBack ? 'pantry.myPurchases' : 'profile.purchaseHistory')} icon="receipt-outline"
         headerTop={headerTop} onBack={onBack} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
@@ -204,7 +206,7 @@ export default function HistoryScreen({ onBack, onAddPantryPurchase }: HistorySc
                       {expanded && (
                         <View style={[styles.expanded, showBorder && styles.rowBorder]}>
                           {onAddPantryPurchase ? (
-                            <PantryPurchaseProducts key={p.id} purchaseId={p.id} onAddPurchase={onAddPantryPurchase} />
+                            <PantryPurchaseProducts key={p.id} purchaseId={p.id} onAddPurchase={onAddPantryPurchase} section={pantrySection} />
                           ) : itemsLoadingId === p.id ? (
                             <ActivityIndicator size="small" color={colors.accent} style={{ paddingVertical: 16 }} />
                           ) : prods && prods.length > 0 ? (

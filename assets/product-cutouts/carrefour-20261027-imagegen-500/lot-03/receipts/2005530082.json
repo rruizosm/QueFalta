@@ -1,0 +1,15 @@
+{
+  "id": "2005530082",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/947089_00_1.jpg",
+  "sourceSha256": "15ef9807927db2b9d983951505e97c52cae23444e61fd3b8d67349fd77d4f78f",
+  "outputSha256": "9a05295ec8447be9f25bc1b2cf8a768f5edaac6a80e3b5dcc9027b8581ffd08f",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2005530082.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-0bf2b307-f09c-47fd-8746-3df1f729ceb6.png",
+  "visualReview": "Complete Carrefour latex glove package, navy box and white gloves intact; hanging slot transparent. Minor generated print texture changes.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 854839,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.205Z"
+}

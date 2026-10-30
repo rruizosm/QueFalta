@@ -26,6 +26,7 @@ export interface UIProduct {
   unitPrice: number | null;
   /** Precio numérico por unidad canónica, usado para ordenar el catálogo. */
   pricePerUnit?: number | null;
+  glutenFreeByTag?: boolean;
   /** Línea secundaria: tamaño/formato del envase ("1 L", "250 Gr"), o null. */
   metaLabel: string | null;
   /** Precio por unidad de medida ya formateado ("3,90 €/L", "1,50 €/kg"), o null.
@@ -39,7 +40,7 @@ export interface UIProduct {
    *  de precio por "anterior tachado · actual en verde/rojo · (%)". Opcional:
    *  solo lo aporta PriceChangesScreen. */
   priceChange?: { prevLabel: string; pctLabel: string; direction: 'up' | 'down' } | null;
-  /** Categoría del retailer (para que la Lista agrupe por zona al añadir). */
+  /** Subcategoría del retailer para agrupar la lista de la compra. */
   categoryName: string | null;
 }
 
@@ -56,12 +57,12 @@ const euro = (n: number | null | undefined): string =>
 
 export function mercadonaToUI(
   p: MercadonaProduct,
-  // Por defecto, la categoría (N2) que el producto trae del espejo → la Lista lo
-  // agrupa por su zona. ProductsScreen (navegación por categorías) pasa el N1
-  // explícito y ese tiene prioridad.
-  categoryName: string | null = p.categories?.[0]?.name ?? null,
+  // En una navegación por N2 usamos el título de la pantalla. En búsquedas y
+  // listados generales, la última categoría del producto es la más específica.
+  categoryName: string | null = p.categories?.at(-1)?.name ?? null,
 ): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByName,
     id: p.id,
     store: 'mercadona',
     name: p.display_name,
@@ -77,6 +78,7 @@ export function mercadonaToUI(
 
 export function bonpreuToUI(p: BonpreuProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'esclat', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -87,6 +89,7 @@ export function bonpreuToUI(p: BonpreuProduct): UIProduct {
 
 export function carrefourToUI(p: CarrefourProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'carrefour', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -97,6 +100,7 @@ export function carrefourToUI(p: CarrefourProduct): UIProduct {
 
 export function bonareaToUI(p: BonareaProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'bonarea', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -106,6 +110,7 @@ export function bonareaToUI(p: BonareaProduct): UIProduct {
 
 export function consumToUI(p: ConsumProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'consum', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -116,6 +121,7 @@ export function consumToUI(p: ConsumProduct): UIProduct {
 
 export function diaToUI(p: DiaProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'dia', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -131,6 +137,7 @@ export function sorliToUI(p: SorliProduct): UIProduct {
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     // El formato ya va en el nombre ("Naranja Bolsa 2kg") → sin metaLabel.
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    glutenFreeByTag: p.glutenFreeByTag,
     nutriScoreGrade: p.nutriScoreGrade,
     offerTag: p.promoName,
   };
@@ -140,6 +147,7 @@ export function sorliToUI(p: SorliProduct): UIProduct {
 // marca y formato ("Leche Condis semidesnatada 1 L") → sin metaLabel.
 export function condisToUI(p: CondisProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'condis', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -151,6 +159,7 @@ export function condisToUI(p: CondisProduct): UIProduct {
 // El nombre ya trae marca y formato ("… Ametller Origen 150 g") → sin metaLabel.
 export function ametllerToUI(p: AmetllerProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'ametller', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -161,6 +170,7 @@ export function ametllerToUI(p: AmetllerProduct): UIProduct {
 // Aldi: es-only, con marca y formato del envase (salesUnit) → metaLabel como Consum.
 export function aldiToUI(p: AldiProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'aldi', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -174,6 +184,7 @@ export function lidlToUI(p: LidlProduct): UIProduct {
     ? `${p.promoName} · Lidl Plus`
     : p.promoName;
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     lidlDetail: { product: p, fetchedAt: Date.now() },
     id: p.id, store: 'lidl', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
@@ -186,6 +197,7 @@ export function lidlToUI(p: LidlProduct): UIProduct {
 /** BM: precio, surtido y promociones ya vienen resueltos para el CP activo. */
 export function bmToUI(p: BmProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'bm', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -198,6 +210,7 @@ export function bmToUI(p: BmProduct): UIProduct {
 /** El Jamón: catálogo común de recogida con promociones ya normalizadas. */
 export function eljamonToUI(p: EljamonProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'eljamon', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -210,6 +223,7 @@ export function eljamonToUI(p: EljamonProduct): UIProduct {
  * directo o corresponder a una promoción por unidades. */
 export function gadisToUI(p: GadisProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'gadis', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -219,7 +233,7 @@ export function gadisToUI(p: GadisProduct): UIProduct {
 }
 
 export function froizToUI(p: FroizProduct): UIProduct {
-  return { id: p.id, store: 'froiz', name: p.displayName, imageUrl: p.thumbnail,
+  return { glutenFreeByTag: p.glutenFreeByTag, id: p.id, store: 'froiz', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit), metaLabel: p.packaging ?? null,
     pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName, offerTag: p.promoName };
@@ -228,7 +242,8 @@ export function froizToUI(p: FroizProduct): UIProduct {
 /** Ahorramás: catálogo Demandware en castellano. El precio tachado y la
  * vigencia de campaña se conservan para Ofertas; la tarjeta usa el precio final. */
 export function ahorramasToUI(p: AhorramasProduct): UIProduct {
-  return { id: p.id, store: 'ahorramas', name: p.displayName, imageUrl: p.thumbnail,
+  return {
+    glutenFreeByTag: p.glutenFreeByTag, id: p.id, store: 'ahorramas', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit), metaLabel: p.packaging ?? null,
     pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName, offerTag: p.promoName };
@@ -238,6 +253,7 @@ export function ahorramasToUI(p: AhorramasProduct): UIProduct {
 // canónico extraído de price_text.
 export function hiperdinoToUI(p: HiperdinoProduct): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store: 'hiperdino', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
@@ -264,6 +280,7 @@ export function plusfrescToUI(p: PlusfrescProduct): UIProduct {
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    glutenFreeByTag: p.glutenFreeByTag,
   };
 }
 
@@ -272,6 +289,7 @@ export function plusfrescToUI(p: PlusfrescProduct): UIProduct {
 // 1 litro"); el precio unitario se muestra cuando la tarjeta de origen lo publica.
 function tapestryToUI(p: TapestryProduct, store: CatalogStore): UIProduct {
   return {
+    glutenFreeByTag: p.glutenFreeByTag,
     id: p.id, store, name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),

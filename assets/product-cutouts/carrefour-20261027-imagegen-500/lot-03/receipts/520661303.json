@@ -1,0 +1,15 @@
+{
+  "id": "520661303",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/000157_00_1.jpg",
+  "sourceSha256": "352e48795b9e6fc4f64c1e6a88550b9fefcda826e17c5fb0a921262db8d0b76f",
+  "outputSha256": "c11a6fbf1713fd6d0164eb23aa2d557dc21a9748a4a5c6c587142d2756e7b52c",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520661303.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-7d3b4ba4-e991-495d-83b9-7edba9600143.png",
+  "visualReview": "Complete Heineken green33cl can, redstar and metal rims preserved within canvas; transparent exterior.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1147790,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:56:46.905Z"
+}

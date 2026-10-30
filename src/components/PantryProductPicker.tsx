@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { PANTRY_SEARCH_PAGE_SIZE, PANTRY_STORES, searchPantryProducts, type PantryCatalogProduct, type PantryStore } from '../api/pantry';
+import { PANTRY_SEARCH_PAGE_SIZE, PANTRY_STORES, isCarrefourPantryCategory, searchPantryProducts, type PantryCatalogProduct, type PantryStore } from '../api/pantry';
 import { fetchCategories } from '../api/mercadona';
-import { fetchLidlCategoryTree } from '../api/catalog';
+import { fetchBonareaCategoryTree, fetchCarrefourCategoryTree, fetchLidlCategoryTree } from '../api/catalog';
 import { updateProfile } from '../api/profile';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -15,7 +15,7 @@ import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import type { PantryProduct, PantryPurchaseProduct, PantrySection } from '../lib/pantryLayout';
+import type { PantryProduct, PantryPurchaseProduct, PantrySection, PantryShelfLabel } from '../lib/pantryLayout';
 import { sortByName } from '../lib/sort';
 import StoreProductList from './StoreProductList';
 import StoreDropdown from './StoreDropdown';
@@ -25,17 +25,22 @@ import SlidingSegments, { type Segment } from './SlidingSegments';
 import GlassSurface, { glassAvailable } from './GlassSurface';
 import LidlStorePicker from './LidlStorePicker';
 import { catalogBrowserStyles } from './catalogBrowserStyles';
-import type { ViewMode } from './ViewModeToggle';
+import ViewModeToggle, { type ViewMode } from './ViewModeToggle';
 import HistoryScreen from '../screens/HistoryScreen';
+import PantryPlacementReview from './PantryPlacementReview';
+import PantryImageBoundsProbe from './PantryImageBoundsProbe';
+import { usePantryAddMeasurements } from '../hooks/usePantryAddMeasurements';
+import type { PantryVisibleBounds } from '../lib/pantryVisibleBounds';
 
 interface Category { id: string; name: string; children?: Category[] }
 const stores = storesWithLidlSecond(CATALOG_STORES);
-const selectedKeys = new Set<string>();
+const selectableStores = PANTRY_STORES.filter((store) => store !== 'carrefour');
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, section = 'pantry' }: {
-  onSelect: (product: PantryProduct) => void;
-  onAddPurchase: (products: readonly PantryPurchaseProduct[]) => boolean;
+export default function PantryProductPicker({ onConfirm, onAddPurchase, onClose, shelfLabels = {}, section = 'pantry' }: {
+  onConfirm: (products: readonly PantryProduct[], shelfChoices?: ReadonlyMap<string, number>, bounds?: ReadonlyMap<string, PantryVisibleBounds>) => boolean;
+  shelfLabels?: Readonly<Record<string, PantryShelfLabel>>;
+  onAddPurchase: (products: readonly PantryPurchaseProduct[], bounds?: ReadonlyMap<string, PantryVisibleBounds>) => boolean;
   onClose: () => void;
   section?: PantrySection;
 }) {
@@ -47,6 +52,12 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
   const { session } = useAuth();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
+  const [selected, setSelected] = useState<Map<string, PantryProduct>>(() => new Map());
+  const measurements = usePantryAddMeasurements([...selected.values()]);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [shelfChoices, setShelfChoices] = useState<Map<string, number>>(() => new Map());
+  const [noSpace, setNoSpace] = useState(false);
+  const selectedKeys = useMemo(() => new Set(selected.keys()), [selected]);
   const [store, setStore] = useState<PantryStore>('mercadona');
   const [tab, setTab] = useState<CatalogTab>('productos');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -101,7 +112,12 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
     if (tab !== 'categorias') return;
     const controller = new AbortController();
     setCatsLoading(true); setCatsError(false); setCategories([]);
-    const request = store === 'lidl' ? fetchLidlCategoryTree(lidlStoreId, controller.signal)
+    const request = store === 'bonarea' ? fetchBonareaCategoryTree(controller.signal)
+      : store === 'carrefour' ? fetchCarrefourCategoryTree(controller.signal).then((roots) => roots
+        .filter((root) => isCarrefourPantryCategory(root.id, root.name))
+        .map((root) => ({ ...root, children: root.children.filter((child) => isCarrefourPantryCategory(child.id, child.name)) }))
+        .filter((root) => root.children.length > 0))
+      : store === 'lidl' ? fetchLidlCategoryTree(lidlStoreId, controller.signal)
       : fetchCategories(controller.signal).then((roots) => roots.map((root) => ({
         id: String(root.id), name: root.name,
         children: root.categories.map((child) => ({ id: String(child.id), name: child.name })),
@@ -131,7 +147,7 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
     }
   };
   const changeStore = (next: PantryStore) => {
-    if (!PANTRY_STORES.includes(next)) return;
+    if (!selectableStores.some((store) => store === next)) return;
     setStore(next); setCategory(null); setParentCategory(null); setCatQuery('');
     if (next === 'lidl' && !lidlStoreId) setLidlPickerOpen(true);
   };
@@ -140,10 +156,6 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
     await updateProfile(session.user.id, { lidlStoreId: id });
     applyProfile({ lidlStoreId: id }); setLidlPickerOpen(false);
   };
-  const viewSegments: Segment<ViewMode>[] = [
-    { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
-    { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
-  ];
   const segmentControl = <K extends string,>(segments: Segment<K>[], value: K, onChange: (key: K) => void) =>
     glassAvailable || Platform.OS === 'android'
       ? <SlidingSegments compact dense emphasized transparentTrack={Platform.OS === 'android'} segments={segments} value={value} onChange={onChange} />
@@ -160,20 +172,20 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
         <View style={styles.titleIcon}><Ionicons name="library" size={15} color={colors.accent} /></View>
         <Text style={styles.title} accessibilityRole="header">{t(section === 'fridge' ? 'pantry.addFridgeProduct' : 'pantry.addProduct')}</Text>
       </View>
-      <StoreDropdown stores={stores} value={store} onChange={changeStore} labeled availableStores={PANTRY_STORES} />
+      <StoreDropdown stores={stores} value={store} onChange={changeStore} labeled availableStores={selectableStores} />
       <Pressable style={styles.pickerClose} accessibilityRole="button" accessibilityLabel={t('common.close')}
         testID="pantry-search-close" onPress={onClose}><Ionicons name="close" size={22} color={colors.ink} /></Pressable>
     </View>
     <View style={styles.controlsRow}>
       <CatalogTabSelector value={tab} onChange={(next) => {
         Keyboard.dismiss(); setSearchExpanded(false); setTab(next);
-      }} showIcons={section !== 'pantry' || (width >= 375 && fontScale <= 1.2)} />
-      {section === 'pantry' && <Pressable
+      }} showIcons={width >= 375 && fontScale <= 1.2} />
+      <Pressable
         onPress={() => { Keyboard.dismiss(); setSearchExpanded(false); setPurchasesOpen(true); }}
         style={({ pressed }) => [ownStyles.purchasesBtn, pressed && ownStyles.purchasesBtnPressed]}
         accessibilityRole="button" accessibilityLabel={t('pantry.myPurchases')} testID="pantry-my-purchases">
         <Text style={ownStyles.purchasesBtnText}>{t('pantry.myPurchases')}</Text>
-      </Pressable>}
+      </Pressable>
     </View>
     {category && tab === 'productos' && <Pressable style={ownStyles.categoryScope} onPress={() => setCategory(null)}
       accessibilityRole="button" accessibilityLabel={`${category.name}. ${t('common.clear')}`}>
@@ -189,7 +201,7 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
             {store === 'lidl' && lidlStoreId && segmentControl([
               { key: 'store', icon: 'storefront-outline', accessibilityLabel: t('region.lidlStoreTitle') },
             ], '', () => setLidlPickerOpen(true))}
-            <View style={styles.prodViewGroup}>{segmentControl(viewSegments, viewMode, setViewMode)}</View>
+            <View style={styles.prodViewGroup}><ViewModeToggle value={viewMode} onChange={setViewMode} /></View>
           </>}
         </View>
         {!searchExpanded && !!query && <Text style={styles.prodSearchQuery} numberOfLines={1}>{query}</Text>}
@@ -203,14 +215,25 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
   const retry = <Pressable onPress={() => products.length && tab === 'productos' ? void loadMore() : setAttempt((n) => n + 1)}
     accessibilityRole="button" style={ownStyles.retry}><Text style={styles.retryText}>{t('common.retry')}</Text></Pressable>;
   const lidlNeedsStore = store === 'lidl' && !lidlStoreId;
-  const goBack = () => purchasesOpen ? setPurchasesOpen(false) : onClose();
+  const goBack = () => purchasesOpen ? setPurchasesOpen(false) : reviewOpen ? setReviewOpen(false) : onClose();
   return <Modal visible transparent animationType={reducedMotion ? 'none' : 'slide'}
     presentationStyle="overFullScreen" statusBarTranslucent navigationBarTranslucent onRequestClose={goBack}>
     <KeyboardAvoidingView style={ownStyles.modalRoot} behavior="padding">
       <Pressable style={StyleSheet.absoluteFill} accessible={false} onPress={() => { Keyboard.dismiss(); onClose(); }} />
       <SafeAreaView style={ownStyles.sheet} edges={['left', 'right']}
         testID="pantry-picker-sheet" accessibilityViewIsModal onAccessibilityEscape={goBack}>
-        {purchasesOpen ? <HistoryScreen onBack={() => setPurchasesOpen(false)} onAddPantryPurchase={onAddPurchase} /> : <View style={ownStyles.body}>
+        {!purchasesOpen && <PantryImageBoundsProbe key={measurements.attempt} urls={measurements.urls} onBounds={measurements.onBounds} />}
+        {purchasesOpen ? <HistoryScreen onBack={() => setPurchasesOpen(false)} onAddPantryPurchase={onAddPurchase} pantrySection={section} /> : <View style={ownStyles.body}>
+          {reviewOpen ? <PantryPlacementReview products={[...selected.values()]} shelfLabels={shelfLabels}
+            shelfChoices={shelfChoices} onBack={() => setReviewOpen(false)} onClose={onClose}
+            onChooseShelf={(key, shelf) => {
+              setNoSpace(false);
+              setShelfChoices(previous => {
+                const next = new Map(previous);
+                if (shelf === null) next.delete(key); else next.set(key, shelf);
+                return next;
+              });
+            }} /> : <>
           {glassAvailable ? <View style={[styles.chrome, { zIndex: 1 }]} onLayout={(event) => setChromeHeight(event.nativeEvent.layout.height)}>
             <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>{chrome}</GlassSurface>
           </View> : chrome}
@@ -226,7 +249,7 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />} testID="pantry-category-results"
               ListHeaderComponent={parentCategory ? <Pressable style={ownStyles.back} accessibilityRole="button" onPress={() => { setParentCategory(null); setCatQuery(''); }}>
                 <Ionicons name="chevron-back" size={20} color={colors.accent} /><Text style={styles.retryText}>{parentCategory.name}</Text>
-              </Pressable> : null}
+              </Pressable> : undefined}
               ListEmptyComponent={<Text style={styles.errorText}>{t('pantry.noCategories')}</Text>}
               renderItem={({ item }) => {
                 const { emoji, color } = getMeta(item.name);
@@ -251,15 +274,55 @@ export default function PantryProductPicker({ onSelect, onAddPurchase, onClose, 
                   onEndReached={error ? undefined : () => void loadMore()} loadingMore={loadingMore}
                   emptyText={t(query || category ? 'pantry.noResults' : 'pantry.noIllustrations')}
                   onScrollBeginDrag={() => { Keyboard.dismiss(); setSearchExpanded(false); }}
-                  selection={{ selectedKeys, bottomInset: insets.bottom, actionAppearance: 'glass',
-                    accessibilityLabel: (product) => t(section === 'fridge' ? 'pantry.addNamedFridgeProduct' : 'pantry.addNamedProduct', { name: product.name }),
+                  selection={{ selectedKeys, allowDeselect: true, bottomInset: insets.bottom, actionAppearance: 'glass',
+                    accessibilityLabel: (product) => t(selectedKeys.has(`${product.store}:${product.id}`)
+                      ? 'pantry.deselectNamedProduct' : 'pantry.selectNamedProduct', { name: product.name }),
                     onSelect: (product) => {
-                      const selected = products.find((item) => item.id === product.id);
-                      if (selected) onSelect({ id: selected.id, name: selected.name, store: selected.store, illustrationUrl: selected.illustrationUrl });
+                      const entry = products.find((item) => item.id === product.id && item.store === product.store);
+                      if (!entry) return;
+                      setNoSpace(false);
+                      const entryKey = `${entry.store}:${entry.id}`;
+                      if (selectedKeys.has(entryKey)) setShelfChoices(previous => {
+                        const next = new Map(previous); next.delete(entryKey); return next;
+                      });
+                      setSelected((previous) => {
+                        const next = new Map(previous);
+                        const key = `${entry.store}:${entry.id}`;
+                        if (next.has(key)) next.delete(key);
+                        else next.set(key, { id: entry.id, name: entry.name, store: entry.store,
+                          illustrationUrl: entry.illustrationUrl,
+                          ...(entry.metaLabel ? { metaLabel: entry.metaLabel } : {}) });
+                        return next;
+                      });
                     },
                   }} />
                 {error && <View style={ownStyles.moreError}><Text style={styles.errorText}>{t('pantry.searchError')}</Text>{retry}</View>}
               </>}
+          </>}
+          {measurements.failed && <View><Text style={styles.errorText} accessibilityRole="alert">{t('pantry.measureError')}</Text>
+            <Pressable onPress={measurements.retry} accessibilityRole="button" style={ownStyles.retry}>
+              <Text style={styles.errorText}>{t('common.retry')}</Text>
+            </Pressable></View>}
+          {noSpace && <Text style={[styles.errorText, ownStyles.spaceError]} accessibilityRole="alert">{t('pantry.noSpace')}</Text>}
+          {selected.size > 0 && <GlassSurface style={[ownStyles.confirmBar, { paddingBottom: Math.max(insets.bottom, 12) }]}
+            fallbackColor={colors.paper}>
+            {!reviewOpen && <Pressable testID="pantry-locate-products" accessibilityRole="button"
+              style={[ownStyles.confirmButton, ownStyles.locateButton]} onPress={() => {
+                Keyboard.dismiss(); setSearchExpanded(false); setReviewOpen(true);
+              }}>
+              <Text style={ownStyles.locateText}>{t('pantry.locateProducts')}</Text>
+            </Pressable>}
+            <Pressable testID="pantry-confirm-products" accessibilityRole="button"
+              disabled={!measurements.ready} accessibilityState={{ disabled: !measurements.ready, busy: !measurements.ready && !measurements.failed }}
+              style={ownStyles.confirmButton} onPress={() => {
+                if (!measurements.ready) return;
+                Keyboard.dismiss();
+                setNoSpace(!onConfirm([...selected.values()], shelfChoices, measurements.bounds));
+              }}>
+              {!measurements.ready && !measurements.failed && <ActivityIndicator color={colors.white} />}
+              <Text style={ownStyles.confirmText}>{t(!measurements.ready && !measurements.failed ? 'pantry.measuringProducts' : section === 'fridge' ? 'pantry.confirmFridgeProducts' : 'pantry.confirmProducts')}</Text>
+            </Pressable>
+          </GlassSurface>}
         </View>}
         {store === 'lidl' && lidlPickerOpen && <LidlStorePicker postalCode={profile?.postalCode ?? null} selectedStoreId={lidlStoreId}
           required={!lidlStoreId} onSelect={saveLidlStore} onClose={() => setLidlPickerOpen(false)} />}
@@ -276,6 +339,13 @@ const themedStyles = () => StyleSheet.create({
     overflow: 'hidden', backgroundColor: colors.paper,
   },
   body: { flex: 1, minHeight: 0 },
+  confirmBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 12 },
+  spaceError: { paddingHorizontal: 16, paddingTop: 8 },
+  locateButton: { backgroundColor: colors.accentLight, borderWidth: 1, borderColor: colors.accent },
+  locateText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accent, textAlign: 'center' },
+  confirmButton: { minHeight: 44, flex: 1, borderRadius: 22, backgroundColor: colors.accent,
+    paddingHorizontal: 16, paddingVertical: 10, alignItems: 'center', justifyContent: 'center' },
+  confirmText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.white, textAlign: 'center' },
   purchasesBtn: {
     minHeight: 44, maxWidth: '34%', paddingHorizontal: 12, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',

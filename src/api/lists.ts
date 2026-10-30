@@ -53,8 +53,8 @@ export interface NewListItem {
   note?: string | null;
   noteProduct?: LinkedNoteProduct | null;
   categoryEmoji?: string | null;
-  /** Categoría del retailer al añadir (N1/hoja; BM usa la ruta N1 › N2).
-   *  La lista la mapea a una zona canónica (constants/zones.ts). null → "Otros". */
+  /** Subcategoría propia del retailer al añadir. Si llega una ruta N1 › N2,
+   *  la lista usa su último nivel. null → "Otros". */
   categoryName?: string | null;
   mercadonaProductId?: string | null;
   /** Id del producto en su propio súper (Bonpreu/Carrefour/bonÀrea/Consum/Dia),

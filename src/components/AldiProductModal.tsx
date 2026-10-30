@@ -145,7 +145,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -214,6 +214,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
         <ProductInfoSections
           items={[
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
+            { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: 'glutenFreeByTag' in product && product.glutenFreeByTag ? t('product.glutenFreeDescription') : null },
             ...('description' in product ? [
               { key: 'description', icon: 'information-circle-outline' as const, title: t('product.sections.description'), text: product.description },
               { key: 'ingredients', icon: 'leaf-outline' as const, title: t('product.sections.ingredients'), text: product.ingredients },

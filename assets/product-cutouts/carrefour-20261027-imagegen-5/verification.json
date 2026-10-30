@@ -1,0 +1,55 @@
+{
+  "method": "Built-in ImageGen, one edit per original photograph",
+  "transparentBackground": true,
+  "published": true,
+  "visualReview": "Complete products with transparent backgrounds; generated changes in brightness and label details and edge remnants. Not approved as exact photographic cutouts.",
+  "products": [
+    {
+      "id": "520660281",
+      "file": "520660281.png",
+      "width": 1254,
+      "height": 1254,
+      "transparentPixels": 1307637,
+      "partialAlphaPixels": 264163,
+      "sha256": "27c35ddba1560bd5dcf6dc1abfd7c4ed6cb65e1e917629ebdf20526570655b0c"
+    },
+    {
+      "id": "520664611",
+      "file": "520664611.png",
+      "width": 1254,
+      "height": 1254,
+      "transparentPixels": 874683,
+      "partialAlphaPixels": 697468,
+      "sha256": "fbec58894ce1f67fe85eda3f2e66fad17200e9038d51f3454c1d87c0c6a23319"
+    },
+    {
+      "id": "521001754",
+      "file": "521001754.png",
+      "width": 1254,
+      "height": 1254,
+      "transparentPixels": 1218138,
+      "partialAlphaPixels": 353911,
+      "sha256": "cdb59dc316a2cd36144c2031bfef72e4338e05ce76685f855fd70a93a4d2f4f3"
+    },
+    {
+      "id": "521002680",
+      "file": "521002680.png",
+      "width": 1406,
+      "height": 1119,
+      "transparentPixels": 459546,
+      "partialAlphaPixels": 1113548,
+      "sha256": "dcfe2bfa099fd09f582f80a002779f5f5bb13df7d26d8d93b991efc807c65bc5"
+    },
+    {
+      "id": "521003205",
+      "file": "521003205.png",
+      "width": 1254,
+      "height": 1254,
+      "transparentPixels": 571932,
+      "partialAlphaPixels": 1000041,
+      "sha256": "53cc3a0b94b1873b111df8695e95cc0e1d02d4c1c38a0d1164e9f4deb49debe7"
+    }
+  ],
+  "publicationReceipt": "docs/carrefour-imagegen-replacement-20261027.json",
+  "userAuthorizedReplacement": true
+}

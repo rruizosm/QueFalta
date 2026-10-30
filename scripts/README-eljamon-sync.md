@@ -1,5 +1,10 @@
 # Sync de Supermercados El Jamón
 
+El sync actualiza `gluten_free_label` desde el nombre mediante
+`lib/gluten-free-names.mjs`. Reconoce también S/G en pan y galletas, sin
+confundirlo con «sin gas» en bebidas. Ver
+[reglas y validación](README-gluten-free-names.md).
+
 `sync-eljamon.mjs` extrae el catálogo público de
 `supermercadoseljamon.com` mediante Playwright.
 
@@ -30,8 +35,15 @@ Por producto:
 La ruta se resuelve primero comparando ese nombre con el árbol de la categoría
 raíz. Cuando el nombre solo aparece una vez, se asigna su ruta completa sin abrir
 la ficha. Si es ambiguo, no existe en el árbol o viene vacío, el sync abre la
-ficha y usa su breadcrumb. La publicación se bloquea si queda algún producto sin
-resolver para evitar volver a guardar todo el catálogo en las categorías raíz.
+ficha y usa su breadcrumb. Si una ficha agota sus reintentos o queda algún producto
+sin subcategoría resuelta, se excluye solo ese producto y el sync publica el resto.
+El log identifica los SKU excluidos; el snapshot incluye `excluded_products` con
+su ID, nombre y motivo, y el informe distingue extraídos, publicables y excluidos.
+Los recuentos por categoría se calculan únicamente sobre los productos válidos.
+Si un excluido estaba publicado, la limpieza habitual lo despublica; podrá volver
+en un sync posterior si su categoría se resuelve. El mínimo `MIN_PRODUCTS` se
+comprueba después de excluir los fallidos para impedir una publicación masivamente
+incompleta. No se guardan productos asignados solo a las categorías raíz.
 Si la propia ficha solo publica la raíz, se conserva el ancestro inequívoco del
 nombre de Comerzzia; por ejemplo, `Postres vegetales` se asigna a `Postres`.
 

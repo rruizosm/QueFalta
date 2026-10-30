@@ -317,7 +317,6 @@ export default function HomeScreen() {
       <AmbientBubbleBackdrop />
       <StatusBar
         barStyle={entryCoverVisible ? 'light-content' : colors.statusBar}
-        backgroundColor={entryCoverVisible ? colors.blue : colors.paper}
       />
       {!glassAvailable && header}
       <ScrollView tabBarScroll

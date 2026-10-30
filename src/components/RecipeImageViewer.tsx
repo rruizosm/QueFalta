@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   ActivityIndicator, Modal, Pressable, StatusBar,
@@ -17,7 +18,7 @@ interface Props {
   uri: string;
   title: string;
   onClose: () => void;
-  sourceRef: RefObject<View | null>;
+  sourceRef: RefObject<ViewInstance | null>;
   imageRatio: number;
   progress: SharedValue<number>;
 }
@@ -28,7 +29,7 @@ export default function RecipeImageViewer({ uri, title, onClose, sourceRef, imag
   const reducedMotion = useReducedMotion();
   const window = useWindowDimensions();
   const [size, setSize] = useState({ width: window.width, height: window.height });
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ViewInstance>(null);
   const mounted = useRef(true);
   const source = useSharedValue<{ x: number; y: number; width: number; height: number } | null>(null);
   const zoom = useSharedValue(1);
@@ -141,7 +142,7 @@ export default function RecipeImageViewer({ uri, title, onClose, sourceRef, imag
       <View ref={rootRef} collapsable={false} style={styles.root}
         onLayout={(event) => setSize(event.nativeEvent.layout)}
         accessibilityViewIsModal onAccessibilityEscape={close}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <StatusBar barStyle="light-content" />
         <Animated.View pointerEvents="none" style={[styles.backdrop, fadeStyle]} />
         <GestureDetector gesture={imageGestures}>
         <Animated.View style={[styles.imageArea, frameStyle]}>

@@ -1,3 +1,4 @@
+import type { ScrollViewInstance } from 'react-native';
 import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -17,7 +18,7 @@ export default function WordProfileStatistics({ userId, positionsLocked, onUnloc
   const [data, setData] = useState<WordProfileStats | null>(null);
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
-  const calendar = useRef<ScrollView>(null);
+  const calendar = useRef<ScrollViewInstance>(null);
   useFocusEffect(useCallback(() => {
     if (!userId) return;
     let active = true;

@@ -39,8 +39,8 @@ export default function ProductsScreen() {
   }, [subcategoryId, lang, profile?.region]);
 
   const uiProducts = useMemo(
-    () => products.map((p) => mercadonaToUI(p, categoryName)),
-    [products, categoryName],
+    () => products.map((p) => mercadonaToUI(p, subcategoryName || categoryName)),
+    [products, subcategoryName, categoryName],
   );
   const glutenFreeProductIds = useMemo(
     () => new Set(products.filter((p) => p.glutenFreeByName).map((p) => p.id)),
@@ -49,7 +49,7 @@ export default function ProductsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>

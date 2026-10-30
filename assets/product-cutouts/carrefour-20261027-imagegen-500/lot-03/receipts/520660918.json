@@ -1,0 +1,15 @@
+{
+  "id": "520660918",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/020872_00_1.jpg",
+  "sourceSha256": "77fa5e3f358c49065a4275790f1034cac94da8e97857e4ca8d7fd8fcde9d0af3",
+  "outputSha256": "425b33a1be9dc915bdd17195cbe6f2e226df856bc29f6fb9541d64c4221d0ddf",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660918.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-ab16a947-73a3-4aed-99bf-3b9aa18c9ed5.png",
+  "visualReview": "Granini tomato1L bottle matches original red cap and tomato labeling; transparent exterior. Source cap already touches top edge; composition otherwise preserved.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 774472,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:56:46.818Z"
+}

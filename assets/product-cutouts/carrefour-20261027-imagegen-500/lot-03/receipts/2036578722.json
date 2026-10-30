@@ -1,0 +1,15 @@
+{
+  "id": "2036578722",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/021479_00_1.jpg",
+  "sourceSha256": "209788ea2751bc7e1b52c39e24b473f71825376c462e5e351cb92eb72aeab2e5",
+  "outputSha256": "6c692f5836e1a680c118c817244219da126ce59c014904dacef035b9d95505c7",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2036578722.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-82b34098-5d52-4d5a-8c8c-c99955991920.png",
+  "visualReview": "Complete Hot&Cold grey lunchbox with white handle, matches actual source color and geometry, background transparent. Small edge remnants.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 744014,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.273Z"
+}

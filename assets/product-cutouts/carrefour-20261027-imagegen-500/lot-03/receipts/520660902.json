@@ -1,0 +1,15 @@
+{
+  "id": "520660902",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/685512_00_1.jpg",
+  "sourceSha256": "a48a44203d1df75489fd0a5718510fb3b923e0fb44ac0e34b99f7fda005514f2",
+  "outputSha256": "69fc0b8d65532d1e218a3908bf5142a7ae30f670a6b4d2e0fae6c15009c4c706",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660902.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-b4c6489a-df07-4a25-8170-0350100e89ed.png",
+  "visualReview": "Complete Granini premium apple 1L bottle and red cap, label and bottle dimples recognizable, transparent exterior.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 695254,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:04.053Z"
+}

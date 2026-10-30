@@ -32,25 +32,25 @@ import {
   type MercadonaProduct,
 } from '../api/mercadona';
 import {
-  searchProducts, fetchMercadonaGlutenFreeProducts, searchBonpreuProducts, fetchBonpreuCategoryTree,
-  searchCarrefourProducts, fetchCarrefourCategoryTree,
-  searchBonareaProducts, fetchBonareaCategoryTree,
-  searchConsumProducts, fetchConsumCategoryTree,
-  searchDiaProducts, fetchDiaCategoryTree,
-  searchSorliProducts, fetchSorliCategoryTree,
-  searchEroskiProducts, fetchEroskiCategoryTree,
-  searchCapraboProducts, fetchCapraboCategoryTree,
-  searchCondisProducts, fetchCondisCategoryTree,
-  searchAmetllerProducts, fetchAmetllerCategoryTree,
-  searchAldiProducts, fetchAldiCategoryTree,
-  searchLidlProducts, fetchLidlCategoryTree,
-  searchBmProducts, fetchBmCategoryTree,
-  searchEljamonProducts, fetchEljamonCategoryTree,
-  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, fetchFroizCategoryTree,
-  searchAhorramasProducts, fetchAhorramasCategoryTree,
-  searchHiperdinoProducts, fetchHiperdinoCategoryTree,
+  searchProducts, fetchMercadonaGlutenFreeProducts, searchBonpreuProducts, fetchBonpreuCategoryTree, fetchBonpreuGlutenFreeProducts,
+  searchCarrefourProducts, fetchCarrefourCategoryTree, fetchCarrefourGlutenFreeProducts,
+  searchBonareaProducts, fetchBonareaCategoryTree, fetchBonareaGlutenFreeProducts,
+  searchConsumProducts, fetchConsumCategoryTree, fetchConsumGlutenFreeProducts,
+  searchDiaProducts, fetchDiaCategoryTree, fetchDiaGlutenFreeProducts,
+  searchSorliProducts, fetchSorliCategoryTree, fetchSorliGlutenFreeProducts,
+  searchEroskiProducts, fetchEroskiCategoryTree, fetchEroskiGlutenFreeProducts,
+  searchCapraboProducts, fetchCapraboCategoryTree, fetchCapraboGlutenFreeProducts,
+  searchCondisProducts, fetchCondisCategoryTree, fetchCondisGlutenFreeProducts,
+  searchAmetllerProducts, fetchAmetllerCategoryTree, fetchAmetllerGlutenFreeProducts,
+  searchAldiProducts, fetchAldiCategoryTree, fetchAldiGlutenFreeProducts,
+  searchLidlProducts, fetchLidlCategoryTree, fetchLidlGlutenFreeProducts,
+  searchBmProducts, fetchBmCategoryTree, fetchBmGlutenFreeProducts,
+  searchEljamonProducts, fetchEljamonCategoryTree, fetchEljamonGlutenFreeProducts,
+  searchGadisProducts, fetchGadisCategoryTree, fetchGadisGlutenFreeProducts, searchFroizProducts, fetchFroizCategoryTree, fetchFroizGlutenFreeProducts,
+  searchAhorramasProducts, fetchAhorramasCategoryTree, fetchAhorramasGlutenFreeProducts,
+  searchHiperdinoProducts, fetchHiperdinoCategoryTree, fetchHiperdinoGlutenFreeProducts,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
-  searchPlusfrescProducts, fetchPlusfrescCategoryTree,
+  searchPlusfrescProducts, fetchPlusfrescCategoryTree, fetchPlusfrescGlutenFreeProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
@@ -92,12 +92,13 @@ import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePa
 import { searchCatalogStore } from '../lib/catalogSearch';
 import ActionSheet from '../components/ActionSheet';
 import StoreProductList, { type ProductSelection } from '../components/StoreProductList';
-import { type ViewMode } from '../components/ViewModeToggle';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
 import CatalogSearchField from '../components/CatalogSearchField';
 import CatalogTabSelector from '../components/CatalogTabSelector';
 import CatalogFilterSheet from '../components/CatalogFilterSheet';
+import CatalogFilterButton from '../components/CatalogFilterButton';
 import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import { useCatalogStore } from '../context/CatalogStoreContext';
 import PaywallModal from '../components/PaywallModal';
@@ -112,6 +113,11 @@ import type { CatalogCategoryNode } from '../types';
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
 type StoreKey = StoreSelection;
+const GLUTEN_FILTER_STORES = new Set<StoreKey>([
+  'mercadona', 'esclat', 'bonarea', 'carrefour', 'aldi', 'condis', 'dia',
+  'froiz', 'gadis', 'plusfresc', 'sorli', 'ahorramas', 'bm', 'caprabo', 'consum', 'eroski',
+  'ametller', 'eljamon', 'hiperdino', 'lidl',
+]);
 type ProductSortDirection = 'asc' | 'desc';
 type ProductSortField = 'price' | 'pricePerUnit';
 type ProductBrowseOrder = 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'pricePerUnitDesc';
@@ -268,6 +274,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const toast = useToast();
   const [sheetCat, setSheetCat] = useState<CatRow | null>(null);
   const sharedStore = useCatalogStore();
+  const { glutenOnly, setGlutenOnly } = sharedStore;
   const [pickerStore, setPickerStore] = useState<StoreKey>('mercadona');
   const pickerFavoriteApplied = useRef(false);
   const store = isProductPicker ? pickerStore : sharedStore.store;
@@ -477,9 +484,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const [prodResults, setProdResults] = useState<MercadonaProduct[]>([]);
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState(false);
-  const [glutenOnly, setGlutenOnly] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [glutenResults, setGlutenResults] = useState<MercadonaProduct[]>([]);
+  const [glutenResults, setGlutenResults] = useState<UIProduct[]>([]);
+  const [glutenResultsStore, setGlutenResultsStore] = useState<string | null>(null);
   const [glutenLoading, setGlutenLoading] = useState(false);
   const [glutenError, setGlutenError] = useState(false);
   const [glutenReload, setGlutenReload] = useState(0);
@@ -777,6 +784,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const browseOrder: ProductBrowseOrder = productSortField === 'pricePerUnit'
     ? (activeProductOrder === 'desc' ? 'pricePerUnitDesc' : 'pricePerUnitAsc')
     : (activeProductOrder === 'desc' ? 'priceDesc' : 'priceAsc');
+  const glutenPageOrder: ProductBrowseOrder = browseOrder;
   const compareActiveProducts = useMemo(
     () => productSortField === 'pricePerUnit'
       ? compareProductsByPricePerUnit(activeProductOrder)
@@ -792,6 +800,23 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     }
     return compareProductsByPrice(productSearchOrder === 'priceAsc' ? 'asc' : 'desc');
   }, [productSearchOrder]);
+  const orderedGlutenProducts = useMemo(() => {
+    if (!glutenOnly || !GLUTEN_FILTER_STORES.has(store)) return [];
+    const queryWords = prodQuery.trim().length >= 2
+      ? prodQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).filter(Boolean)
+      : [];
+    const matching = glutenResults.filter((product) => {
+      if (queryWords.length === 0) return true;
+      const normalizedName = product.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return queryWords.every((word) => normalizedName.includes(word));
+    });
+    if (queryWords.length === 0) return matching.sort(compareActiveProducts);
+    if (productSearchOrder !== 'relevance') return matching.sort(compareSearchProducts!);
+    return matching.sort((a, b) => {
+      const scoreDifference = relevanceScore(b.name, prodQuery) - relevanceScore(a.name, prodQuery);
+      return scoreDifference || compareByName(a.name, b.name);
+    });
+  }, [glutenOnly, store, prodQuery, glutenResults, compareActiveProducts, compareSearchProducts, productSearchOrder]);
   const allSearchComparator = useCallback((query: string) => {
     if (compareSearchProducts) return compareSearchProducts;
     return (a: UIProduct, b: UIProduct) => {
@@ -822,7 +847,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     browseMoreController.current?.abort();
     browseInitialController.current = null;
     browseMoreController.current = null;
-    if (!browseMode || (store === 'mercadona' && glutenOnly)) {
+    if (!browseMode || (GLUTEN_FILTER_STORES.has(store) && glutenOnly)) {
       setBrowseMore(false);
       return;
     }
@@ -975,27 +1000,63 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   }, [searchGeneration, store, prodSearch, lang, region, productSearchOrder, glutenOnly]);
 
   useEffect(() => {
-    if (store !== 'mercadona' || !glutenOnly || productSelection) return;
+    if (!GLUTEN_FILTER_STORES.has(store) || !glutenOnly || productSelection) return;
     const controller = new AbortController();
     let cancelled = false;
     setGlutenResults([]);
+    setGlutenResultsStore(null);
     setGlutenLoading(true);
     setGlutenError(false);
-    fetchMercadonaGlutenFreeProducts(region, controller.signal)
-      .then((items) => { if (!cancelled) setGlutenResults(items); })
-      .catch(() => { if (!cancelled) setGlutenError(true); })
+    const publishPage = (page: UIProduct[]) => {
+      if (cancelled) return;
+      setGlutenResults((current) => [...current, ...page]);
+      setGlutenResultsStore(store);
+    };
+    const loadProducts = async () => {
+      const signal = controller.signal;
+      const loaders: Partial<Record<StoreKey, () => Promise<unknown>>> = {
+        mercadona: () => fetchMercadonaGlutenFreeProducts(region, signal, (page) => publishPage(page.map((item) => mercadonaToUI(item))), glutenPageOrder),
+        ametller: () => fetchAmetllerGlutenFreeProducts(signal, (page) => publishPage(page.map(ametllerToUI)), glutenPageOrder),
+        eljamon: () => fetchEljamonGlutenFreeProducts(signal, (page) => publishPage(page.map(eljamonToUI)), glutenPageOrder),
+        hiperdino: () => fetchHiperdinoGlutenFreeProducts(signal, (page) => publishPage(page.map(hiperdinoToUI)), glutenPageOrder),
+        lidl: () => fetchLidlGlutenFreeProducts(lidlStoreId, signal, (page) => publishPage(page.map(lidlToUI)), glutenPageOrder),
+        esclat: () => fetchBonpreuGlutenFreeProducts(signal, (page) => publishPage(page.map(bonpreuToUI)), glutenPageOrder),
+        bonarea: () => fetchBonareaGlutenFreeProducts(signal, (page) => publishPage(page.map(bonareaToUI)), glutenPageOrder),
+        carrefour: () => fetchCarrefourGlutenFreeProducts(region, signal, (page) => publishPage(page.map(carrefourToUI)), glutenPageOrder),
+        aldi: () => fetchAldiGlutenFreeProducts(signal, (page) => publishPage(page.map(aldiToUI)), glutenPageOrder),
+        condis: () => fetchCondisGlutenFreeProducts(signal, (page) => publishPage(page.map(condisToUI)), glutenPageOrder),
+        dia: () => fetchDiaGlutenFreeProducts(region, signal, (page) => publishPage(page.map(diaToUI)), glutenPageOrder),
+        froiz: () => fetchFroizGlutenFreeProducts(signal, (page) => publishPage(page.map(froizToUI)), glutenPageOrder),
+        gadis: () => fetchGadisGlutenFreeProducts(signal, (page) => publishPage(page.map(gadisToUI)), glutenPageOrder),
+        plusfresc: () => fetchPlusfrescGlutenFreeProducts(postalCode, signal, (page) => publishPage(page.map(plusfrescToUI)), glutenPageOrder),
+        sorli: () => fetchSorliGlutenFreeProducts(signal, (page) => publishPage(page.map(sorliToUI)), glutenPageOrder),
+        ahorramas: () => fetchAhorramasGlutenFreeProducts(signal, (page) => publishPage(page.map(ahorramasToUI)), glutenPageOrder),
+        bm: () => fetchBmGlutenFreeProducts(postalCode, signal, (page) => publishPage(page.map(bmToUI)), glutenPageOrder),
+        caprabo: () => fetchCapraboGlutenFreeProducts(signal, (page) => publishPage(page.map(capraboToUI)), glutenPageOrder),
+        consum: () => fetchConsumGlutenFreeProducts(region, postalCode, signal, (page) => publishPage(page.map(consumToUI)), glutenPageOrder),
+        eroski: () => fetchEroskiGlutenFreeProducts(signal, (page) => publishPage(page.map(eroskiToUI)), glutenPageOrder),
+      };
+      const load = loaders[store];
+      if (!load) throw new Error(`Unsupported gluten-free catalog: ${store}`);
+      await load();
+    };
+    loadProducts()
+      .then(() => {
+        if (!cancelled) setGlutenResultsStore(store);
+      })
+      .catch(() => { if (!cancelled) { setGlutenError(true); setGlutenResultsStore(store); } })
       .finally(() => { if (!cancelled) setGlutenLoading(false); });
     return () => {
       cancelled = true;
       controller.abort();
     };
-  }, [store, glutenOnly, glutenReload, region, lang, productSelection]);
+  }, [store, glutenOnly, glutenReload, region, postalCode, lidlStoreId, lang, productSelection, glutenPageOrder]);
 
   // BonpreuEsclat: búsqueda server-side con debounce.
   useEffect(() => {
-    if (store !== 'esclat') return;
+    if (store !== 'esclat' || glutenOnly) return;
     return startProductSearch(bpSearch, (q, signal) => searchBonpreuProducts(q, 50, signal, 0, productSearchOrder), setBpResults, setBpLoading, setBpError);
-  }, [searchGeneration, store, bpSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, bpSearch, lang, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Carrefour la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1005,9 +1066,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Carrefour: búsqueda server-side con debounce.
   useEffect(() => {
-    if (store !== 'carrefour') return;
+    if (store !== 'carrefour' || glutenOnly) return;
     return startProductSearch(cfSearch, (q, signal) => searchCarrefourProducts(q, region, 50, signal, 0, productSearchOrder), setCfResults, setCfLoading, setCfError);
-  }, [searchGeneration, store, cfSearch, region, productSearchOrder]);
+  }, [searchGeneration, store, cfSearch, region, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías bonÀrea la primera vez que se entra a esa tienda.
   useEffect(() => { setBaCats([]); }, [lang]);
@@ -1018,9 +1079,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // bonÀrea: búsqueda server-side con debounce.
   useEffect(() => {
-    if (store !== 'bonarea') return;
+    if (store !== 'bonarea' || glutenOnly) return;
     return startProductSearch(baSearch, (q, signal) => searchBonareaProducts(q, 50, signal, 0, productSearchOrder), setBaResults, setBaLoading, setBaError);
-  }, [searchGeneration, store, baSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, baSearch, lang, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Consum la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1030,9 +1091,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Consum: búsqueda server-side con debounce.
   useEffect(() => {
-    if (store !== 'consum') return;
+    if (store !== 'consum' || glutenOnly) return;
     return startProductSearch(csSearch, (q, signal) => searchConsumProducts(q, region, postalCode, 50, signal, 0, productSearchOrder), setCsResults, setCsLoading, setCsError);
-  }, [searchGeneration, store, csSearch, region, postalCode, productSearchOrder]);
+  }, [searchGeneration, store, csSearch, region, postalCode, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Dia la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1042,9 +1103,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Dia: búsqueda server-side con debounce.
   useEffect(() => {
-    if (store !== 'dia') return;
+    if (store !== 'dia' || glutenOnly) return;
     return startProductSearch(ddSearch, (q, signal) => searchDiaProducts(q, region, 50, signal, 0, productSearchOrder), setDdResults, setDdLoading, setDdError);
-  }, [searchGeneration, store, ddSearch, region, productSearchOrder]);
+  }, [searchGeneration, store, ddSearch, region, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Sorli la primera vez que se entra a esa tienda.
   useEffect(() => { setSoCats([]); }, [lang]);
@@ -1055,9 +1116,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Sorli: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    if (store !== 'sorli') return;
+    if (store !== 'sorli' || glutenOnly) return;
     return startProductSearch(soSearch, (q, signal) => searchSorliProducts(q, 50, signal, 0, productSearchOrder), setSoResults, setSoLoading, setSoError);
-  }, [searchGeneration, store, soSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, soSearch, lang, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Eroski la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1067,9 +1128,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Eroski: búsqueda server-side con debounce.
   useEffect(() => {
-    if (store !== 'eroski') return;
+    if (store !== 'eroski' || glutenOnly) return;
     return startProductSearch(ekSearch, (q, signal) => searchEroskiProducts(q, 50, signal, 0, productSearchOrder), setEkResults, setEkLoading, setEkError);
-  }, [searchGeneration, store, ekSearch, productSearchOrder]);
+  }, [searchGeneration, store, ekSearch, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Caprabo la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1079,9 +1140,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Caprabo: búsqueda server-side con debounce.
   useEffect(() => {
-    if (store !== 'caprabo') return;
+    if (store !== 'caprabo' || glutenOnly) return;
     return startProductSearch(cbSearch, (q, signal) => searchCapraboProducts(q, 50, signal, 0, productSearchOrder), setCbResults, setCbLoading, setCbError);
-  }, [searchGeneration, store, cbSearch, productSearchOrder]);
+  }, [searchGeneration, store, cbSearch, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Condis la primera vez que se entra a esa tienda.
   useEffect(() => { setCoCats([]); }, [lang]);
@@ -1092,9 +1153,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Condis: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    if (store !== 'condis') return;
+    if (store !== 'condis' || glutenOnly) return;
     return startProductSearch(coSearch, (q, signal) => searchCondisProducts(q, 50, signal, 0, productSearchOrder), setCoResults, setCoLoading, setCoError);
-  }, [searchGeneration, store, coSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, coSearch, lang, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Ametller la primera vez que se entra a esa tienda.
   useEffect(() => { setAmCats([]); }, [lang]);
@@ -1105,9 +1166,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Ametller: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    if (store !== 'ametller') return;
+    if (store !== 'ametller' || glutenOnly) return;
     return startProductSearch(amSearch, (q, signal) => searchAmetllerProducts(q, 50, signal, 0, productSearchOrder), setAmResults, setAmLoading, setAmError);
-  }, [searchGeneration, store, amSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, amSearch, lang, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Aldi la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1117,9 +1178,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Aldi: búsqueda server-side con debounce (es-only).
   useEffect(() => {
-    if (store !== 'aldi') return;
+    if (store !== 'aldi' || glutenOnly) return;
     return startProductSearch(alSearch, (q, signal) => searchAldiProducts(q, 50, signal, 0, productSearchOrder), setAlResults, setAlLoading, setAlError);
-  }, [searchGeneration, store, alSearch, productSearchOrder]);
+  }, [searchGeneration, store, alSearch, productSearchOrder, glutenOnly]);
 
   useEffect(() => { setLiCats([]); setLiResults([]); }, [lidlStoreId]);
   useEffect(() => {
@@ -1127,9 +1188,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     return startCategoryLoad((signal) => fetchLidlCategoryTree(lidlStoreId, signal), setLiCats, setLiCatsLoading, setLiCatsError);
   }, [store, tab, liCats.length, lidlStoreId]);
   useEffect(() => {
-    if (store !== 'lidl') return;
+    if (store !== 'lidl' || glutenOnly) return;
     return startProductSearch(liSearch, (q, signal) => searchLidlProducts(q, 50, signal, 0, productSearchOrder, lidlStoreId), setLiResults, setLiLoading, setLiError);
-  }, [searchGeneration, store, liSearch, productSearchOrder, lidlStoreId]);
+  }, [searchGeneration, store, liSearch, productSearchOrder, lidlStoreId, glutenOnly]);
 
   useEffect(() => { setBmCats([]); setBmResults([]); }, [postalCode]);
   useEffect(() => {
@@ -1137,45 +1198,45 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     return startCategoryLoad(fetchBmCategoryTree, setBmCats, setBmCatsLoading, setBmCatsError);
   }, [store, tab, bmCats.length, postalCode]);
   useEffect(() => {
-    if (store !== 'bm') return;
+    if (store !== 'bm' || glutenOnly) return;
     return startProductSearch(bmSearch, (query, signal) => searchBmProducts(query, postalCode, 50, signal, 0, productSearchOrder), setBmResults, setBmLoading, setBmError);
-  }, [searchGeneration, store, bmSearch, postalCode, productSearchOrder]);
+  }, [searchGeneration, store, bmSearch, postalCode, productSearchOrder, glutenOnly]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'eljamon' || ejCats.length > 0) return;
     return startCategoryLoad(fetchEljamonCategoryTree, setEjCats, setEjCatsLoading, setEjCatsError);
   }, [store, tab, ejCats.length]);
   useEffect(() => {
-    if (store !== 'eljamon') return;
+    if (store !== 'eljamon' || glutenOnly) return;
     return startProductSearch(ejSearch, (query, signal) => searchEljamonProducts(query, 50, signal, 0, productSearchOrder), setEjResults, setEjLoading, setEjError);
-  }, [searchGeneration, store, ejSearch, productSearchOrder]);
+  }, [searchGeneration, store, ejSearch, productSearchOrder, glutenOnly]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'gadis' || gaCats.length > 0) return;
     return startCategoryLoad(fetchGadisCategoryTree, setGaCats, setGaCatsLoading, setGaCatsError);
   }, [store, tab, gaCats.length]);
   useEffect(() => {
-    if (store !== 'gadis') return;
+    if (store !== 'gadis' || glutenOnly) return;
     return startProductSearch(gaSearch, (q, signal) => searchGadisProducts(q, 50, signal, 0, productSearchOrder), setGaResults, setGaLoading, setGaError);
-  }, [searchGeneration, store, gaSearch, productSearchOrder]);
+  }, [searchGeneration, store, gaSearch, productSearchOrder, glutenOnly]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'froiz' || frCats.length > 0) return;
     return startCategoryLoad(fetchFroizCategoryTree, setFrCats, setFrCatsLoading, setFrCatsError);
   }, [store, tab, frCats.length]);
   useEffect(() => {
-    if (store !== 'froiz') return;
+    if (store !== 'froiz' || glutenOnly) return;
     return startProductSearch(frSearch, (q, signal) => searchFroizProducts(q, 50, signal, 0, productSearchOrder), setFrResults, setFrLoading, setFrError);
-  }, [searchGeneration, store, frSearch, productSearchOrder]);
+  }, [searchGeneration, store, frSearch, productSearchOrder, glutenOnly]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'ahorramas' || ahCats.length > 0) return;
     return startCategoryLoad(fetchAhorramasCategoryTree, setAhCats, setAhCatsLoading, setAhCatsError);
   }, [store, tab, ahCats.length]);
   useEffect(() => {
-    if (store !== 'ahorramas') return;
+    if (store !== 'ahorramas' || glutenOnly) return;
     return startProductSearch(ahSearch, (q, signal) => searchAhorramasProducts(q, 50, signal, 0, productSearchOrder), setAhResults, setAhLoading, setAhError);
-  }, [searchGeneration, store, ahSearch, productSearchOrder]);
+  }, [searchGeneration, store, ahSearch, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías HiperDino la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1185,9 +1246,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // HiperDino: búsqueda server-side con debounce (es-only).
   useEffect(() => {
-    if (store !== 'hiperdino') return;
+    if (store !== 'hiperdino' || glutenOnly) return;
     return startProductSearch(hdSearch, (q, signal) => searchHiperdinoProducts(q, 50, signal, 0, productSearchOrder), setHdResults, setHdLoading, setHdError);
-  }, [searchGeneration, store, hdSearch, productSearchOrder]);
+  }, [searchGeneration, store, hdSearch, productSearchOrder, glutenOnly]);
 
   // Carga perezosa de categorías Alcampo la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1210,9 +1271,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Plusfresc: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    if (store !== 'plusfresc') return;
+    if (store !== 'plusfresc' || glutenOnly) return;
     return startProductSearch(pfSearch, (q, signal) => searchPlusfrescProducts(q, postalCode, 50, signal, 0, productSearchOrder), setPfResults, setPfLoading, setPfError);
-  }, [searchGeneration, store, pfSearch, lang, postalCode, productSearchOrder]);
+  }, [searchGeneration, store, pfSearch, lang, postalCode, productSearchOrder, glutenOnly]);
 
   useLayoutEffect(() => {
     setProdResults([]);
@@ -1551,33 +1612,14 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     if (store === 'lidl' && !lidlStoreId) {
       return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.lidlStoreRequired')}</Text></View>;
     }
-    if (store === 'mercadona' && glutenOnly && !productSelection) {
-      const queryWords = query.trim().length >= 2
-        ? query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).filter(Boolean)
-        : [];
-      const matchingGlutenProducts = glutenResults
-        .map((product) => mercadonaToUI(product))
-        .filter((product) => {
-          if (queryWords.length === 0) return true;
-          const normalizedName = product.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          return queryWords.every((word) => normalizedName.includes(word));
-        });
-      const orderedGlutenProducts = query.trim().length >= 2
-        ? productSearchOrder === 'relevance'
-          ? [...matchingGlutenProducts].sort((a, b) => {
-            const scoreDifference = relevanceScore(b.name, query) - relevanceScore(a.name, query);
-            return scoreDifference || compareByName(a.name, b.name);
-          })
-          : [...matchingGlutenProducts].sort(compareSearchProducts!)
-        : [...matchingGlutenProducts].sort(compareActiveProducts);
-
-      if (glutenLoading) {
+    if (GLUTEN_FILTER_STORES.has(store) && glutenOnly && !productSelection) {
+      if (glutenResultsStore !== store || (glutenLoading && (query.trim().length >= 2 || orderedGlutenProducts.length === 0))) {
         return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />;
       }
       if (glutenError) {
         return (
           <View style={styles.centerBox}>
-            <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Mercadona' })}</Text>
+            <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: CATALOG_STORES.find((option) => option.key === store)?.name ?? store })}</Text>
             <TouchableOpacity onPress={() => setGlutenReload((value) => value + 1)}>
               <Text style={styles.retryText}>{t('common.retry')}</Text>
             </TouchableOpacity>
@@ -1592,7 +1634,8 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
           selection={productSelection}
           products={orderedGlutenProducts}
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
-          roundedCards keepOrder topInset={glassInset}
+          roundedCards keepOrder topInset={glassInset} loadingMore={glutenLoading}
+          waitForInitialImages={false}
           onScrollBeginDrag={handleProductScrollBegin}
         />
       );
@@ -1795,26 +1838,9 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
           )}
           </View>
         )}
-        {store === 'mercadona' && !productSelection && !productSearchExpanded && (
-          glassAvailable || Platform.OS === 'android' ? (
-            <SlidingSegments
-              compact dense emphasized allowReselect transparentTrack={Platform.OS === 'android'}
-              segments={[{ key: 'filters', icon: 'options-outline', accessibilityLabel: t('catalog.filterA11y') }]}
-              value={glutenOnly ? 'filters' : null}
-              onChange={() => setFilterOpen(true)}
-            />
-          ) : (
-            <TouchableOpacity
-              style={[styles.filterBtn, glutenOnly && styles.filterBtnOn]}
-              onPress={() => setFilterOpen(true)}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel={t('catalog.filterA11y')}
-              accessibilityState={{ selected: glutenOnly }}
-            >
-              <Ionicons name="options-outline" size={20} color={glutenOnly ? colors.white : colors.inkSoft} />
-            </TouchableOpacity>
-          )
+        {GLUTEN_FILTER_STORES.has(store) && !productSelection && !productSearchExpanded && (
+          <CatalogFilterButton active={glutenOnly} onPress={() => setFilterOpen(true)}
+            accessibilityLabel={t('catalog.filterA11y')} />
         )}
         {store === 'lidl' && lidlStoreId && !productSearchExpanded ? (
           glassAvailable || Platform.OS === 'android' ? (
@@ -1840,29 +1866,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
         ) : null}
         {!productSearchExpanded && (
           <View style={styles.prodViewGroup}>
-          {glassAvailable || Platform.OS === 'android' ? (
-            <SlidingSegments
-              compact
-              dense
-              emphasized
-              transparentTrack={Platform.OS === 'android'}
-              segments={[
-                { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
-                { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
-              ]}
-              value={prodViewMode}
-              onChange={(value) => setProdViewMode(value as ViewMode)}
-            />
-          ) : (
-            <View style={[styles.viewToggle, styles.prodToggleDense]}>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, prodViewMode === 'list' && styles.viewBtnOn]} onPress={() => setProdViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')} accessibilityState={{ selected: prodViewMode === 'list' }}>
-                <Ionicons name="list" size={19} color={prodViewMode === 'list' ? colors.white : colors.inkSoft} />
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, prodViewMode === 'grid' && styles.viewBtnOn]} onPress={() => setProdViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')} accessibilityState={{ selected: prodViewMode === 'grid' }}>
-                <Ionicons name="grid" size={17} color={prodViewMode === 'grid' ? colors.white : colors.inkSoft} />
-              </TouchableOpacity>
-            </View>
-          )}
+            <ViewModeToggle value={prodViewMode} onChange={setProdViewMode} />
           </View>
         )}
       </View>
@@ -2026,7 +2030,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       {!glassAvailable && chrome}
 

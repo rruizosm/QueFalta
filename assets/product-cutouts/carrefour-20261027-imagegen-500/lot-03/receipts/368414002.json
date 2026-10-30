@@ -1,0 +1,16 @@
+{
+  "id": "368414002",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/066913_00_1.jpg",
+  "sourceSha256": "c8166f8e60493800f0923f2b7692c74717579b1d8452071388266b3c696b8f2b",
+  "outputSha256": "83500037196648ea7c8e96b7f037e1fbe17fdb589d0a0d923ae9dd0ebc8d143d",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/368414002.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-7d367d3f-7129-4e8d-9b63-7f946d98dd34.png",
+  "visualReview": "Complete correct product and package preserved, clear exterior alpha; Brekkies300g, BioOil200ml and Fanta2L amounts retained. Minor print/edge variations.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1256381,
+  "sourceBytes": 19055,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:56:46.493Z"
+}

@@ -1,5 +1,0 @@
-{
-  "native": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-82927071-09f9-474c-98e3-d495655a4d4b.png",
-  "sha256": "b6c8919a7fca56fe36da6098e7227be22cce65e35f13a7dbee63fcb8f0ad33ac",
-  "reason": "record had copied PNG before jobs directory ENOENT; recovered exact native hash; no regeneration"
-}

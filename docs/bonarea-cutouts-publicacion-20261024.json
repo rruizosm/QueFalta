@@ -1,0 +1,29 @@
+{
+  "completed_at_utc": "2026-10-24T14:53:17.229250+00:00",
+  "project": "gkffvigcnsesbaihycay",
+  "table": "public.bonarea_products",
+  "column": "illustration_url",
+  "products_linked_and_verified": 1005,
+  "already_linked_before_final_update": 305,
+  "rows_updated_in_final_transaction": 700,
+  "method": "Linked existing official public PNG URLs; each downloaded stream matched the approved local SHA-256 before cleanup.",
+  "all_1005_remote_pngs_http_200_and_hash_match": true,
+  "database_verification": {
+    "linked": 1005,
+    "expected": 1005,
+    "total_with_image": 1005,
+    "missing_or_mismatched": 0
+  },
+  "removed_batches": [
+    "assets/product-cutouts/bonarea-20261024-5",
+    "assets/product-cutouts/bonarea-20261024-300",
+    "assets/product-cutouts/bonarea-20261024-700"
+  ],
+  "removed_project_files": 1060,
+  "removed_project_bytes": 2130670785,
+  "removed_cache_files": 1069,
+  "removed_cache_bytes": 2179875366,
+  "earlier_generated_illustrations": "preserved; outside these three photographic cutout batches",
+  "typecheck": "npx tsc --noEmit: exit 2; existing five TS2339 errors in src/api/pantry.ts:47-49; source code not modified",
+  "cleanup_complete": true
+}

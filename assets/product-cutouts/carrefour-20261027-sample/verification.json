@@ -1,0 +1,72 @@
+{
+  "method": "Border-connected near-white background extraction and visually reviewed background seeds; alpha only; original dimensions and decoded RGB preserved.",
+  "excludedCategories": [
+    "Papelería",
+    "Bazar",
+    "Calzado"
+  ],
+  "products": [
+    {
+      "id": "520664611",
+      "categoryName": "Conservas, Sopas y Precocinados",
+      "width": 350,
+      "height": 350,
+      "transparentPixels": 74810,
+      "rgbUnchanged": true,
+      "backgroundSeeds": [],
+      "originalSha256": "f3a1d774b7ea6989db95419db828756c1ea57dc4f6d8f533ea029249a0d05681",
+      "outputSha256": "1714447b4ceee4953acfebcb38faf530bc1254a3f2b0e293a81e1e29a11786fa"
+    },
+    {
+      "id": "520660281",
+      "categoryName": "Aceites y vinagres",
+      "width": 350,
+      "height": 350,
+      "transparentPixels": 107953,
+      "rgbUnchanged": true,
+      "backgroundSeeds": [],
+      "originalSha256": "f7bc5c1655be35d7a414d81abdfa58994558de549c245b8ac511a13b81db930a",
+      "outputSha256": "4550b4f0c54a9bd9e0bcf70f60afa4a28320b5371f5305aaea535f033ef3c355"
+    },
+    {
+      "id": "521002680",
+      "categoryName": "Desayuno",
+      "width": 350,
+      "height": 349,
+      "transparentPixels": 55682,
+      "rgbUnchanged": true,
+      "backgroundSeeds": [],
+      "originalSha256": "6c8da92a8a494db9822a2bb882086ac1f611f0f742ac9de30956a307075ae280",
+      "outputSha256": "e3836bd04ff1bd3fdbaa743a0934fb0e19b44290b8bff48460080070b823ad1d"
+    },
+    {
+      "id": "521003205",
+      "categoryName": "Lácteos",
+      "width": 350,
+      "height": 350,
+      "transparentPixels": 45040,
+      "rgbUnchanged": true,
+      "backgroundSeeds": [],
+      "originalSha256": "bc9ae1de7dee29af294ed3b7a1ce50d318c2ce4eed102f84395fc8febb2198e1",
+      "outputSha256": "b89440732ad55f65e61ba167ca2eea3812593ec73c88cccf45a59b8556b9d9ee"
+    },
+    {
+      "id": "521001754",
+      "categoryName": "Limpieza del hogar",
+      "width": 350,
+      "height": 350,
+      "transparentPixels": 95831,
+      "rgbUnchanged": true,
+      "backgroundSeeds": [
+        [
+          200,
+          135
+        ]
+      ],
+      "originalSha256": "ce6c5e6f1bb1396be5b05be7728a23bc23b46aa5fbece8d85261a7b907048abe",
+      "outputSha256": "90983a058e56e96f78e91533d94da57a93f927bd9a484a00d84d04f4eb98d68e"
+    }
+  ],
+  "uploaded": false,
+  "databaseChanged": false
+}

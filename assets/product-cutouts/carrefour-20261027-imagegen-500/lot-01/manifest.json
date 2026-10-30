@@ -1,0 +1,2886 @@
+{
+  "lot": "lot-01",
+  "target": 167,
+  "products": [
+    {
+      "id": "100401194",
+      "display_name": "Molde Tarta Plano de Vidrio PYREX Classic 31 cm - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/023414_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000750151",
+      "display_name": "Arena Absorbente para Gatos 7L 4,7 kg , Carrefour",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/340461_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000770074",
+      "display_name": "Set de Mopa con Palo Carrefour",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/476033_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950638",
+      "display_name": "Hermeticos Portalíquidos de Plástico TATAY 2 L. - Blanco",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/385928_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950676",
+      "display_name": "Snack huesos de pollo para perro Carrefour 6 unidades 80 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/927143_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001540002",
+      "display_name": "Set de  Servilletas  1 capa de Celulosa RENOVA Red Label 140pz - Color y Decoradas",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/390004_00_1.jpg",
+      "category_id": "cat20046",
+      "category_name": "Papel y Celulosa",
+      "category_ids": [
+        "cat20046"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001780220",
+      "display_name": "Vegetal Clean Papel Vitakraft  25 litros",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/945397_00_1.jpg",
+      "category_id": "cat20053",
+      "category_name": "Conejos y roedores",
+      "category_ids": [
+        "cat20053"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002468020",
+      "display_name": "Bolsita de manzana, zanahoria y mango desde 6 meses Nestlé sin gluten y sin azúcar añadido 90 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/958496_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618485",
+      "display_name": "Gel champú Original Denenes 600 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/001443_00_1.jpg",
+      "category_id": "cat20049",
+      "category_name": "Cuidado e Higiene Infantil",
+      "category_ids": [
+        "cat20049"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618519",
+      "display_name": "Bolsas Pañales Carrefour Baby x50",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/091564_00_1.jpg",
+      "category_id": "cat400002",
+      "category_name": "Puericultura",
+      "category_ids": [
+        "cat400002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618618",
+      "display_name": "Ropa interior absorbente niño noche DryNites 4-7 años (17-30 kg.) 16 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/618745_00_1.jpg",
+      "category_id": "cat20050",
+      "category_name": "Pañales",
+      "category_ids": [
+        "cat20050"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618659",
+      "display_name": "Toallitas para bebé con aloe vera Carrefour Baby pack 6 de 80 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/752063_00_1.jpg",
+      "category_id": "cat31330789",
+      "category_name": "Toallitas",
+      "category_ids": [
+        "cat31330789"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870077",
+      "display_name": "Gasa estéril Loto 20 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/541974_00_1.jpg",
+      "category_id": "cat33926833",
+      "category_name": "Botiquín",
+      "category_ids": [
+        "cat33926833",
+        "cat20059"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870081",
+      "display_name": "Protector absorbente maxi 60x90 cm Sabanindas Extra 20 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/542015_00_1.jpg",
+      "category_id": "cat20035",
+      "category_name": "Higiene íntima",
+      "category_ids": [
+        "cat20035",
+        "cat400002",
+        "cat32683499",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870095",
+      "display_name": "Papilla infantil desde 6 meses 8 cereales toque a miel fibra Nutribén sin aceite de palma 600 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/552656_00_1.jpg",
+      "category_id": "cat32683499",
+      "category_name": "Parafarmacia para el Bebé",
+      "category_ids": [
+        "cat32683499",
+        "cat20048",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870133",
+      "display_name": "Sacaleches Manual Chicco",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/773424_00_1.jpg",
+      "category_id": "cat400001",
+      "category_name": "Embarazo y Lactancia",
+      "category_ids": [
+        "cat400001",
+        "cat32683499",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2013790033",
+      "display_name": "Limpia Crista con Mango Aluminio ELEPHANT",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/404469_00_1.jpg",
+      "category_id": "cat20045",
+      "category_name": "Limpieza del hogar",
+      "category_ids": [
+        "cat20045",
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2027873291",
+      "display_name": "Funda para Tabla de Planchar Metalizada VILEDA Rapid",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/233547_00_1.jpg",
+      "category_id": "cat20044",
+      "category_name": "Cuidado de la ropa",
+      "category_ids": [
+        "cat20044"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2047790336",
+      "display_name": "Tapones Herméticos para Botellas FACKELMANN Bar & Wine 10cm 3 ud - Rojo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/056591_00_1.jpg",
+      "category_id": "cat20027",
+      "category_name": "Vinos",
+      "category_ids": [
+        "cat20027",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2053456642",
+      "display_name": "Champú tratamiento antiparasitario Paranix 200 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/055441_00_1.jpg",
+      "category_id": "cat20060",
+      "category_name": "Cuidado del cabello",
+      "category_ids": [
+        "cat20060"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2058992028",
+      "display_name": "Menú ProVita Agapornis 750 gr Vitakraft",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/085863_00_1.jpg",
+      "category_id": "cat20055",
+      "category_name": "Pájaros",
+      "category_ids": [
+        "cat20055"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368501869",
+      "display_name": "Tetra Reptomin Energy Comida para Totugas Acuáticas 250 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/316758_00_1.jpg",
+      "category_id": "cat20056",
+      "category_name": "Peces y tortugas",
+      "category_ids": [
+        "cat20056"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660257",
+      "display_name": "Aceite de oliva suave 0,4º La Española 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/002895_00_1.jpg",
+      "category_id": "cat33207691",
+      "category_name": "Aceites y vinagres",
+      "category_ids": [
+        "cat33207691"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660321",
+      "display_name": "Té Classic en bolsitas Hornimans 25 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/001730_00_1.jpg",
+      "category_id": "cat26100390",
+      "category_name": "Desayuno",
+      "category_ids": [
+        "cat26100390"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660327",
+      "display_name": "T.CREME.GLOSS.CASTING.210",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/684466_00_1.jpg",
+      "category_id": "cat20031",
+      "category_name": "Cuidado del Cabello",
+      "category_ids": [
+        "cat20031"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660404",
+      "display_name": "Vino blanco para cocinar aromatizado con hierbas Carrefour Classic 75 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/744835_00_1.jpg",
+      "category_id": "cat20009",
+      "category_name": "Alimentación",
+      "category_ids": [
+        "cat20009",
+        "cat20027"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660418",
+      "display_name": "Gaseosa La Casera cero azucares y calorías botella 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000034_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660513",
+      "display_name": "Licor ron miel Indias 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/288018_00_1.jpg",
+      "category_id": "cat20025",
+      "category_name": "Licores y Cremas",
+      "category_ids": [
+        "cat20025"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660777",
+      "display_name": "Red Bull Bebida Energética pack 8 latas 25 cl",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/738587_00_1.jpg",
+      "category_id": "cat32968822",
+      "category_name": "Energéticas",
+      "category_ids": [
+        "cat32968822"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660797",
+      "display_name": "Zumo de tomate Carrefour Classic brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/793541_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660910",
+      "display_name": "Cocktail de frutos secos dulce y salado Carrefour 125 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/792485_00_1.jpg",
+      "category_id": "cat390001",
+      "category_name": "Aperitivos",
+      "category_ids": [
+        "cat390001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660953",
+      "display_name": "Almendra molida Vahiné 100 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/216237_00_1.jpg",
+      "category_id": "cat26100388",
+      "category_name": "Dulce",
+      "category_ids": [
+        "cat26100388",
+        "cat390001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661007",
+      "display_name": "Concentrado de lima Rives 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000119_00_1.jpg",
+      "category_id": "cat33755675",
+      "category_name": "Sin Alcohol (NoLo)",
+      "category_ids": [
+        "cat33755675",
+        "cat20025"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661017",
+      "display_name": "Caldo natural de puchero Aneto sin gluten y sin lactosa brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/644137_00_1.jpg",
+      "category_id": "cat20013",
+      "category_name": "Conservas, Sopas y Precocinados",
+      "category_ids": [
+        "cat20013"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661134",
+      "display_name": "Cerveza tostada extra San Miguel Selecta botella 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/761120_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661189",
+      "display_name": "Batido de chocolate Puleva sin gluten pack de 6 briks de 200 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/686696_00_1.jpg",
+      "category_id": "cat20011",
+      "category_name": "Lácteos",
+      "category_ids": [
+        "cat20011"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "100401608",
+      "display_name": "Set de 80 Filtros para Cafetera de Papel MELITTA 1x4 - Blanco",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/172597_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001810047",
+      "display_name": "Spray Gatos Catnip Vitakraft 50 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/945721_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2005530063",
+      "display_name": "2 Guantes satinados de Látex Carrefour  P - Amarillo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/947051_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2032893617",
+      "display_name": "Bote Redondo de Cristal BORMIOLI 4 Estaciones 1 L. - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/007973_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950677",
+      "display_name": "Snack de pollo para perro Carrefour 80 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/927148_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001570013",
+      "display_name": "Servilletas de papel 2 capas 39x39 cm RENOVA 75 unid. - Blancas",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/065284_00_1.jpg",
+      "category_id": "cat20046",
+      "category_name": "Papel y Celulosa",
+      "category_ids": [
+        "cat20046"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2064820521",
+      "display_name": "Hanseaten Heno para Roedores 1Kg",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/124528_00_1.jpg",
+      "category_id": "cat20053",
+      "category_name": "Conejos y roedores",
+      "category_ids": [
+        "cat20053"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002468023",
+      "display_name": "Bolsita de multifrutas desde 6 meses Nestlé sin gluten y sin azúcar añadido 90 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/958499_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618490",
+      "display_name": "Crema protectora de pañal Johnson's Baby 100 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/019820_00_1.jpg",
+      "category_id": "cat20049",
+      "category_name": "Cuidado e Higiene Infantil",
+      "category_ids": [
+        "cat20049"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618521",
+      "display_name": "Protector absorbente My Carrefour Baby 10 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/107695_00_1.jpg",
+      "category_id": "cat400002",
+      "category_name": "Puericultura",
+      "category_ids": [
+        "cat400002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618619",
+      "display_name": "Ropa interior absorbente niña noche DryNites 8-13 años (30-48 kg.) 13 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/618747_00_1.jpg",
+      "category_id": "cat20050",
+      "category_name": "Pañales",
+      "category_ids": [
+        "cat20050"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870041",
+      "display_name": "Toallitas natural care Huggies 168 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/163971_00_1.jpg",
+      "category_id": "cat31330789",
+      "category_name": "Toallitas",
+      "category_ids": [
+        "cat31330789"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916217",
+      "display_name": "Suero fisiológico pack de 2 unidades 30 monodosis de 5 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/687555_00_1.jpg",
+      "category_id": "cat33926833",
+      "category_name": "Botiquín",
+      "category_ids": [
+        "cat33926833",
+        "cat20059"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870096",
+      "display_name": "Papilla de cereales infantil desde 4 meses sin azúcar añadido Nutribén sin gluten sin aceite de palma 600 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/552697_00_1.jpg",
+      "category_id": "cat32683499",
+      "category_name": "Parafarmacia para el Bebé",
+      "category_ids": [
+        "cat32683499",
+        "cat20048",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870142",
+      "display_name": "Discos de lactancia Chicco 60 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/794006_00_1.jpg",
+      "category_id": "cat400001",
+      "category_name": "Embarazo y Lactancia",
+      "category_ids": [
+        "cat400001",
+        "cat32683499",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2073270451",
+      "display_name": "Toallitas desinfectantes multiusos sin lejía Sanytol 30 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/884087_00_1.jpg",
+      "category_id": "cat20045",
+      "category_name": "Limpieza del hogar",
+      "category_ids": [
+        "cat20045"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2034850294",
+      "display_name": "Cuerda de ropa  de Plástico BERGNER  1500 cm - Verde",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/069534_00_1.jpg",
+      "category_id": "cat20044",
+      "category_name": "Cuidado de la ropa",
+      "category_ids": [
+        "cat20044"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2047790343",
+      "display_name": "Sacacorcho  FACKELMANN Bar & Wine 11,7cm. - Inox",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/056690_00_1.jpg",
+      "category_id": "cat20027",
+      "category_name": "Vinos",
+      "category_ids": [
+        "cat20027",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2053456798",
+      "display_name": "Spray Elimina Piojos y Liendres Fullmarks 150 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/906136_00_1.jpg",
+      "category_id": "cat20060",
+      "category_name": "Cuidado del cabello",
+      "category_ids": [
+        "cat20060"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2067109580",
+      "display_name": "Barritas de huevo y semilla para canarios 2 unidades 54 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/105641_00_1.jpg",
+      "category_id": "cat20055",
+      "category_name": "Pájaros",
+      "category_ids": [
+        "cat20055"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368501872",
+      "display_name": "Reptosafe 100 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/316771_00_1.jpg",
+      "category_id": "cat20056",
+      "category_name": "Peces y tortugas",
+      "category_ids": [
+        "cat20056"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660263",
+      "display_name": "Aceite de oliva 0,4º La Masía 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000005_00_1.jpg",
+      "category_id": "cat33207691",
+      "category_name": "Aceites y vinagres",
+      "category_ids": [
+        "cat33207691"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660448",
+      "display_name": "Kétchup ecológico Heinz 580 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/749122_00_1.jpg",
+      "category_id": "cat20009",
+      "category_name": "Alimentación",
+      "category_ids": [
+        "cat20009"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660420",
+      "display_name": "Gaseosa Carrefour Calssic´ cero azúcares botella 50 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/440911_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660783",
+      "display_name": "Energy Drink Carrefour Bebida Energética lata 25 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/522848_00_1.jpg",
+      "category_id": "cat32968822",
+      "category_name": "Energéticas",
+      "category_ids": [
+        "cat32968822"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660799",
+      "display_name": "Zumo de naranja Don Simón brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000100_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661015",
+      "display_name": "Aperitivo de maíz Risketos Risi sin gluten 120 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/646511_00_1.jpg",
+      "category_id": "cat390001",
+      "category_name": "Aperitivos",
+      "category_ids": [
+        "cat390001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661009",
+      "display_name": "Concentrado de granadina Rives 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000120_00_1.jpg",
+      "category_id": "cat33755675",
+      "category_name": "Sin Alcohol (NoLo)",
+      "category_ids": [
+        "cat33755675",
+        "cat20025"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661050",
+      "display_name": "Pisto de verduras Carretilla sin gluten 300 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/063349_00_1.jpg",
+      "category_id": "cat20013",
+      "category_name": "Conservas, Sopas y Precocinados",
+      "category_ids": [
+        "cat20013"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661136",
+      "display_name": "Cerveza tostada extra San Miguel Selecta lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/761122_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "100401696",
+      "display_name": "Paellera Esmaltada VAELLO LA VALENCIANA 38 cm - Negro",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/268767_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002011666",
+      "display_name": "Comida húmeda de conejo para gatos Simpl 400 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/952659_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2005530064",
+      "display_name": "Guante Satinado de Látex CARREFOUR  M 2 ud - Amarillo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/947053_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2032893618",
+      "display_name": "Bote Redondo de Cristal BORMIOLI 4 Estaciones 1,5 L. - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/007974_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950678",
+      "display_name": "PALITOS TRENZ.POLLO 8 UD CRF P",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/927152_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001570025",
+      "display_name": "Servilletas 2 Capas de Celulosa 100 ud CARREFOUR HOME - Blanca Decoradas",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/351138_00_1.jpg",
+      "category_id": "cat20046",
+      "category_name": "Papel y Celulosa",
+      "category_ids": [
+        "cat20046"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "367765282",
+      "display_name": "Lecho vegetal clean higiénico de maiz Vitakraft 8 l",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/190480_00_1.jpg",
+      "category_id": "cat20053",
+      "category_name": "Conejos y roedores",
+      "category_ids": [
+        "cat20053",
+        "cat20055"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618598",
+      "display_name": "Tarrito de verduritas a la crema desde 6 meses Buenas Noches Hero Solo sin gluten pack de 2 unidades de 190 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/529323_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618495",
+      "display_name": "Bastoncillos Johnson's Baby 100 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/045883_00_1.jpg",
+      "category_id": "cat20049",
+      "category_name": "Cuidado e Higiene Infantil",
+      "category_ids": [
+        "cat20049"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618555",
+      "display_name": "Protector de cama DryNites 7 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/152249_00_1.jpg",
+      "category_id": "cat400002",
+      "category_name": "Puericultura",
+      "category_ids": [
+        "cat400002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618620",
+      "display_name": "Ropa interior absorbente niño noche DryNites 8-13 años (30-48 kg.) 13 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/620388_00_1.jpg",
+      "category_id": "cat20050",
+      "category_name": "Pañales",
+      "category_ids": [
+        "cat20050"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916053",
+      "display_name": "Toallitas para bebé fresh My Carrefour Baby 80 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/078675_00_1.jpg",
+      "category_id": "cat31330789",
+      "category_name": "Toallitas",
+      "category_ids": [
+        "cat31330789"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916266",
+      "display_name": "Spray para el cuidado de fosas nasales Rhinomer Intense Eucaliptus 20 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/814025_00_1.jpg",
+      "category_id": "cat33926833",
+      "category_name": "Botiquín",
+      "category_ids": [
+        "cat33926833",
+        "cat20059"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870184",
+      "display_name": "Papilla infantil desde 6 meses 8 cereales galletas María Nutribén sin aceite de palma 600 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/914547_00_1.jpg",
+      "category_id": "cat32683499",
+      "category_name": "Parafarmacia para el Bebé",
+      "category_ids": [
+        "cat32683499",
+        "cat20048",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916226",
+      "display_name": "Discos de lactancia Suavinex 60 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/760322_00_1.jpg",
+      "category_id": "cat400001",
+      "category_name": "Embarazo y Lactancia",
+      "category_ids": [
+        "cat400001",
+        "cat32683499",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2036578606",
+      "display_name": "Plancha mangas de metal de RAYEN 52 x 11 cm - Gris",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/008094_00_1.jpg",
+      "category_id": "cat20044",
+      "category_name": "Cuidado de la ropa",
+      "category_ids": [
+        "cat20044"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2047790344",
+      "display_name": "Sacacorchos 2 en 1 para Vino y Cerveza Tipo Bodega Camarero FACKELMANN",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/056691_00_1.jpg",
+      "category_id": "cat20027",
+      "category_name": "Vinos",
+      "category_ids": [
+        "cat20027",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2053456800",
+      "display_name": "Lendrera detección de piojos Paranix 1 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/973481_00_1.jpg",
+      "category_id": "cat20060",
+      "category_name": "Cuidado del cabello",
+      "category_ids": [
+        "cat20060"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2067109581",
+      "display_name": "Menú Provita para Cotorras 750 gr",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/105668_00_1.jpg",
+      "category_id": "cat20055",
+      "category_name": "Pájaros",
+      "category_ids": [
+        "cat20055"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368501910",
+      "display_name": "Alimento para Peces Tetragoldfish Escama 1 L",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/341803_00_1.jpg",
+      "category_id": "cat20056",
+      "category_name": "Peces y tortugas",
+      "category_ids": [
+        "cat20056"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660265",
+      "display_name": "Aceite de oliva intenso 1º La Masía 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000006_00_1.jpg",
+      "category_id": "cat33207691",
+      "category_name": "Aceites y vinagres",
+      "category_ids": [
+        "cat33207691"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661027",
+      "display_name": "Kétchup Heinz envase 700 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/680150_00_1.jpg",
+      "category_id": "cat20009",
+      "category_name": "Alimentación",
+      "category_ids": [
+        "cat20009"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660422",
+      "display_name": "Gaseosa Carrefour Classic´ cero azúcares botella 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/228959_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660787",
+      "display_name": "Red Bull Bebida Energética lata 25 cl",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/020858_00_1.jpg",
+      "category_id": "cat32968822",
+      "category_name": "Energéticas",
+      "category_ids": [
+        "cat32968822"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660801",
+      "display_name": "Zumo de piña,manzana y uva Don Simón brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000101_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661158",
+      "display_name": "Cerveza Ak Damm botella 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/371317_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "100401704",
+      "display_name": "Quemador a Gas VAELLO LA VALENCIANA 400 mm - Negro",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/268954_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002030440",
+      "display_name": "Comida húmeda de pollo para gatos Simpl 400 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/250545_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2005530065",
+      "display_name": "2 Guantes satinados de Látex Carrefour  G - Amarillo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/947057_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2032893620",
+      "display_name": "Bote Redondo de Cristal BORMIOLI 4 Estaciones 0,5 L. - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/112001_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950679",
+      "display_name": "Snack hueso de masticar para perro mini Vitalive Chew Bones Carrefour Companino 4 ud",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/927153_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001570029",
+      "display_name": "Set de Servilletas  2 capas de Celulosa RENOVA Cocktail 30pz - Rojo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/634657_00_1.jpg",
+      "category_id": "cat20046",
+      "category_name": "Papel y Celulosa",
+      "category_ids": [
+        "cat20046"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "367765464",
+      "display_name": "Lecho Higíenico Papel Vegetal Vitakraft 10 l",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/315908_00_1.jpg",
+      "category_id": "cat20053",
+      "category_name": "Conejos y roedores",
+      "category_ids": [
+        "cat20053",
+        "cat20055",
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618849",
+      "display_name": "Bolsita de manzana y plátano desde 4 meses Hero Solo sin gluten y sin azúcares añadidos 100 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/958732_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618520",
+      "display_name": "Colonia Original Denenes 600 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/101997_00_1.jpg",
+      "category_id": "cat20049",
+      "category_name": "Cuidado e Higiene Infantil",
+      "category_ids": [
+        "cat20049"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870080",
+      "display_name": "Protector Absorbente Sabanindas Extra 60x60cm 20 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/542010_00_1.jpg",
+      "category_id": "cat400002",
+      "category_name": "Puericultura",
+      "category_ids": [
+        "cat400002",
+        "cat32683499",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618621",
+      "display_name": "Ropa interior absorbente niña noche DryNites 4-7 años (17-30 kg.) 16 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/622125_00_1.jpg",
+      "category_id": "cat20050",
+      "category_name": "Pañales",
+      "category_ids": [
+        "cat20050"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916118",
+      "display_name": "Toallitas para bebé fresh aloe vera Carrefour Baby 24 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/425767_00_1.jpg",
+      "category_id": "cat31330789",
+      "category_name": "Toallitas",
+      "category_ids": [
+        "cat31330789"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916295",
+      "display_name": "Spray para el cuidado de fosas nasales higiene y bienestar Stérimar 100 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/905122_00_1.jpg",
+      "category_id": "cat33926833",
+      "category_name": "Botiquín",
+      "category_ids": [
+        "cat33926833",
+        "cat20049",
+        "cat32683499",
+        "cat20051",
+        "cat20059"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870185",
+      "display_name": "Papilla infantil desde 6 meses 8 cereales con toque de miel 4 frutas Nutribén 600 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/914560_00_1.jpg",
+      "category_id": "cat32683499",
+      "category_name": "Parafarmacia para el Bebé",
+      "category_ids": [
+        "cat32683499",
+        "cat20048",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2036578815",
+      "display_name": "Paño para planchar  de Algodón RAYEN 35 x 70 cm - Translúcido",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/025890_00_1.jpg",
+      "category_id": "cat20044",
+      "category_name": "Cuidado de la ropa",
+      "category_ids": [
+        "cat20044"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2047790346",
+      "display_name": "Enfriador para botellas FACKELMANN Bar & Wine 37cm. - Gris",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/056738_00_1.jpg",
+      "category_id": "cat20027",
+      "category_name": "Vinos",
+      "category_ids": [
+        "cat20027",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2067109582",
+      "display_name": "Menú Provita para Loros 750 gr Vita",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/105682_00_1.jpg",
+      "category_id": "cat20055",
+      "category_name": "Pájaros",
+      "category_ids": [
+        "cat20055"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368501913",
+      "display_name": "Tetrapond Sticks 1 L",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/341806_00_1.jpg",
+      "category_id": "cat20056",
+      "category_name": "Peces y tortugas",
+      "category_ids": [
+        "cat20056"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660275",
+      "display_name": "Aceite de oliva virgen extra ecológico Oro de Génave 75 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/038646_00_1.jpg",
+      "category_id": "cat33207691",
+      "category_name": "Aceites y vinagres",
+      "category_ids": [
+        "cat33207691"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661029",
+      "display_name": "Mostaza Orlando sin gluten envase 290 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/002259_00_1.jpg",
+      "category_id": "cat20009",
+      "category_name": "Alimentación",
+      "category_ids": [
+        "cat20009"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660424",
+      "display_name": "Gaseosa La Casera 0% calorías y azúcares botella 50 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/020842_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660789",
+      "display_name": "Red Bull Bebida Energética sin azúcar lata 25 cl",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/496510_00_1.jpg",
+      "category_id": "cat32968822",
+      "category_name": "Energéticas",
+      "category_ids": [
+        "cat32968822"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660803",
+      "display_name": "Zumo de melocotón, manzana y uva Don Simón brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000102_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661160",
+      "display_name": "Cerveza Voll Damm doble malta lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/026481_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "100401706",
+      "display_name": "Tripode Regulable Quemador VAELLO LA VALENCIANA - Metalizado",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/268966_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002030441",
+      "display_name": "Comida húmeda de salmón para gatos Simpl 400 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/250546_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2005530066",
+      "display_name": "2 Guantes flocados de Látex Carrefour  P - Rosa",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/947060_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2032893661",
+      "display_name": "Hermético Cuadrado de Vidrio LUMINARC 1,22 l",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/770989_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950779",
+      "display_name": "Hueso de masticar para perro Carrefour 20 cm",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/927905_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001970000",
+      "display_name": "Set de 40 Servilletas  2 capas de Celulosa RENOVA Gold 40pz - Rojo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/069166_00_1.jpg",
+      "category_id": "cat20046",
+      "category_name": "Papel y Celulosa",
+      "category_ids": [
+        "cat20046"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "367765740",
+      "display_name": "Vitakraft Vegetal Clean Corn Lecho Higiénico 8l",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/694122_00_1.jpg",
+      "category_id": "cat20053",
+      "category_name": "Conejos y roedores",
+      "category_ids": [
+        "cat20053"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618850",
+      "display_name": "Bolsita de multifrutas con galleta desde 6 meses Hero Solo 100 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/958733_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618617",
+      "display_name": "Bastoncillos Johnson's Baby 200 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/614964_00_1.jpg",
+      "category_id": "cat20049",
+      "category_name": "Cuidado e Higiene Infantil",
+      "category_ids": [
+        "cat20049"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870220",
+      "display_name": "Limpiador Biberones Frosch Baby 500 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/954182_00_1.jpg",
+      "category_id": "cat400002",
+      "category_name": "Puericultura",
+      "category_ids": [
+        "cat400002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618675",
+      "display_name": "Pants bañador Carrefour Baby T4 (7-13 kg) 12 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/797294_00_1.jpg",
+      "category_id": "cat20050",
+      "category_name": "Pañales",
+      "category_ids": [
+        "cat20050"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916191",
+      "display_name": "Toallitas para bebé milk My Carrefour Baby 72 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/674099_00_1.jpg",
+      "category_id": "cat31330789",
+      "category_name": "Toallitas",
+      "category_ids": [
+        "cat31330789"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2047290071",
+      "display_name": "Agua de mar higiene nasal en spray Senti2 pack de 2 unidades de 100 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/061085_00_1.jpg",
+      "category_id": "cat33926833",
+      "category_name": "Botiquín",
+      "category_ids": [
+        "cat33926833",
+        "cat20059"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870187",
+      "display_name": "Preparado lácteo de crecimiento 3 desde 12 meses Nutribén Crecimiento Pro + sin aceite de palma lata 800 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/914564_00_1.jpg",
+      "category_id": "cat32683499",
+      "category_name": "Parafarmacia para el Bebé",
+      "category_ids": [
+        "cat32683499",
+        "cat20048",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2073270480",
+      "display_name": "Detergente liquido para la ropa de bebe Frosch Baby 21 Lavados",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/909924_00_1.jpg",
+      "category_id": "cat20044",
+      "category_name": "Cuidado de la ropa",
+      "category_ids": [
+        "cat20044"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661386",
+      "display_name": "Vino tinto joven tempranillo Marqués Dospalacios Vendimia Seleccionada 75 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/300426_00_1.jpg",
+      "category_id": "cat20027",
+      "category_name": "Vinos",
+      "category_ids": [
+        "cat20027"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414055",
+      "display_name": "Comida para agaponis Vitakraft 750 g",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/173233_00_1.jpg",
+      "category_id": "cat20055",
+      "category_name": "Pájaros",
+      "category_ids": [
+        "cat20055"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368502055",
+      "display_name": "Tetra Reptomin Comida para Tortugas Acuáticas 1L/220g",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/454492_00_1.jpg",
+      "category_id": "cat20056",
+      "category_name": "Peces y tortugas",
+      "category_ids": [
+        "cat20056"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660279",
+      "display_name": "Aceite de oliva virgen extra La Española 750 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000004_00_1.jpg",
+      "category_id": "cat33207691",
+      "category_name": "Aceites y vinagres",
+      "category_ids": [
+        "cat33207691"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660426",
+      "display_name": "Tónica Schweppes zero lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/029259_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660820",
+      "display_name": "Zumo de manzana Don Simón brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/040240_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661162",
+      "display_name": "Cerveza Voll Damm doble malta pack de 6 botellas de 25 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/026482_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950640",
+      "display_name": "Olla a Presión MAGEFESA Favorit 3 + 6L",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/663253_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2003317257",
+      "display_name": "Pienso de salmón para gato adulto esterilizado Ultima Nature Cat 1,25 kg.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/960640_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2005530067",
+      "display_name": "2 Guantes flocados de Látex Carrefour  M - Rosa",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/947063_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2032893662",
+      "display_name": "Recipiente Hermetico Cuadrado  de Cristal LUMINARC Pure Box Active 0,76 L. - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/770990_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950781",
+      "display_name": "Snacks huesos anudados de piel de buey para perro Carrefour pack de 4 unidades",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/927911_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2001970001",
+      "display_name": "Servilletas de 2 capas de papel 23x23 cm RENOVA 90 uds - Blancas",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/093884_00_1.jpg",
+      "category_id": "cat20046",
+      "category_name": "Papel y Celulosa",
+      "category_ids": [
+        "cat20046"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414242",
+      "display_name": "Comida para hamster Vitakraft 400 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/361844_00_1.jpg",
+      "category_id": "cat20053",
+      "category_name": "Conejos y roedores",
+      "category_ids": [
+        "cat20053"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618851",
+      "display_name": "Bolsita de tres frutas desde 4 meses Hero Baby sin gluten 100 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/958734_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870039",
+      "display_name": "Colonia infantil Suavinex 100 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/147486_00_1.jpg",
+      "category_id": "cat20049",
+      "category_name": "Cuidado e Higiene Infantil",
+      "category_ids": [
+        "cat20049",
+        "cat32683499",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002916086",
+      "display_name": "Protegecamas Infantil Carrefour Baby 10 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/285793_00_1.jpg",
+      "category_id": "cat400002",
+      "category_name": "Puericultura",
+      "category_ids": [
+        "cat400002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002618676",
+      "display_name": "Pañales Bañador Carrefour Baby Talla 5 +12 kg 11 uds",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/797295_00_1.jpg",
+      "category_id": "cat20050",
+      "category_name": "Pañales",
+      "category_ids": [
+        "cat20050"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2003352308",
+      "display_name": "Toallitas de bebé Dodot Sensitive pack de 4 paquetes de 54 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/070160_00_1.jpg",
+      "category_id": "cat31330789",
+      "category_name": "Toallitas",
+      "category_ids": [
+        "cat31330789"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870188",
+      "display_name": "Leche infantil para lactantes 1 desde el primer día en polvo Nutriben Natal Pro-a sin aceite de palma lata 800 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/914824_00_1.jpg",
+      "category_id": "cat32683499",
+      "category_name": "Parafarmacia para el Bebé",
+      "category_ids": [
+        "cat32683499",
+        "cat20048",
+        "cat20051"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2073270482",
+      "display_name": "Quitamanchas Ropa Bebé Frosch Baby Pistola 500 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/909926_00_1.jpg",
+      "category_id": "cat20044",
+      "category_name": "Cuidado de la ropa",
+      "category_ids": [
+        "cat20044"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661390",
+      "display_name": "Vino blanco joven macabeo Marqués Dospalacios Vendimia Seleccionada 75 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/300420_00_1.jpg",
+      "category_id": "cat20027",
+      "category_name": "Vinos",
+      "category_ids": [
+        "cat20027"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414221",
+      "display_name": "Comida para periquitos Vitakraft 500 g",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/361690_00_1.jpg",
+      "category_id": "cat20055",
+      "category_name": "Pájaros",
+      "category_ids": [
+        "cat20055"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368502447",
+      "display_name": "Tetra Anchovies, 250 ml",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/879702_00_1.jpg",
+      "category_id": "cat20056",
+      "category_name": "Peces y tortugas",
+      "category_ids": [
+        "cat20056"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660293",
+      "display_name": "Aceite de oliva virgen extra gran selección Carbonell 750 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000016_00_1.jpg",
+      "category_id": "cat33207691",
+      "category_name": "Aceites y vinagres",
+      "category_ids": [
+        "cat33207691"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660428",
+      "display_name": "Tónica Carrefour botella 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/228960_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660822",
+      "display_name": "Zumo de naranja Don Simón exprimido con pulpa brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/194724_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661170",
+      "display_name": "Cerveza Leffe botella 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/037080_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950692",
+      "display_name": "Paellera Pulida VAELLO LA VALENCIANA 42 cm - Gris",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/268937_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2005187052",
+      "display_name": "Snacks de pollo para gatos Catisfactions 180 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/963482_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2005530068",
+      "display_name": "2 Guantes flocados de Látex Carrefour  G - Rosa",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/947067_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2032893663",
+      "display_name": "Recipiente Hermetico Rectangular de Cristal LUMINARC Pure Box Active 0,122l - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/770991_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2000950782",
+      "display_name": "Snack hueso anudado de piel de buey para perro Carrefour 19 cm.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/927913_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2031686080",
+      "display_name": "Servilleta dos Capas CARREFOUR HOME 22x20 cm 500 ud - Blanco",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/975572_00_1.jpg",
+      "category_id": "cat20046",
+      "category_name": "Papel y Celulosa",
+      "category_ids": [
+        "cat20046"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414245",
+      "display_name": "Barritas de miel para hamster Vitakraft 2 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/361847_00_1.jpg",
+      "category_id": "cat20053",
+      "category_name": "Conejos y roedores",
+      "category_ids": [
+        "cat20053"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2002870166",
+      "display_name": "Postre lácteo de pera desde 6 meses Nestlé Yogolino sin gluten pack de 4 unidades de 100 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/895384_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    }
+  ],
+  "reserves": [
+    {
+      "id": "520660572",
+      "display_name": "Kas de limón 2 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000083_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661054",
+      "display_name": "Agua mineral Font Vella 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000127_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661344",
+      "display_name": "Cerveza Saer Brau sin alcohol pack de 6 botellas de 25 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/668340_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2012800287",
+      "display_name": "Rallador TESCOMA Handy 4 Caras- Metalizado",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/757909_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414298",
+      "display_name": "Hierba para Gato Vitakraft",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/407094_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2008102356",
+      "display_name": "6 Bayetas Multiusos  Carrefour   - Amarilla",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/258282_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2065684779",
+      "display_name": "Set de 3 Botes Rectangulares de Plástico CRF HOME Carrefour 0,9 L. - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/729958_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414191",
+      "display_name": "Pienso de pollo para perros yorkshire terrier Ultima 1,5 kg",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/357374_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2003043939",
+      "display_name": "Preparado lácteo infantil de crecimiento desde 3 años Nestlé Junior Original sin gluten y sin azúcar añadido brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/571081_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660574",
+      "display_name": "Fanta de limón botella 2 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000061_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661058",
+      "display_name": "Agua mineral Bezoya 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/033249_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661348",
+      "display_name": "Cerveza San Miguel 0,0 alcohol pack 6 botellas 25 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000165_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2012800303",
+      "display_name": "Juego Espátulas TESCOMA Delicia 3 pzas - Multicolor",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/757948_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414428",
+      "display_name": "Pienso bolas de pelo de pavo para gato Ultima 1,5 kg.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/636204_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2008102358",
+      "display_name": "Alfombrilla Posavajillas CARREFOUR",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/258284_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2065684780",
+      "display_name": "Bote Cuadrado de Plástico CARREFOUR HOME  0,7l 3 ud - Bicolor",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/730602_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414194",
+      "display_name": "Pienso de pollo para perro adulto mini Ultima 3 kg.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/357439_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2003043940",
+      "display_name": "Preparado lácteo infantil de crecimiento desde 12 meses Puleva Peques 3 sin gluten y sin lactosa y sin azúcar añadido brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/575835_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660576",
+      "display_name": "Fanta de limón lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/000059_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661060",
+      "display_name": "Agua mineral Lanjarón 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/029203_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661354",
+      "display_name": "Cerveza San Miguel 0,0 pack 12 latas 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/646833_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2012800306",
+      "display_name": "Galletera Decoradora de Tartas de Plástico TESCOMA Delicia  22cm - Amarillo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/757954_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414706",
+      "display_name": "Snack de pato para gatos adultos Vitakraaft 3 ud.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/666380_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2008102360",
+      "display_name": "2 Bayetas de cristales  Carrefour   - Beige",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/258288_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2065684781",
+      "display_name": "Bote Redondo de Plástico CARREFOUR HOME Carrefour 0,5l 3ud - Bicolor",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/760047_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414260",
+      "display_name": "Snack de pavo para perro Vitakraft Beef Stick",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/361959_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2003043955",
+      "display_name": "Preparado lácteo infantil de crecimiento con cereales y fruta desde 12 meses Puleva Peques 3 pack de 3 unidades de 200 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/634004_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660578",
+      "display_name": "Fanta de limón botella 50 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/038212_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661062",
+      "display_name": "Agua mineral Carrefour Classic 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/609744_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661358",
+      "display_name": "Cerveza Mahou Mixta Shandy con limón lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/577258_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2012800310",
+      "display_name": "Jarra Medidora TESCOMA Delicia 0,5 l - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/757962_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414790",
+      "display_name": "Pienso de pollo para gato esterilizado Brekkies Excel 1,5 kg",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/820419_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2008102405",
+      "display_name": "3 Bayetas Multiusos de Microfibra  Carrefour   - Colores surtidos",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/470404_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2065684782",
+      "display_name": "Bote Redondo de Plástico CARREFOUR HOME 1 l 2 ud - Bicolor",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/760048_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414304",
+      "display_name": "Pienso para perro adulto Receta Mediterránea Bon Menú 15 Kg.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/409159_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2003043956",
+      "display_name": "Preparado lácteo infantil de crecimiento con cereales y cacao +12 meses Puleva Peques 3 pack de 3 unidades de 200 ml.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/634006_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660580",
+      "display_name": "Schweppes de limón lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/707834_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661064",
+      "display_name": "Agua mineral Solán de Cabras natural 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/492590_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661360",
+      "display_name": "Cerveza Free Damm Lager 0,0 sin alcohol con limón sin gluten lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/722416_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2012800315",
+      "display_name": "Rodillo de Plástico TESCOMA Delicia 17cm - Amarillo",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/757983_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414878",
+      "display_name": "Comida húmeda selección de pescados para gato adulto Gourmet Mon Petit 6x50 g.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/903970_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2008102472",
+      "display_name": "Cubre Escoba de Microfibra  ROZENBAL  - Azul",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/716568_00_1.jpg",
+      "category_id": "cat20047",
+      "category_name": "Utensilios de limpieza",
+      "category_ids": [
+        "cat20047"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2076510082",
+      "display_name": "Set de 5 Hermeticos Rectangulares  IDEALCASA Miami - Transparente",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/142757_00_1.jpg",
+      "category_id": "cat20039",
+      "category_name": "Conservación de alimentos",
+      "category_ids": [
+        "cat20039",
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368414307",
+      "display_name": "Pienso para perro adulto Receta Tradicional Bon Menú 15 Kg.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/409168_00_1.jpg",
+      "category_id": "cat20057",
+      "category_name": "Perros",
+      "category_ids": [
+        "cat20057"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2003043959",
+      "display_name": "Leche infantil de continuación desde 6 meses Puleva Peques 2 brik 1 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/644323_00_1.jpg",
+      "category_id": "cat20048",
+      "category_name": "Alimentación infantil",
+      "category_ids": [
+        "cat20048"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520660582",
+      "display_name": "Fanta de limón pack 2 botellas 2 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/392863_00_1.jpg",
+      "category_id": "cat650001",
+      "category_name": "Refrescos",
+      "category_ids": [
+        "cat650001"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661066",
+      "display_name": "Agua mineral Aquabona 1,5 l.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/465192_00_1.jpg",
+      "category_id": "cat650002",
+      "category_name": "Aguas y Zumos",
+      "category_ids": [
+        "cat650002"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "520661370",
+      "display_name": "Cerveza Free Damm Lager 0,0 sin alcohol sin gluten lata 33 cl.",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/030464_00_1.jpg",
+      "category_id": "cat20023",
+      "category_name": "Cerveza",
+      "category_ids": [
+        "cat20023"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "2012800322",
+      "display_name": "Descapsulador de Acero TESCOMA Presto 10cm - Inox",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/758092_00_1.jpg",
+      "category_id": "cat20041",
+      "category_name": "Menaje",
+      "category_ids": [
+        "cat20041"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    },
+    {
+      "id": "368501542",
+      "display_name": "Comida húmeda de buey y pollo en gelatina para gato adulto Purina Felix 400 g",
+      "thumbnail": "https://static.carrefour.es/hd_350x_/img_pim_food/073295_00_1.jpg",
+      "category_id": "cat20054",
+      "category_name": "Gatos",
+      "category_ids": [
+        "cat20054"
+      ],
+      "illustration_url": null,
+      "published": true,
+      "available": true
+    }
+  ]
+}

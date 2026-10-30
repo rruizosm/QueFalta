@@ -1,0 +1,174 @@
+{
+  "completed_at_utc": "2026-10-24T15:30:20.799904+00:00",
+  "project": "gkffvigcnsesbaihycay",
+  "table": "public.bonarea_products",
+  "column": "illustration_url",
+  "new_products_linked_and_verified": 700,
+  "prior_products_preserved": 1705,
+  "total_products_with_image": 2405,
+  "method": "Official existing transparent PNG photos linked by URL; original pixel bytes unchanged.",
+  "unique_new_ids": 700,
+  "unique_new_urls": 700,
+  "unique_new_png_hashes": 700,
+  "all_700_remote_pngs_http_200_and_sha256_match": true,
+  "visual_review": "700 photographs reviewed and approved across 28 contact sheets",
+  "approved_mapping_sha256": "d42d11797a27707dac6c0827522d07ffd6fdfb810361f6d0c83a51a261bcfdf4",
+  "database_verification": {
+    "linked_new": 700,
+    "expected_new": 700,
+    "total_linked": 2405
+  },
+  "skipped_count": 35,
+  "skipped_reasons": {
+    "no_native_transparency": 33,
+    "catalog_photo_mismatch: Plum Cake shows sausage": 1,
+    "catalog_photo_mismatch: Maria integral shows gluten-free Maria": 1
+  },
+  "skipped_products": [
+    {
+      "id": "13*3577",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0091305",
+      "reason": "catalog_photo_mismatch: Plum Cake shows sausage"
+    },
+    {
+      "id": "13*0091812",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*6469",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0091445",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0088326",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0097621",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3579",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0088549",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0026128",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3572",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0092079",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3567",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0112",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "99*3473",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0087972",
+      "reason": "catalog_photo_mismatch: Maria integral shows gluten-free Maria"
+    },
+    {
+      "id": "13*7072",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*6471",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*9829",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0088548",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*6137",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0028240",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3076",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3801",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0092799",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0087572",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*8073",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*8947",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3578",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0089188",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*0090969",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*6566",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3471",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*6542",
+      "reason": "no_native_transparency"
+    },
+    {
+      "id": "13*3472",
+      "reason": "no_native_transparency"
+    }
+  ],
+  "removed_temporary_directory": "/private/tmp/bonarea-cutouts-20261024-700-03",
+  "removed_files": 787,
+  "removed_bytes": 1588576044,
+  "typecheck": "npx tsc --noEmit: exit 0",
+  "cleanup_complete": true
+}

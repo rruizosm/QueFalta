@@ -107,7 +107,7 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -140,6 +140,7 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
 
         <ProductInfoSections
           items={[
+            { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: product.glutenFreeByTag ? t('product.glutenFreeDescription') : null },
             { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}

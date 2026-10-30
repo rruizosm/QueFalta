@@ -1,0 +1,20 @@
+{
+  "worker": "carrefour_lot_03",
+  "target": 116,
+  "assignedRange": [
+    0,
+    115
+  ],
+  "rootAssignedRange": [
+    116,
+    165
+  ],
+  "accepted": 25,
+  "rejected": [
+    "2010201218",
+    "520660349",
+    "520660378",
+    "520660517"
+  ],
+  "sourceDeletionEnabled": true
+}

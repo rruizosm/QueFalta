@@ -20,6 +20,10 @@ envía código postal: sincroniza el surtido público por defecto.
 - **Cambios:** el trigger guarda precio anterior y porcentaje al modificar
   `unit_price`.
 
+El sync rellena `gluten_free_label` con la propiedad nativa `property_code = "16"`
+(«Sin gluten») en cada upsert. El backfill inicial está en
+`supabase/migrations/20261022130000_froiz_gadis_gluten_free_labels.sql`.
+
 ## Precio por unidad
 
 El sync convierte los sufijos de Gadisline (`el kilo`, `el litro`, `la unidad`,

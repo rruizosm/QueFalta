@@ -123,7 +123,7 @@ export default function PriceAlertsScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       <ProfileSubscreenHeader
         title={t('priceAlerts.title')}
         icon="notifications-outline"

@@ -41,7 +41,7 @@ export default function BmProductsScreen() {
   const uiProducts = useMemo(() => products.map(bmToUI), [products]);
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />

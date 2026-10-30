@@ -1,9 +1,0 @@
-{
-  "recordedAt": "2026-10-11T18:23:47.526721+00:00",
-  "command": "npx tsc --noEmit",
-  "exitCode": 0,
-  "executor": "root",
-  "sessionId": 7567,
-  "output": "",
-  "note": "Completed successfully during this resume turn; app source was not modified."
-}

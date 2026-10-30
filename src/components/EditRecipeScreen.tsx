@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native';
 import { useRef } from 'react';
 import { Keyboard, View } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
@@ -10,7 +11,7 @@ import RecipeForm from './RecipeForm';
 // The modal stack owns the horizontal transition. The form stays at its final
 // position and does not run the creator's separate animation timeline.
 const useEditorPresentation: typeof useRecipeCreatorTransition = (_origin, onClose) => {
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ViewInstance>(null);
   const progress = useSharedValue(1);
   const surfaceStyle = useAnimatedStyle(() => ({ opacity: 1, borderRadius: 0, transform: [{ translateY: 0 }] }));
   const hiddenStyle = useAnimatedStyle(() => ({ opacity: 0 }));

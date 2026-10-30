@@ -13,3 +13,7 @@ $env:DRY_RUN='1'; $env:SKIP_DETAIL='1'; node scripts/sync-plusfresc.mjs
 
 Usa el centro de referencia por defecto (`12`) en ejecuciones reales, para que
 coincida con el fallback cliente.
+
+El sync guarda `gluten_free_label` desde la característica explícita
+`SGL_SI` del producto (`raw.characteristics`). El Catálogo filtra con esa
+columna y limita la disponibilidad al centro asociado al código postal.

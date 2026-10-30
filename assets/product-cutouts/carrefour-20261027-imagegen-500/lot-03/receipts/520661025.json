@@ -1,0 +1,16 @@
+{
+  "id": "520661025",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/609747_00_1.jpg",
+  "sourceSha256": "590963d5b31073d09779862f4f8e2f1b79a082f4601bcf403483bc1bd3c7a418",
+  "outputSha256": "938c74e7769e109416ab535524bd9d67e3226bc48fbc02c87b2f7e6ac6e69710",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520661025.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f05-531c-7593-b0a3-004394dee5d1/exec-064e41e9-981b-4b57-880d-98269383fe9c.png",
+  "visualReview": "Rejected: generated water bottle label says0.6L; catalogue product is50cl. Preserve rejected output and replace with reserve.",
+  "validAlpha": true,
+  "visualReviewAccepted": false,
+  "bytes": 721320,
+  "sourceBytes": 8435,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:52:07.536Z"
+}

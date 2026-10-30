@@ -96,7 +96,7 @@ export default function HiperdinoProductModal({ product, onClose, topInset = 16,
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -124,6 +124,7 @@ export default function HiperdinoProductModal({ product, onClose, topInset = 16,
          *  nutrición), solo la categoría, con el mismo diseño que el resto. */}
         <ProductInfoSections
           items={[
+            { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: product.glutenFreeByTag ? t('product.glutenFreeDescription') : null },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}
         />

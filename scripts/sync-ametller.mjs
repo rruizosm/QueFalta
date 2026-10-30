@@ -46,6 +46,7 @@ import { normalizeAmetllerOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { hasGlutenFreeName } from './lib/gluten-free-names.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -334,6 +335,7 @@ async function main() {
     rows.push({
       ...det,
       category_ids: [...expanded],
+      gluten_free_label: hasGlutenFreeName(det.display_name, det.display_name_ca),
       category_id: leaf,
       category_name: leaf ? catName.get(leaf) ?? null : null,
       detail_synced_at: runStart,

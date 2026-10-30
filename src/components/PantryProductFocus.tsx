@@ -1,40 +1,52 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import type { ScrollViewInstance, ViewInstance } from 'react-native';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { cancelAnimation, Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { cancelAnimation, Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import GlassSurface from './GlassSurface';
+import { usePantryCartMembership } from '../hooks/usePantryCartMembership';
 import { fonts } from '../constants/typography';
 import { colors } from '../constants/colors';
 import { STORE_META } from '../constants/stores';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { isPantryExpiryDate, PANTRY_MAX_QUANTITY, PANTRY_MAX_NOTES_LENGTH,
+import { isPantryExpiryDate, pantryExpiryStatus, PANTRY_MAX_QUANTITY, PANTRY_MAX_NOTES_LENGTH,
   PANTRY_MAX_LOCATION_LENGTH,
-  type PantryProduct, type PantrySection } from '../lib/pantryLayout';
+  type PantryProduct, type PantrySection, type PantryShelfLabel } from '../lib/pantryLayout';
 
 type Rect = { x: number; y: number; width: number; height: number };
 type Props = {
   product: PantryProduct;
   section?: PantrySection;
+  activeListId?: string | null;
   quantity: number;
   notes: string;
   kitchenLocation: string;
   kitchenLocationOptions: string[];
   onKitchenLocationOptionsChange: (options: string[], removedIndex?: number) => void;
+  shelfLabels: Readonly<Record<string, PantryShelfLabel>>;
+  selectedShelfGroup: number | null;
+  onChooseShelf: (index: number) => boolean;
+  otherShelfLabels?: Readonly<Record<string, PantryShelfLabel>>;
+  onChooseOtherShelf?: (index: number) => boolean;
   expiryDate: string | null;
+  today?: string;
   onEdit: (patch: { quantity?: number; notes?: string; kitchenLocation?: string; expiryDate?: string | null }) => void;
   saveError: boolean;
   onRetrySave: () => void;
   onFinish: () => void;
   onAddToCart: () => Promise<void>;
   onShowDetails: () => void;
-  sourceRef?: RefObject<View | null>;
-  backgroundRef: RefObject<View | null>;
+  /** Present nested sheets from this modal's native presentation context. */
+  children?: ReactNode;
+  sourceRef?: RefObject<ViewInstance | null>;
+  backgroundRef: RefObject<ViewInstance | null>;
   onReady: () => void;
   onClose: () => void;
 };
@@ -61,9 +73,9 @@ function expiryInputToDate(value: string): string | null {
 }
 
 /** The illustration zoom is visual only; edits are scoped to the selected instance. */
-export default function PantryProductFocus({ product, section = 'pantry', quantity, notes, kitchenLocation, kitchenLocationOptions,
-  onKitchenLocationOptionsChange, expiryDate,
-  onEdit, saveError, onRetrySave, onFinish, onAddToCart, onShowDetails, sourceRef, backgroundRef, onReady, onClose }: Props) {
+export default function PantryProductFocus({ product, section = 'pantry', activeListId, quantity, notes, kitchenLocation, kitchenLocationOptions,
+  onKitchenLocationOptionsChange, shelfLabels = {}, selectedShelfGroup, onChooseShelf, otherShelfLabels = {}, onChooseOtherShelf, expiryDate, today,
+  onEdit, saveError, onRetrySave, onFinish, onAddToCart, onShowDetails, children, sourceRef, backgroundRef, onReady, onClose }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -75,7 +87,7 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
   const [imageError, setImageError] = useState(false);
   const [started, setStarted] = useState(false);
   const [origin, setOrigin] = useState<Rect | null>(null);
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ViewInstance>(null);
   const mounted = useRef(true);
   const closing = useRef(false);
   const opening = useRef(false);
@@ -83,19 +95,43 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
   const addingRef = useRef(false);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const inCurrentList = usePantryCartMembership(activeListId ?? null, product);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notesFocused, setNotesFocused] = useState(false);
   const [locationsOpen, setLocationsOpen] = useState(false);
+  const [shelvesOpen, setShelvesOpen] = useState(false);
+  const [shelfError, setShelfError] = useState(false);
+  const shelves = Object.entries(shelfLabels).sort(([a], [b]) => Number(a) - Number(b));
+  const otherShelves = Object.entries(otherShelfLabels).sort(([a], [b]) => Number(a) - Number(b));
+  const otherSectionName = t(section === 'pantry' ? 'pantry.fridge' : 'pantry.title');
+  const shelfName = (index: string, label: PantryShelfLabel) =>
+    [label.emoji, label.name.trim() || t('pantry.shelfNumber', { number: Number(index) + 1 })].filter(Boolean).join(' ');
+  const currentShelfLabel = selectedShelfGroup == null ? undefined : shelfLabels[String(selectedShelfGroup)];
+  const currentShelfName = currentShelfLabel ? shelfName(String(selectedShelfGroup), currentShelfLabel) : t('pantry.noShelfSelected');
   const [editingLocations, setEditingLocations] = useState(false);
   const deletingLocation = useRef(false);
   const [locationsHeight, setLocationsHeight] = useState(0);
   const locationsAnimatedHeight = useSharedValue(0);
   const locationsProgress = useSharedValue(0);
+  const [shelvesHeight, setShelvesHeight] = useState(0);
+  const shelvesAnimatedHeight = useSharedValue(0);
+  const shelvesProgress = useSharedValue(0);
   const [expiryFocused, setExpiryFocused] = useState(false);
   const [expiryInput, setExpiryInput] = useState(() => expiryDateToInput(expiryDate));
   const [expiryError, setExpiryError] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const keyboardVisible = size.height < window.height - 100;
+  const expiryStatus = pantryExpiryStatus(expiryDate, today);
+  const expiryPulse = useSharedValue(1);
+  useEffect(() => {
+    cancelAnimation(expiryPulse);
+    expiryPulse.set(1);
+    if (expiryStatus && started && !reducedMotion) {
+      expiryPulse.set(withRepeat(withTiming(0.25, { duration: 800, easing: Easing.inOut(Easing.cubic) }), -1, true));
+    }
+    return () => cancelAnimation(expiryPulse);
+  }, [expiryStatus, started, reducedMotion, expiryPulse]);
+  const expiryPulseStyle = useAnimatedStyle(() => ({ opacity: expiryPulse.value }));
 
   useEffect(() => {
     const config = { duration: reducedMotion ? 0 : 240, easing: Easing.inOut(Easing.cubic) };
@@ -108,6 +144,18 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
   }));
   const locationsChevron = useAnimatedStyle(() => ({
     transform: [{ rotate: `${locationsProgress.value * 180}deg` }],
+  }));
+  useEffect(() => {
+    const config = { duration: reducedMotion ? 0 : 240, easing: Easing.inOut(Easing.cubic) };
+    shelvesAnimatedHeight.set(withTiming(shelvesOpen ? shelvesHeight : 0, config));
+    shelvesProgress.set(withTiming(shelvesOpen ? 1 : 0, config));
+  }, [shelvesOpen, shelvesHeight, reducedMotion, shelvesAnimatedHeight, shelvesProgress]);
+  const shelvesTransition = useAnimatedStyle(() => ({
+    height: shelvesAnimatedHeight.value,
+    opacity: shelvesProgress.value,
+  }));
+  const shelvesChevron = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${shelvesProgress.value * 180}deg` }],
   }));
 
   useEffect(() => {
@@ -273,10 +321,13 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
             <View style={styles.nameRow}>
               <Image source={STORE_META[product.store ?? 'mercadona'].icon} style={styles.storeLogo}
                 contentFit="contain" accessible accessibilityLabel={STORE_META[product.store ?? 'mercadona'].name} />
-              <Text accessibilityRole="header" style={styles.name}>{product.name}</Text>
+              <View style={styles.nameBlock}>
+                <Text accessibilityRole="header" style={styles.name}>{product.name}</Text>
+                {!!product.metaLabel && <Text testID="pantry-focus-package" style={styles.packageLabel}>{product.metaLabel}</Text>}
+              </View>
               <Pressable testID="pantry-focus-details" accessibilityRole="button"
                 accessibilityLabel={t('pantry.productDetails')} accessibilityHint={t('pantry.productDetailsHint')}
-                onPress={onShowDetails} hitSlop={4}
+                onPress={() => { Keyboard.dismiss(); onShowDetails(); }} hitSlop={4}
                 style={({ pressed }) => [styles.detailsButton, pressed && styles.pressed]}>
                 <Ionicons name="information-circle-outline" size={20} color={colors.accent} />
               </Pressable>
@@ -315,7 +366,10 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
                 </Pressable>
               </View>
             </View>
-            <View style={[styles.field, styles.compactField, expiryFocused && styles.activeField]}>
+            <View testID="pantry-focus-expiry-section"
+              style={[styles.field, styles.compactField, expiryFocused && styles.activeField, expiryStatus && styles.expiryWarningField]}>
+              {expiryStatus && <Animated.View testID="pantry-focus-expiry-pulse" pointerEvents="none"
+                style={[styles.expiryWarningBorder, expiryPulseStyle]} />}
               <View style={[styles.fieldHeading, styles.compactFieldHeading]}>
                 <View style={styles.compactFieldIcon}><Ionicons name="calendar-outline" size={18} color={colors.accent} /></View>
                 <Text style={[styles.label, styles.fieldText]}>{t('pantry.expiry')}</Text>
@@ -339,15 +393,70 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
                 </Pressable>}
               </View>
               <Text style={styles.expiryNote}>{t('pantry.expiryNotificationNote')}</Text>
+              {expiryStatus && <Text testID="pantry-focus-expiry-warning" accessibilityRole="alert"
+                accessibilityLiveRegion="polite" style={styles.expiryWarningText}>
+                {t(expiryStatus === 'expired' ? 'pantry.expired' : 'pantry.expiringSoon')}
+              </Text>}
               {expiryError && <Text accessibilityRole="alert" style={[styles.error, styles.expiryError]}>
                 {t('pantry.expiryInvalid')}
               </Text>}
+            </View>
+            <View testID="pantry-focus-shelves" style={[styles.field, styles.locationField, shelvesOpen && styles.activeField]}>
+              <Pressable testID="pantry-focus-shelf-options" accessibilityRole="button"
+                accessibilityLabel={`${t('pantry.shelves')}: ${currentShelfName}`}
+                accessibilityState={{ expanded: shelvesOpen }}
+                onPress={() => { Keyboard.dismiss(); setLocationsOpen(false); setShelvesOpen(open => !open); setShelfError(false); }}
+                style={({ pressed }) => [styles.locationControl, styles.shelfControl, pressed && styles.pressed]}>
+                <View style={styles.locationFieldIcon}><Ionicons name="albums-outline" size={18} color={colors.accent} /></View>
+                <Text style={styles.label}>{t('pantry.shelves')}</Text>
+                <Text numberOfLines={1} style={[styles.locationValue, !currentShelfLabel && styles.locationPlaceholder]}>{currentShelfName}</Text>
+                <Animated.View style={shelvesChevron}>
+                  <Ionicons name="chevron-down" size={18} color={colors.inkSoft} />
+                </Animated.View>
+              </Pressable>
+              <Animated.View style={[styles.locationOptionsClip, shelvesTransition]}
+                pointerEvents={shelvesOpen ? 'auto' : 'none'} accessibilityElementsHidden={!shelvesOpen}
+                importantForAccessibility={shelvesOpen ? 'auto' : 'no-hide-descendants'}>
+              <View style={styles.locationOptionsMeasure} onLayout={({ nativeEvent }) => setShelvesHeight(nativeEvent.layout.height)}>
+              <View style={styles.locationOptions}>
+                {otherShelves.length > 0 && <Text style={styles.expiryNote}>{t(section === 'pantry' ? 'pantry.title' : 'pantry.fridge')}</Text>}
+                {shelves.map(([index, label]) => <Pressable key={index} testID={`pantry-focus-shelf-${index}`}
+                  accessibilityRole="radio" accessibilityState={{ checked: selectedShelfGroup === Number(index) }}
+                  accessibilityLabel={shelfName(index, label)}
+                  style={({ pressed }) => [styles.shelfOption, selectedShelfGroup === Number(index) && styles.selectedLocationOption,
+                    pressed && styles.pressed]}
+                  onPress={() => {
+                    const moved = onChooseShelf(Number(index));
+                    setShelfError(!moved);
+                    if (moved) setShelvesOpen(false);
+                  }}>
+                  <Text style={styles.locationOptionLabel}>{shelfName(index, label)}</Text>
+                  {selectedShelfGroup === Number(index) && <Ionicons name="checkmark" size={16} color={colors.accent} />}
+                </Pressable>)}
+                {!shelves.length && <Text style={styles.expiryNote}>{t('pantry.noLabeledShelves')}</Text>}
+                {otherShelves.length > 0 && <Text style={styles.expiryNote}>{otherSectionName}</Text>}
+                {otherShelves.map(([index, label]) => <Pressable key={`other-${index}`} testID={`pantry-focus-other-shelf-${index}`}
+                  accessibilityRole="radio" accessibilityState={{ checked: false }}
+                  accessibilityLabel={`${otherSectionName}: ${shelfName(index, label)}`}
+                  style={({ pressed }) => [styles.shelfOption, pressed && styles.pressed]}
+                  onPress={() => {
+                    const moved = onChooseOtherShelf?.(Number(index)) ?? false;
+                    setShelfError(!moved);
+                    if (moved) setShelvesOpen(false);
+                  }}>
+                  <Text style={styles.locationOptionLabel}>{shelfName(index, label)}</Text>
+                </Pressable>)}
+                <Text style={styles.expiryNote}>{t('pantry.shelfGroupHint')}</Text>
+              </View>
+              {shelfError && <Text accessibilityRole="alert" style={[styles.error, styles.expiryError]}>{t('pantry.shelfGroupFull')}</Text>}
+              </View>
+              </Animated.View>
             </View>
             <View style={[styles.field, styles.locationField, locationsOpen && styles.activeField]}>
               <Pressable testID="pantry-focus-location-options" accessibilityRole="button"
                 accessibilityLabel={`${t('pantry.location')}: ${kitchenLocation || t('pantry.chooseKitchenLocation')}`}
                 accessibilityState={{ expanded: locationsOpen }}
-                onPress={() => { Keyboard.dismiss(); setLocationsOpen((open) => !open); }}
+                onPress={() => { Keyboard.dismiss(); setShelvesOpen(false); setLocationsOpen((open) => !open); }}
                 style={({ pressed }) => [styles.locationControl, pressed && styles.pressed]}>
                 <View style={styles.locationFieldIcon}><Ionicons name="location-outline" size={18} color={colors.accent} /></View>
                 <Text style={styles.label}>{t('pantry.location')}</Text>
@@ -362,7 +471,7 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
                 pointerEvents={locationsOpen ? 'auto' : 'none'} accessibilityElementsHidden={!locationsOpen}
                 importantForAccessibility={locationsOpen ? 'auto' : 'no-hide-descendants'}>
               <View style={styles.locationOptionsMeasure} onLayout={({ nativeEvent }) => setLocationsHeight(nativeEvent.layout.height)}>
-              <View style={styles.locationOptions}>
+              <View style={[styles.locationOptions, styles.editableLocationOptions]}>
                 {kitchenLocationOptions.map((option, index) => <View key={index}
                   style={[styles.locationOption, kitchenLocation === option && styles.selectedLocationOption]}>
                   <Pressable disabled={editingLocations} testID={`pantry-focus-location-option-${index}`}
@@ -413,13 +522,11 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
                   }} style={({ pressed }) => [styles.addLocationOption, pressed && styles.pressed]}>
                   <Ionicons name="add" size={18} color={colors.accent} />
                 </Pressable>}
-                <View style={styles.locationOptionsFooter}>
-                  <Pressable testID="pantry-focus-edit-locations" accessibilityRole="button"
-                    accessibilityLabel={t('pantry.editKitchenLocations')} onPress={() => setEditingLocations((editing) => !editing)}
-                    style={({ pressed }) => [styles.editLocationsButton, pressed && styles.pressed]}>
-                    <Ionicons name={editingLocations ? 'checkmark' : 'pencil-outline'} size={17} color={colors.accent} />
-                  </Pressable>
-                </View>
+                <Pressable testID="pantry-focus-edit-locations" accessibilityRole="button"
+                  accessibilityLabel={t('pantry.editKitchenLocations')} onPress={() => setEditingLocations((editing) => !editing)}
+                  style={({ pressed }) => [styles.editLocationsButton, pressed && styles.pressed]}>
+                  <Ionicons name={editingLocations ? 'checkmark' : 'pencil-outline'} size={17} color={colors.accent} />
+                </Pressable>
               </View>
               </View>
               </Animated.View>
@@ -435,6 +542,10 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
                 selectionColor={colors.accent} style={styles.notesInput} />
               </View>
             </View>
+            {(inCurrentList || added) && <View testID="pantry-focus-in-current-list" style={styles.cartMembership}>
+              <Ionicons name="cart-outline" size={18} color={colors.accent} />
+              <Text accessibilityLiveRegion="polite" style={styles.cartMembershipLabel}>{t('pantry.inCurrentList')}</Text>
+            </View>}
           </View>
           {saveError && <Pressable testID="pantry-focus-save-error" onPress={onRetrySave} accessibilityRole="button"
             accessibilityLabel={`${t('pantry.saveError')} ${t('common.retry')}`} style={styles.saveError}>
@@ -453,15 +564,17 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
               onPress={addToCart} style={({ pressed }) => [styles.action, styles.primaryAction,
                 added && styles.addedAction, pressed && styles.actionPressed,
                 pressed && !reducedMotion && styles.actionCompressed]}>
-              <LinearGradient pointerEvents="none" colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0)']}
-                style={styles.actionSheen} />
+              <GlassSurface testID="pantry-focus-cart-glass" pointerEvents="none" interactive={!adding && !added}
+                tintColor={colors.accentLight} fallbackColor={colors.accentLight}
+                style={styles.cartGlassContent}>
               <View style={[styles.actionIcon, styles.primaryActionIcon]}>
-                {adding ? <ActivityIndicator size="small" color="#FFFFFF" />
-                  : <Ionicons name={added ? 'checkmark' : 'cart-outline'} size={20} color="#FFFFFF" />}
+                {adding ? <ActivityIndicator size="small" color={colors.ink} />
+                  : <Ionicons name={added ? 'checkmark' : 'cart-outline'} size={20} color={colors.ink} />}
               </View>
               <Text accessibilityLiveRegion="polite" style={styles.primaryLabel}>
                 {t(adding ? 'pantry.addingToCart' : added ? 'pantry.addedToCart' : 'pantry.addToCart')}
               </Text>
+              </GlassSurface>
             </Pressable>
             <Pressable testID="pantry-focus-finished" accessibilityRole="button" accessibilityLabel={t('pantry.finished')}
               accessibilityHint={t(section === 'fridge' ? 'pantry.fridgeFinishHint' : 'pantry.finishHint')}
@@ -470,7 +583,7 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
                 adding && styles.actionDisabled, pressed && styles.actionPressed,
                 pressed && !reducedMotion && styles.actionCompressed]}>
               <View style={[styles.actionIcon, styles.secondaryActionIcon]}>
-                <Ionicons name="checkmark-done-outline" size={20} color={colors.inkSoft} />
+                <Ionicons name="trash-outline" size={20} color={colors.inkSoft} />
               </View>
               <Text style={styles.secondaryLabel}>{t('pantry.finished')}</Text>
             </Pressable>
@@ -495,6 +608,7 @@ export default function PantryProductFocus({ product, section = 'pantry', quanti
       </Pressable>
     </View>
     </KeyboardAvoidingView>
+    {children}
   </Modal>;
 }
 
@@ -512,7 +626,9 @@ const themedStyles = () => StyleSheet.create({
   heading: { gap: 10 },
   storeLogo: { width: 28, height: 28 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  name: { flex: 1, color: colors.ink, fontFamily: fonts.bold, fontSize: 19, lineHeight: 23, letterSpacing: -0.4 },
+  nameBlock: { flex: 1, minWidth: 0, gap: 4 },
+  name: { color: colors.ink, fontFamily: fonts.bold, fontSize: 19, lineHeight: 23, letterSpacing: -0.4 },
+  packageLabel: { color: colors.inkSoft, fontFamily: fonts.medium, fontSize: 13, lineHeight: 18 },
   detailsButton: { width: 38, height: 38, borderRadius: 14, backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   fields: { gap: 8 },
@@ -536,6 +652,9 @@ const themedStyles = () => StyleSheet.create({
     padding: 0, paddingHorizontal: 2, minHeight: 32, textAlign: 'right' },
   expiryNote: { color: colors.inkFaint, fontFamily: fonts.medium, fontSize: 10, lineHeight: 13, marginTop: 3 },
   expiryError: { marginTop: 3 },
+  expiryWarningField: { borderColor: colors.red },
+  expiryWarningBorder: { ...StyleSheet.absoluteFill, borderWidth: 2, borderColor: colors.red, borderRadius: 20 },
+  expiryWarningText: { color: colors.red, fontFamily: fonts.semibold, fontSize: 12, lineHeight: 16, marginTop: 4 },
   locationField: { padding: 8 },
   locationControl: { minHeight: 34, flexDirection: 'row', alignItems: 'center', gap: 8 },
   locationFieldIcon: { width: 30, height: 30, borderRadius: 10, backgroundColor: colors.accentLight,
@@ -546,8 +665,9 @@ const themedStyles = () => StyleSheet.create({
   locationOptionsMeasure: { position: 'absolute', top: 0, left: 0, right: 0, paddingTop: 6 },
   locationOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingTop: 6,
     borderTopWidth: 1, borderTopColor: colors.border },
-  locationOptionsFooter: { width: '100%', alignItems: 'flex-end' },
-  editLocationsButton: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  editableLocationOptions: { paddingRight: 38, minHeight: 42 },
+  editLocationsButton: { position: 'absolute', right: 0, bottom: 0, width: 32, height: 36,
+    borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   addLocationOption: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, borderColor: colors.accentMid,
     backgroundColor: colors.accentLight, alignItems: 'center', justifyContent: 'center' },
   locationOptionText: { flexShrink: 1, justifyContent: 'center' },
@@ -559,6 +679,8 @@ const themedStyles = () => StyleSheet.create({
   locationOption: { minHeight: 36, maxWidth: '100%', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 11,
     flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.border },
   selectedLocationOption: { backgroundColor: colors.accentLight, borderColor: colors.accentMid },
+  shelfOption: { width: '100%', minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: 10, borderRadius: 12 },
+  shelfControl: { minHeight: 44 },
   locationOptionLabel: { flexShrink: 1, color: colors.inkSoft, fontFamily: fonts.medium, fontSize: 13, lineHeight: 18 },
   selectedLocationOptionLabel: { color: colors.ink, fontFamily: fonts.semibold },
   stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, flexShrink: 0 },
@@ -586,13 +708,16 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 7, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 },
   actionIcon: { width: 26, height: 26, borderRadius: 13, flexShrink: 0,
     alignItems: 'center', justifyContent: 'center' },
-  primaryActionIcon: { backgroundColor: 'rgba(255,255,255,0.16)' },
+  primaryActionIcon: { backgroundColor: colors.surfaceAlt },
   secondaryActionIcon: { backgroundColor: colors.surfaceAlt },
-  actionSheen: { ...StyleSheet.absoluteFill, borderRadius: 19 },
-  primaryAction: { backgroundColor: colors.accent, borderColor: colors.accent,
+  cartGlassContent: { alignSelf: 'stretch', flex: 1, minHeight: 60, borderRadius: 19,
+    paddingHorizontal: 8, paddingVertical: 7, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  cartMembership: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  cartMembershipLabel: { flex: 1, color: colors.accent, fontFamily: fonts.medium, fontSize: 13, lineHeight: 19 },
+  primaryAction: { paddingHorizontal: 0, paddingVertical: 0, gap: 0, backgroundColor: 'transparent', borderColor: colors.accent,
     shadowColor: colors.accent, shadowOpacity: 0.22, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
-  addedAction: { backgroundColor: '#347A43', borderColor: '#347A43', shadowColor: '#347A43' },
-  primaryLabel: { width: '100%', color: '#FFFFFF', fontFamily: fonts.semibold, fontSize: 12, lineHeight: 15, textAlign: 'center' },
+  addedAction: { backgroundColor: 'transparent', borderColor: '#347A43', shadowColor: '#347A43' },
+  primaryLabel: { width: '100%', color: colors.ink, fontFamily: fonts.semibold, fontSize: 12, lineHeight: 15, textAlign: 'center' },
   secondaryAction: { backgroundColor: colors.white, borderColor: colors.border,
     shadowColor: '#24170E', shadowOpacity: 0.04, shadowRadius: 5, shadowOffset: { width: 0, height: 2 }, elevation: 1 },
   secondaryLabel: { width: '100%', color: colors.ink, fontFamily: fonts.semibold, fontSize: 12, lineHeight: 15, textAlign: 'center' },

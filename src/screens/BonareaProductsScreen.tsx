@@ -36,10 +36,14 @@ export default function BonareaProductsScreen() {
   }, [categoryId, lang]);
 
   const uiProducts = useMemo(() => products.map(bonareaToUI), [products]);
+  const glutenFreeProductIds = useMemo(
+    () => new Set(products.filter((product) => product.glutenFreeByTag).map((product) => product.id)),
+    [products],
+  );
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -52,6 +56,7 @@ export default function BonareaProductsScreen() {
 
       <StoreProductList
         products={uiProducts}
+        glutenFreeProductIds={glutenFreeProductIds}
         pageSize={50}
         loading={loading}
         error={error}

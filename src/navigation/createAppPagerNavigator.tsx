@@ -80,6 +80,19 @@ function AppPagerView({ state, navigation, descriptors }: Omit<BottomTabBarProps
     return () => cancelIdleCallback(task);
   }, [state.index, state.routes, state.preloadedRouteKeys]);
 
+  // Prepare the cupboard even when Home is selected and Pantry is not a neighbor.
+  // Give Home its first paint, then mount during idle time without moving focus.
+  const pantryRouteKey = state.routes.find((route) => route.name === 'Pantry')?.key;
+  useEffect(() => {
+    if (!pantryRouteKey) return;
+    let idle: ReturnType<typeof requestIdleCallback> | undefined;
+    const timer = setTimeout(() => {
+      idle = requestIdleCallback(() => setLoaded((previous) => previous.has(pantryRouteKey)
+        ? previous : new Set([...previous, pantryRouteKey])));
+    }, 350);
+    return () => { clearTimeout(timer); if (idle !== undefined) cancelIdleCallback(idle); };
+  }, [pantryRouteKey]);
+
   const onPressTab = (index: number) => {
     runOnUI(expandTabBar)();
     const route = state.routes[index];

@@ -1,0 +1,15 @@
+{
+  "id": "2003043934",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/558489_00_1.jpg",
+  "sourceSha256": "7bd428cf88922559f9915a1612b8faa54c09031f8fc62dce991e5016332b98e0",
+  "outputSha256": "22c2498afc18c55616b0ad7d10683c9fa7249eb41fba8b55f9f42db4a096e3f9",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2003043934.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-ac6d6655-bc4a-4184-81bc-e87c88afa8b8.png",
+  "visualReview": "Complete BlevitDigest green tin with chamomile/fennel label; alpha background, minor edge artifacts.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 1404842,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:56:45.881Z"
+}

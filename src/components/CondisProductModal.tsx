@@ -107,7 +107,7 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -137,6 +137,7 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
         {/* Características extraídas de la ficha pública mediante el sync. */}
         <ProductInfoSections
           items={[
+            { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: product.glutenFreeByTag ? t('product.glutenFreeDescription') : null },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'conservation', icon: 'snow-outline', title: t('product.sections.storage'), text: product.conservation },

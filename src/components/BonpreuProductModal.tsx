@@ -110,7 +110,7 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16, b
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -159,6 +159,7 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16, b
           items={[
             { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'product_info', icon: 'reader-outline', title: t('product.sections.productInfo'), text: product.productInfo },
+            { key: 'glutenFree', icon: 'barley-off', title: t('catalog.glutenFree'), text: product.glutenFreeByTag ? t('product.glutenFreeDescription') : null },
             { key: 'brand', icon: 'ribbon-outline', title: t('product.sections.brand'), text: product.brand },
             { key: 'supplier_name', icon: 'business-outline', title: t('product.sections.supplierName'), text: product.supplierName },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },

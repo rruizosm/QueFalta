@@ -274,6 +274,8 @@ function normalize(p) {
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.units_in_stock == null ? true : Number(p.units_in_stock) > 0,
     published: true,
+    gluten_free_label: Array.isArray(p.info_tags) && p.info_tags.some((tag) =>
+      typeof tag?.message === 'string' && tag.message.trim() === 'Sin gluten'),
     ...offer,
     raw: { ...p, quefalta_offers: { version: 1, observed_at: runStart, promotions } },
     synced_at: runStart,

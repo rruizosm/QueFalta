@@ -1,0 +1,707 @@
+{
+  "status": "completed",
+  "result": {
+    "batches": 61,
+    "completed": 5967,
+    "stale": 118,
+    "failed": 0,
+    "deferred": 0,
+    "dispatchedByWorker": 0
+  },
+  "postflight": {
+    "checked_at": "2026-10-20 08:34:33.552911+00",
+    "pipeline": {
+      "mode": "paused",
+      "reason": "Esperando verificacion del lote autorizado",
+      "updatedAt": "2026-10-20T08:34:14.213803+00:00",
+      "maxAutoJobs": 1000,
+      "maxAutoRatio": 0.1,
+      "canaryMaxRequests": 1,
+      "canaryRemainingRequests": 0
+    },
+    "maintenance": {
+      "hnsw": {
+        "live": true,
+        "ready": true,
+        "valid": true,
+        "indexBytes": 599195648,
+        "indexScans": 21954,
+        "lastIndexScan": "2026-10-20T05:57:20.862749+00:00"
+      },
+      "table": {
+        "deadTuples": 4562,
+        "liveTuples": 237751,
+        "tableBytes": 183779328,
+        "totalBytes": 1537622016,
+        "deadTupleAlert": false,
+        "deadTupleRatio": 0.018827,
+        "lastAutovacuum": "2026-10-20T08:28:28.107804+00:00",
+        "autovacuumCount": 15,
+        "lastAutoanalyze": "2026-10-20T08:29:29.359994+00:00",
+        "autoanalyzeCount": 35,
+        "deadTuplePercent": 1.883,
+        "modifiedSinceAnalyze": 2465,
+        "deadTupleAlertThreshold": 0.05
+      },
+      "autovacuum": {
+        "vacuumThreshold": 50,
+        "analyzeThreshold": 50,
+        "vacuumScaleFactor": 0.05,
+        "analyzeScaleFactor": 0.02,
+        "estimatedVacuumTriggerTuples": 11938,
+        "estimatedAnalyzeTriggerChanges": 4806
+      },
+      "observedAt": "2026-10-20T08:34:33.552911+00:00",
+      "maintenance": {
+        "vacuumInProgress": 0,
+        "indexMaintenanceInProgress": 0
+      },
+      "pgvectorVersion": "0.8.0",
+      "requiresAttention": false
+    },
+    "queue_messages": 0,
+    "failures": 0,
+    "pending_http": 0,
+    "cron": [
+      {
+        "jobid": 17,
+        "active": false
+      }
+    ],
+    "reviewed_runs": [
+      {
+        "store": "aldi",
+        "status": "settled",
+        "anomaly_override": true,
+        "expected_embedding_jobs": 719
+      },
+      {
+        "store": "carrefour",
+        "status": "settled",
+        "anomaly_override": true,
+        "expected_embedding_jobs": 2101
+      }
+    ],
+    "coverage": [
+      {
+        "store": "ahorramas",
+        "published": 7491,
+        "missing_embedding": 0,
+        "current_embeddings": 7491
+      },
+      {
+        "store": "alcampo",
+        "published": 15724,
+        "missing_embedding": 0,
+        "current_embeddings": 15724
+      },
+      {
+        "store": "aldi",
+        "published": 2591,
+        "missing_embedding": 0,
+        "current_embeddings": 2591
+      },
+      {
+        "store": "ametller",
+        "published": 3161,
+        "missing_embedding": 0,
+        "current_embeddings": 3161
+      },
+      {
+        "store": "bm",
+        "published": 10215,
+        "missing_embedding": 0,
+        "current_embeddings": 10215
+      },
+      {
+        "store": "bonarea",
+        "published": 3160,
+        "missing_embedding": 0,
+        "current_embeddings": 3160
+      },
+      {
+        "store": "caprabo",
+        "published": 11976,
+        "missing_embedding": 0,
+        "current_embeddings": 11976
+      },
+      {
+        "store": "carrefour",
+        "published": 34055,
+        "missing_embedding": 0,
+        "current_embeddings": 34055
+      },
+      {
+        "store": "condis",
+        "published": 7590,
+        "missing_embedding": 0,
+        "current_embeddings": 7590
+      },
+      {
+        "store": "consum",
+        "published": 11048,
+        "missing_embedding": 0,
+        "current_embeddings": 11048
+      },
+      {
+        "store": "dia",
+        "published": 7504,
+        "missing_embedding": 0,
+        "current_embeddings": 7504
+      },
+      {
+        "store": "eljamon",
+        "published": 6856,
+        "missing_embedding": 0,
+        "current_embeddings": 6856
+      },
+      {
+        "store": "eroski",
+        "published": 21499,
+        "missing_embedding": 0,
+        "current_embeddings": 21499
+      },
+      {
+        "store": "esclat",
+        "published": 20786,
+        "missing_embedding": 0,
+        "current_embeddings": 20786
+      },
+      {
+        "store": "froiz",
+        "published": 7019,
+        "missing_embedding": 0,
+        "current_embeddings": 7019
+      },
+      {
+        "store": "gadis",
+        "published": 11022,
+        "missing_embedding": 0,
+        "current_embeddings": 11022
+      },
+      {
+        "store": "hiperdino",
+        "published": 14787,
+        "missing_embedding": 0,
+        "current_embeddings": 14787
+      },
+      {
+        "store": "lidl",
+        "published": 3324,
+        "missing_embedding": 0,
+        "current_embeddings": 3324
+      },
+      {
+        "store": "mercadona",
+        "published": 6306,
+        "missing_embedding": 0,
+        "current_embeddings": 6306
+      },
+      {
+        "store": "plusfresc",
+        "published": 7853,
+        "missing_embedding": 0,
+        "current_embeddings": 7853
+      },
+      {
+        "store": "sorli",
+        "published": 9456,
+        "missing_embedding": 0,
+        "current_embeddings": 9456
+      }
+    ]
+  },
+  "authorizedBy": "Owner requested processing pending embeddings on 2026-10-20",
+  "aldiRun": "9e62ae50-3548-41af-9321-82560b09babd",
+  "carrefourRun": "5ef912c2-7c62-4212-b77d-ed43135725ff",
+  "receipts": [
+    {
+      "id": 7768,
+      "completed": 85,
+      "failed": 0,
+      "stale": 15,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7769,
+      "completed": 97,
+      "failed": 0,
+      "stale": 3,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7770,
+      "completed": 94,
+      "failed": 0,
+      "stale": 6,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7771,
+      "completed": 92,
+      "failed": 0,
+      "stale": 8,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7772,
+      "completed": 87,
+      "failed": 0,
+      "stale": 13,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7773,
+      "completed": 90,
+      "failed": 0,
+      "stale": 10,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7774,
+      "completed": 78,
+      "failed": 0,
+      "stale": 22,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7775,
+      "completed": 90,
+      "failed": 0,
+      "stale": 10,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7776,
+      "completed": 98,
+      "failed": 0,
+      "stale": 2,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7777,
+      "completed": 98,
+      "failed": 0,
+      "stale": 2,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7779,
+      "completed": 82,
+      "failed": 0,
+      "stale": 18,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7780,
+      "completed": 98,
+      "failed": 0,
+      "stale": 2,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7781,
+      "completed": 98,
+      "failed": 0,
+      "stale": 2,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7782,
+      "completed": 99,
+      "failed": 0,
+      "stale": 1,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7783,
+      "completed": 99,
+      "failed": 0,
+      "stale": 1,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7784,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7785,
+      "completed": 98,
+      "failed": 0,
+      "stale": 2,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7786,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7787,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7788,
+      "completed": 99,
+      "failed": 0,
+      "stale": 1,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7789,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7790,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7791,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7792,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7793,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7794,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7795,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7796,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7797,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7798,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7799,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7800,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7801,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7802,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7803,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7804,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7805,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7806,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7807,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7809,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7810,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7811,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7812,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7813,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7814,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7815,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7816,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7817,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7818,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7819,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7820,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7821,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7822,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7823,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7824,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7825,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7826,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7827,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7828,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7829,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "id": 7830,
+      "completed": 85,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    }
+  ]
+}

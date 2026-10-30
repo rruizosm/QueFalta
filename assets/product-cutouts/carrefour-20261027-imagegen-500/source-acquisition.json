@@ -1,0 +1,3894 @@
+[
+  {
+    "lot": "lot-01",
+    "id": "100401194",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000750151",
+    "status": "downloaded",
+    "bytes": 17723
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000770074",
+    "status": "downloaded",
+    "bytes": 4467
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950638",
+    "status": "downloaded",
+    "bytes": 7399
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950676",
+    "status": "downloaded",
+    "bytes": 12845
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001540002",
+    "status": "downloaded",
+    "bytes": 15096
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001780220",
+    "status": "downloaded",
+    "bytes": 12312
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002468020",
+    "status": "downloaded",
+    "bytes": 18471
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618485",
+    "status": "downloaded",
+    "bytes": 8547
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618519",
+    "status": "downloaded",
+    "bytes": 19299
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618618",
+    "status": "downloaded",
+    "bytes": 35604
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618659",
+    "status": "downloaded",
+    "bytes": 19357
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870077",
+    "status": "downloaded",
+    "bytes": 13995
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870081",
+    "status": "downloaded",
+    "bytes": 24380
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870095",
+    "status": "downloaded",
+    "bytes": 32889
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870133",
+    "status": "downloaded",
+    "bytes": 17049
+  },
+  {
+    "lot": "lot-01",
+    "id": "2013790033",
+    "status": "downloaded",
+    "bytes": 5589
+  },
+  {
+    "lot": "lot-01",
+    "id": "2027873291",
+    "status": "downloaded",
+    "bytes": 24225
+  },
+  {
+    "lot": "lot-01",
+    "id": "2047790336",
+    "status": "downloaded",
+    "bytes": 3921
+  },
+  {
+    "lot": "lot-01",
+    "id": "2053456642",
+    "status": "downloaded",
+    "bytes": 10026
+  },
+  {
+    "lot": "lot-01",
+    "id": "2058992028",
+    "status": "downloaded",
+    "bytes": 21610
+  },
+  {
+    "lot": "lot-01",
+    "id": "368501869",
+    "status": "downloaded",
+    "bytes": 11843
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660257",
+    "status": "downloaded",
+    "bytes": 8185
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660321",
+    "status": "downloaded",
+    "bytes": 13693
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660327",
+    "status": "downloaded",
+    "bytes": 21710
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660404",
+    "status": "downloaded",
+    "bytes": 6962
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660418",
+    "status": "downloaded",
+    "bytes": 7462
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660513",
+    "status": "downloaded",
+    "bytes": 8087
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660777",
+    "status": "downloaded",
+    "bytes": 20327
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660797",
+    "status": "downloaded",
+    "bytes": 14082
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660910",
+    "status": "downloaded",
+    "bytes": 14821
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660953",
+    "status": "downloaded",
+    "bytes": 19853
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661007",
+    "status": "downloaded",
+    "bytes": 7294
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661017",
+    "status": "downloaded",
+    "bytes": 20536
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661134",
+    "status": "downloaded",
+    "bytes": 8918
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661189",
+    "status": "downloaded",
+    "bytes": 26901
+  },
+  {
+    "lot": "lot-01",
+    "id": "100401608",
+    "status": "downloaded",
+    "bytes": 24471
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001810047",
+    "status": "downloaded",
+    "bytes": 8481
+  },
+  {
+    "lot": "lot-01",
+    "id": "2005530063",
+    "status": "downloaded",
+    "bytes": 8831
+  },
+  {
+    "lot": "lot-01",
+    "id": "2032893617",
+    "status": "downloaded",
+    "bytes": 7311
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950677",
+    "status": "downloaded",
+    "bytes": 14939
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001570013",
+    "status": "downloaded",
+    "bytes": 9537
+  },
+  {
+    "lot": "lot-01",
+    "id": "2064820521",
+    "status": "downloaded",
+    "bytes": 9469
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002468023",
+    "status": "downloaded",
+    "bytes": 18175
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618490",
+    "status": "downloaded",
+    "bytes": 8591
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618521",
+    "status": "downloaded",
+    "bytes": 24795
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618619",
+    "status": "downloaded",
+    "bytes": 24036
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870041",
+    "status": "downloaded",
+    "bytes": 27470
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916217",
+    "status": "downloaded",
+    "bytes": 12350
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870096",
+    "status": "downloaded",
+    "bytes": 25729
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870142",
+    "status": "downloaded",
+    "bytes": 13740
+  },
+  {
+    "lot": "lot-01",
+    "id": "2073270451",
+    "status": "downloaded",
+    "bytes": 16834
+  },
+  {
+    "lot": "lot-01",
+    "id": "2034850294",
+    "status": "downloaded",
+    "bytes": 7074
+  },
+  {
+    "lot": "lot-01",
+    "id": "2047790343",
+    "status": "downloaded",
+    "bytes": 6671
+  },
+  {
+    "lot": "lot-01",
+    "id": "2053456798",
+    "status": "downloaded",
+    "bytes": 12752
+  },
+  {
+    "lot": "lot-01",
+    "id": "2067109580",
+    "status": "downloaded",
+    "bytes": 11345
+  },
+  {
+    "lot": "lot-01",
+    "id": "368501872",
+    "status": "downloaded",
+    "bytes": 9477
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660263",
+    "status": "downloaded",
+    "bytes": 9444
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660448",
+    "status": "downloaded",
+    "bytes": 10120
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660420",
+    "status": "downloaded",
+    "bytes": 6879
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660783",
+    "status": "downloaded",
+    "bytes": 13566
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660799",
+    "status": "downloaded",
+    "bytes": 15276
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661015",
+    "status": "downloaded",
+    "bytes": 18569
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661009",
+    "status": "downloaded",
+    "bytes": 7745
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661050",
+    "status": "downloaded",
+    "bytes": 34587
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661136",
+    "status": "downloaded",
+    "bytes": 17568
+  },
+  {
+    "lot": "lot-01",
+    "id": "100401696",
+    "status": "downloaded",
+    "bytes": 7107
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002011666",
+    "status": "downloaded",
+    "bytes": 14068
+  },
+  {
+    "lot": "lot-01",
+    "id": "2005530064",
+    "status": "downloaded",
+    "bytes": 8008
+  },
+  {
+    "lot": "lot-01",
+    "id": "2032893618",
+    "status": "downloaded",
+    "bytes": 7861
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950678",
+    "status": "downloaded",
+    "bytes": 12263
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001570025",
+    "status": "downloaded",
+    "bytes": 12855
+  },
+  {
+    "lot": "lot-01",
+    "id": "367765282",
+    "status": "downloaded",
+    "bytes": 28984
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618598",
+    "status": "downloaded",
+    "bytes": 26626
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618495",
+    "status": "downloaded",
+    "bytes": 14844
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618555",
+    "status": "downloaded",
+    "bytes": 13461
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618620",
+    "status": "downloaded",
+    "bytes": 19720
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916053",
+    "status": "downloaded",
+    "bytes": 12707
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916266",
+    "status": "downloaded",
+    "bytes": 12358
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870184",
+    "status": "downloaded",
+    "bytes": 25513
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916226",
+    "status": "downloaded",
+    "bytes": 15719
+  },
+  {
+    "lot": "lot-01",
+    "id": "2036578606",
+    "status": "downloaded",
+    "bytes": 2196
+  },
+  {
+    "lot": "lot-01",
+    "id": "2047790344",
+    "status": "downloaded",
+    "bytes": 8444
+  },
+  {
+    "lot": "lot-01",
+    "id": "2053456800",
+    "status": "downloaded",
+    "bytes": 21386
+  },
+  {
+    "lot": "lot-01",
+    "id": "2067109581",
+    "status": "downloaded",
+    "bytes": 6545
+  },
+  {
+    "lot": "lot-01",
+    "id": "368501910",
+    "status": "downloaded",
+    "bytes": 12892
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660265",
+    "status": "downloaded",
+    "bytes": 9995
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661027",
+    "status": "downloaded",
+    "bytes": 12979
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660422",
+    "status": "downloaded",
+    "bytes": 6318
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660787",
+    "status": "downloaded",
+    "bytes": 6985
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660801",
+    "status": "downloaded",
+    "bytes": 15196
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661158",
+    "status": "downloaded",
+    "bytes": 7326
+  },
+  {
+    "lot": "lot-01",
+    "id": "100401704",
+    "status": "downloaded",
+    "bytes": 6292
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002030440",
+    "status": "downloaded",
+    "bytes": 18124
+  },
+  {
+    "lot": "lot-01",
+    "id": "2005530065",
+    "status": "downloaded",
+    "bytes": 9008
+  },
+  {
+    "lot": "lot-01",
+    "id": "2032893620",
+    "status": "downloaded",
+    "bytes": 7178
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950679",
+    "status": "downloaded",
+    "bytes": 17336
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001570029",
+    "status": "downloaded",
+    "bytes": 11418
+  },
+  {
+    "lot": "lot-01",
+    "id": "367765464",
+    "status": "downloaded",
+    "bytes": 17932
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618849",
+    "status": "downloaded",
+    "bytes": 14736
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618520",
+    "status": "downloaded",
+    "bytes": 7455
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870080",
+    "status": "downloaded",
+    "bytes": 16776
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618621",
+    "status": "downloaded",
+    "bytes": 34874
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916118",
+    "status": "downloaded",
+    "bytes": 9797
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916295",
+    "status": "downloaded",
+    "bytes": 7470
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870185",
+    "status": "downloaded",
+    "bytes": 32490
+  },
+  {
+    "lot": "lot-01",
+    "id": "2036578815",
+    "status": "downloaded",
+    "bytes": 5137
+  },
+  {
+    "lot": "lot-01",
+    "id": "2047790346",
+    "status": "downloaded",
+    "bytes": 4402
+  },
+  {
+    "lot": "lot-01",
+    "id": "2067109582",
+    "status": "downloaded",
+    "bytes": 6526
+  },
+  {
+    "lot": "lot-01",
+    "id": "368501913",
+    "status": "downloaded",
+    "bytes": 12318
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660275",
+    "status": "downloaded",
+    "bytes": 8677
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661029",
+    "status": "downloaded",
+    "bytes": 9183
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660424",
+    "status": "downloaded",
+    "bytes": 9365
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660789",
+    "status": "downloaded",
+    "bytes": 15323
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660803",
+    "status": "downloaded",
+    "bytes": 13849
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661160",
+    "status": "downloaded",
+    "bytes": 13647
+  },
+  {
+    "lot": "lot-01",
+    "id": "100401706",
+    "status": "downloaded",
+    "bytes": 3209
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002030441",
+    "status": "downloaded",
+    "bytes": 15493
+  },
+  {
+    "lot": "lot-01",
+    "id": "2005530066",
+    "status": "downloaded",
+    "bytes": 8681
+  },
+  {
+    "lot": "lot-01",
+    "id": "2032893661",
+    "status": "downloaded",
+    "bytes": 5843
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950779",
+    "status": "downloaded",
+    "bytes": 10539
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001970000",
+    "status": "downloaded",
+    "bytes": 12079
+  },
+  {
+    "lot": "lot-01",
+    "id": "367765740",
+    "status": "downloaded",
+    "bytes": 11187
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618850",
+    "status": "downloaded",
+    "bytes": 16292
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618617",
+    "status": "downloaded",
+    "bytes": 17540
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870220",
+    "status": "downloaded",
+    "bytes": 11420
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618675",
+    "status": "downloaded",
+    "bytes": 17411
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916191",
+    "status": "downloaded",
+    "bytes": 11529
+  },
+  {
+    "lot": "lot-01",
+    "id": "2047290071",
+    "status": "downloaded",
+    "bytes": 16551
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870187",
+    "status": "downloaded",
+    "bytes": 20373
+  },
+  {
+    "lot": "lot-01",
+    "id": "2073270480",
+    "status": "downloaded",
+    "bytes": 10306
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661386",
+    "status": "downloaded",
+    "bytes": 6142
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414055",
+    "status": "downloaded",
+    "bytes": 22599
+  },
+  {
+    "lot": "lot-01",
+    "id": "368502055",
+    "status": "downloaded",
+    "bytes": 11421
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660279",
+    "status": "downloaded",
+    "bytes": 7804
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660426",
+    "status": "downloaded",
+    "bytes": 12119
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660820",
+    "status": "downloaded",
+    "bytes": 13504
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661162",
+    "status": "downloaded",
+    "bytes": 25608
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950640",
+    "status": "downloaded",
+    "bytes": 7789
+  },
+  {
+    "lot": "lot-01",
+    "id": "2003317257",
+    "status": "downloaded",
+    "bytes": 11224
+  },
+  {
+    "lot": "lot-01",
+    "id": "2005530067",
+    "status": "downloaded",
+    "bytes": 8933
+  },
+  {
+    "lot": "lot-01",
+    "id": "2032893662",
+    "status": "downloaded",
+    "bytes": 10070
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950781",
+    "status": "downloaded",
+    "bytes": 23641
+  },
+  {
+    "lot": "lot-01",
+    "id": "2001970001",
+    "status": "downloaded",
+    "bytes": 7617
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414242",
+    "status": "downloaded",
+    "bytes": 23966
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618851",
+    "status": "downloaded",
+    "bytes": 15761
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870039",
+    "status": "downloaded",
+    "bytes": 7033
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002916086",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002618676",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-01",
+    "id": "2003352308",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870188",
+    "status": "downloaded",
+    "bytes": 18060
+  },
+  {
+    "lot": "lot-01",
+    "id": "2073270482",
+    "status": "downloaded",
+    "bytes": 7037
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661390",
+    "status": "downloaded",
+    "bytes": 7268
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414221",
+    "status": "downloaded",
+    "bytes": 34146
+  },
+  {
+    "lot": "lot-01",
+    "id": "368502447",
+    "status": "downloaded",
+    "bytes": 12619
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660293",
+    "status": "downloaded",
+    "bytes": 6445
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660428",
+    "status": "downloaded",
+    "bytes": 4734
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660822",
+    "status": "downloaded",
+    "bytes": 10066
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661170",
+    "status": "downloaded",
+    "bytes": 8619
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950692",
+    "status": "downloaded",
+    "bytes": 4552
+  },
+  {
+    "lot": "lot-01",
+    "id": "2005187052",
+    "status": "downloaded",
+    "bytes": 31728
+  },
+  {
+    "lot": "lot-01",
+    "id": "2005530068",
+    "status": "downloaded",
+    "bytes": 9079
+  },
+  {
+    "lot": "lot-01",
+    "id": "2032893663",
+    "status": "downloaded",
+    "bytes": 9175
+  },
+  {
+    "lot": "lot-01",
+    "id": "2000950782",
+    "status": "downloaded",
+    "bytes": 13702
+  },
+  {
+    "lot": "lot-01",
+    "id": "2031686080",
+    "status": "downloaded",
+    "bytes": 9093
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414245",
+    "status": "downloaded",
+    "bytes": 15228
+  },
+  {
+    "lot": "lot-01",
+    "id": "2002870166",
+    "status": "downloaded",
+    "bytes": 22319
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660572",
+    "status": "downloaded",
+    "bytes": 7027
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661054",
+    "status": "downloaded",
+    "bytes": 7087
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661344",
+    "status": "downloaded",
+    "bytes": 27553
+  },
+  {
+    "lot": "lot-01",
+    "id": "2012800287",
+    "status": "downloaded",
+    "bytes": 8378
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414298",
+    "status": "downloaded",
+    "bytes": 28085
+  },
+  {
+    "lot": "lot-01",
+    "id": "2008102356",
+    "status": "downloaded",
+    "bytes": 15603
+  },
+  {
+    "lot": "lot-01",
+    "id": "2065684779",
+    "status": "downloaded",
+    "bytes": 8406
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414191",
+    "status": "downloaded",
+    "bytes": 20500
+  },
+  {
+    "lot": "lot-01",
+    "id": "2003043939",
+    "status": "downloaded",
+    "bytes": 11911
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660574",
+    "status": "downloaded",
+    "bytes": 8853
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661058",
+    "status": "downloaded",
+    "bytes": 6031
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661348",
+    "status": "downloaded",
+    "bytes": 28366
+  },
+  {
+    "lot": "lot-01",
+    "id": "2012800303",
+    "status": "downloaded",
+    "bytes": 5334
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414428",
+    "status": "downloaded",
+    "bytes": 21536
+  },
+  {
+    "lot": "lot-01",
+    "id": "2008102358",
+    "status": "downloaded",
+    "bytes": 12293
+  },
+  {
+    "lot": "lot-01",
+    "id": "2065684780",
+    "status": "downloaded",
+    "bytes": 9018
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414194",
+    "status": "downloaded",
+    "bytes": 11687
+  },
+  {
+    "lot": "lot-01",
+    "id": "2003043940",
+    "status": "downloaded",
+    "bytes": 15088
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660576",
+    "status": "downloaded",
+    "bytes": 15535
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661060",
+    "status": "downloaded",
+    "bytes": 6841
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661354",
+    "status": "downloaded",
+    "bytes": 11428
+  },
+  {
+    "lot": "lot-01",
+    "id": "2012800306",
+    "status": "downloaded",
+    "bytes": 6908
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414706",
+    "status": "downloaded",
+    "bytes": 32047
+  },
+  {
+    "lot": "lot-01",
+    "id": "2008102360",
+    "status": "downloaded",
+    "bytes": 16836
+  },
+  {
+    "lot": "lot-01",
+    "id": "2065684781",
+    "status": "downloaded",
+    "bytes": 8202
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414260",
+    "status": "downloaded",
+    "bytes": 9370
+  },
+  {
+    "lot": "lot-01",
+    "id": "2003043955",
+    "status": "downloaded",
+    "bytes": 15696
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660578",
+    "status": "downloaded",
+    "bytes": 8353
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661062",
+    "status": "downloaded",
+    "bytes": 5758
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661358",
+    "status": "downloaded",
+    "bytes": 11849
+  },
+  {
+    "lot": "lot-01",
+    "id": "2012800310",
+    "status": "downloaded",
+    "bytes": 6686
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414790",
+    "status": "downloaded",
+    "bytes": 16702
+  },
+  {
+    "lot": "lot-01",
+    "id": "2008102405",
+    "status": "downloaded",
+    "bytes": 11553
+  },
+  {
+    "lot": "lot-01",
+    "id": "2065684782",
+    "status": "downloaded",
+    "bytes": 9096
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414304",
+    "status": "downloaded",
+    "bytes": 27247
+  },
+  {
+    "lot": "lot-01",
+    "id": "2003043956",
+    "status": "downloaded",
+    "bytes": 14079
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660580",
+    "status": "downloaded",
+    "bytes": 14313
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661064",
+    "status": "downloaded",
+    "bytes": 6810
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661360",
+    "status": "downloaded",
+    "bytes": 17934
+  },
+  {
+    "lot": "lot-01",
+    "id": "2012800315",
+    "status": "downloaded",
+    "bytes": 6607
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414878",
+    "status": "downloaded",
+    "bytes": 23340
+  },
+  {
+    "lot": "lot-01",
+    "id": "2008102472",
+    "status": "downloaded",
+    "bytes": 10122
+  },
+  {
+    "lot": "lot-01",
+    "id": "2076510082",
+    "status": "downloaded",
+    "bytes": 5699
+  },
+  {
+    "lot": "lot-01",
+    "id": "368414307",
+    "status": "downloaded",
+    "bytes": 26554
+  },
+  {
+    "lot": "lot-01",
+    "id": "2003043959",
+    "status": "downloaded",
+    "bytes": 14923
+  },
+  {
+    "lot": "lot-01",
+    "id": "520660582",
+    "status": "downloaded",
+    "bytes": 16094
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661066",
+    "status": "downloaded",
+    "bytes": 7729
+  },
+  {
+    "lot": "lot-01",
+    "id": "520661370",
+    "status": "downloaded",
+    "bytes": 16768
+  },
+  {
+    "lot": "lot-01",
+    "id": "2012800322",
+    "status": "downloaded",
+    "bytes": 4758
+  },
+  {
+    "lot": "lot-01",
+    "id": "368501542",
+    "status": "downloaded",
+    "bytes": 21739
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870052",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916088",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870148",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870216",
+    "status": "downloaded",
+    "bytes": 20200
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661394",
+    "status": "downloaded",
+    "bytes": 6370
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414224",
+    "status": "downloaded",
+    "bytes": 11573
+  },
+  {
+    "lot": "lot-02",
+    "id": "368734281",
+    "status": "downloaded",
+    "bytes": 8183
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660295",
+    "status": "downloaded",
+    "bytes": 8183
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660436",
+    "status": "downloaded",
+    "bytes": 11744
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660830",
+    "status": "downloaded",
+    "bytes": 25835
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661173",
+    "status": "downloaded",
+    "bytes": 7265
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001143302",
+    "status": "downloaded",
+    "bytes": 7616
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005187053",
+    "status": "downloaded",
+    "bytes": 33009
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530069",
+    "status": "downloaded",
+    "bytes": 8856
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893664",
+    "status": "downloaded",
+    "bytes": 9262
+  },
+  {
+    "lot": "lot-02",
+    "id": "2000950784",
+    "status": "downloaded",
+    "bytes": 18073
+  },
+  {
+    "lot": "lot-02",
+    "id": "2044090192",
+    "status": "downloaded",
+    "bytes": 10615
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414251",
+    "status": "downloaded",
+    "bytes": 22346
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870186",
+    "status": "downloaded",
+    "bytes": 20980
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870084",
+    "status": "downloaded",
+    "bytes": 9802
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916103",
+    "status": "downloaded",
+    "bytes": 6006
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870149",
+    "status": "downloaded",
+    "bytes": 14356
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916194",
+    "status": "downloaded",
+    "bytes": 7478
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661396",
+    "status": "downloaded",
+    "bytes": 4568
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414230",
+    "status": "downloaded",
+    "bytes": 14508
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660297",
+    "status": "downloaded",
+    "bytes": 8199
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660438",
+    "status": "downloaded",
+    "bytes": 13219
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660832",
+    "status": "downloaded",
+    "bytes": 27952
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661175",
+    "status": "downloaded",
+    "bytes": 7857
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001143303",
+    "status": "downloaded",
+    "bytes": 7220
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007122962",
+    "status": "downloaded",
+    "bytes": 22685
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530070",
+    "status": "downloaded",
+    "bytes": 8243
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893665",
+    "status": "downloaded",
+    "bytes": 9142
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002011662",
+    "status": "downloaded",
+    "bytes": 18695
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414254",
+    "status": "downloaded",
+    "bytes": 14754
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870194",
+    "status": "downloaded",
+    "bytes": 24762
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870086",
+    "status": "downloaded",
+    "bytes": 4747
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916200",
+    "status": "downloaded",
+    "bytes": 4850
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916284",
+    "status": "downloaded",
+    "bytes": 21026
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916195",
+    "status": "downloaded",
+    "bytes": 5950
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661398",
+    "status": "downloaded",
+    "bytes": 5759
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414233",
+    "status": "downloaded",
+    "bytes": 31030
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660299",
+    "status": "downloaded",
+    "bytes": 8043
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660440",
+    "status": "downloaded",
+    "bytes": 10069
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660834",
+    "status": "downloaded",
+    "bytes": 26341
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661185",
+    "status": "downloaded",
+    "bytes": 7563
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001143924",
+    "status": "downloaded",
+    "bytes": 7036
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007122988",
+    "status": "downloaded",
+    "bytes": 13575
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530071",
+    "status": "downloaded",
+    "bytes": 8687
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893666",
+    "status": "downloaded",
+    "bytes": 10190
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002011664",
+    "status": "downloaded",
+    "bytes": 18042
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414301",
+    "status": "downloaded",
+    "bytes": 20522
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043760",
+    "status": "downloaded",
+    "bytes": 26265
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870089",
+    "status": "downloaded",
+    "bytes": 7411
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916213",
+    "status": "downloaded",
+    "bytes": 5383
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007970407",
+    "status": "downloaded",
+    "bytes": 18128
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916273",
+    "status": "downloaded",
+    "bytes": 9157
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661408",
+    "status": "downloaded",
+    "bytes": 18866
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414236",
+    "status": "downloaded",
+    "bytes": 15372
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660309",
+    "status": "downloaded",
+    "bytes": 11626
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660444",
+    "status": "downloaded",
+    "bytes": 15602
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660878",
+    "status": "downloaded",
+    "bytes": 10191
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661187",
+    "status": "downloaded",
+    "bytes": 10707
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001540016",
+    "status": "downloaded",
+    "bytes": 7514
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007122989",
+    "status": "downloaded",
+    "bytes": 13545
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530072",
+    "status": "downloaded",
+    "bytes": 8536
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893667",
+    "status": "downloaded",
+    "bytes": 10130
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002030442",
+    "status": "downloaded",
+    "bytes": 18585
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414461",
+    "status": "downloaded",
+    "bytes": 26875
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043761",
+    "status": "downloaded",
+    "bytes": 25258
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870135",
+    "status": "downloaded",
+    "bytes": 6523
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007970408",
+    "status": "downloaded",
+    "bytes": 20154
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916296",
+    "status": "downloaded",
+    "bytes": 5840
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661410",
+    "status": "downloaded",
+    "bytes": 11614
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414263",
+    "status": "downloaded",
+    "bytes": 15080
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660317",
+    "status": "downloaded",
+    "bytes": 6230
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660454",
+    "status": "downloaded",
+    "bytes": 11878
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660880",
+    "status": "downloaded",
+    "bytes": 10512
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661191",
+    "status": "downloaded",
+    "bytes": 9247
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001540017",
+    "status": "downloaded",
+    "bytes": 7514
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007970267",
+    "status": "downloaded",
+    "bytes": 26016
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530073",
+    "status": "downloaded",
+    "bytes": 9110
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893668",
+    "status": "downloaded",
+    "bytes": 6864
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002030443",
+    "status": "downloaded",
+    "bytes": 12911
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414709",
+    "status": "downloaded",
+    "bytes": 14038
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043762",
+    "status": "downloaded",
+    "bytes": 26097
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002870179",
+    "status": "downloaded",
+    "bytes": 7790
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007970409",
+    "status": "downloaded",
+    "bytes": 16835
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043849",
+    "status": "downloaded",
+    "bytes": 18321
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661412",
+    "status": "downloaded",
+    "bytes": 12139
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414286",
+    "status": "downloaded",
+    "bytes": 25280
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660329",
+    "status": "downloaded",
+    "bytes": 6938
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660459",
+    "status": "downloaded",
+    "bytes": 22873
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660882",
+    "status": "downloaded",
+    "bytes": 8781
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661193",
+    "status": "downloaded",
+    "bytes": 24031
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001540018",
+    "status": "downloaded",
+    "bytes": 7514
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007970269",
+    "status": "downloaded",
+    "bytes": 21632
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530074",
+    "status": "downloaded",
+    "bytes": 8555
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893669",
+    "status": "downloaded",
+    "bytes": 10203
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003317261",
+    "status": "downloaded",
+    "bytes": 10796
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043763",
+    "status": "downloaded",
+    "bytes": 26513
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916066",
+    "status": "downloaded",
+    "bytes": 6728
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043850",
+    "status": "downloaded",
+    "bytes": 19243
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661414",
+    "status": "downloaded",
+    "bytes": 10027
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414334",
+    "status": "downloaded",
+    "bytes": 14783
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660331",
+    "status": "downloaded",
+    "bytes": 7015
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660461",
+    "status": "downloaded",
+    "bytes": 12102
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660884",
+    "status": "downloaded",
+    "bytes": 10333
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661195",
+    "status": "downloaded",
+    "bytes": 9570
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001620055",
+    "status": "downloaded",
+    "bytes": 20257
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007970270",
+    "status": "downloaded",
+    "bytes": 25504
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530075",
+    "status": "downloaded",
+    "bytes": 8668
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893671",
+    "status": "downloaded",
+    "bytes": 9361
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003317265",
+    "status": "downloaded",
+    "bytes": 25787
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043765",
+    "status": "downloaded",
+    "bytes": 19518
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916111",
+    "status": "downloaded",
+    "bytes": 3048
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043851",
+    "status": "downloaded",
+    "bytes": 19665
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661416",
+    "status": "downloaded",
+    "bytes": 10607
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414393",
+    "status": "downloaded",
+    "bytes": 27189
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660335",
+    "status": "downloaded",
+    "bytes": 7881
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660463",
+    "status": "downloaded",
+    "bytes": 11991
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660892",
+    "status": "downloaded",
+    "bytes": 9491
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661199",
+    "status": "downloaded",
+    "bytes": 6602
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001620056",
+    "status": "downloaded",
+    "bytes": 5094
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008234156",
+    "status": "downloaded",
+    "bytes": 16174
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530076",
+    "status": "downloaded",
+    "bytes": 8661
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893672",
+    "status": "downloaded",
+    "bytes": 10500
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007122955",
+    "status": "downloaded",
+    "bytes": 21124
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043766",
+    "status": "downloaded",
+    "bytes": 24706
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916150",
+    "status": "downloaded",
+    "bytes": 11707
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043859",
+    "status": "downloaded",
+    "bytes": 18130
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661418",
+    "status": "downloaded",
+    "bytes": 17095
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414413",
+    "status": "downloaded",
+    "bytes": 8109
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660337",
+    "status": "downloaded",
+    "bytes": 9703
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660465",
+    "status": "downloaded",
+    "bytes": 23372
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660894",
+    "status": "downloaded",
+    "bytes": 8641
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661203",
+    "status": "downloaded",
+    "bytes": 10844
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001620057",
+    "status": "downloaded",
+    "bytes": 5094
+  },
+  {
+    "lot": "lot-02",
+    "id": "2010201206",
+    "status": "downloaded",
+    "bytes": 35764
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530077",
+    "status": "downloaded",
+    "bytes": 11209
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893673",
+    "status": "downloaded",
+    "bytes": 12938
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007122959",
+    "status": "downloaded",
+    "bytes": 20948
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043772",
+    "status": "downloaded",
+    "bytes": 17026
+  },
+  {
+    "lot": "lot-02",
+    "id": "2002916241",
+    "status": "downloaded",
+    "bytes": 6562
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043869",
+    "status": "downloaded",
+    "bytes": 9583
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661424",
+    "status": "downloaded",
+    "bytes": 11820
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414814",
+    "status": "downloaded",
+    "bytes": 11585
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660339",
+    "status": "downloaded",
+    "bytes": 9232
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660467",
+    "status": "downloaded",
+    "bytes": 11699
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660898",
+    "status": "downloaded",
+    "bytes": 9398
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661245",
+    "status": "downloaded",
+    "bytes": 7323
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001620058",
+    "status": "downloaded",
+    "bytes": 5094
+  },
+  {
+    "lot": "lot-02",
+    "id": "2010201210",
+    "status": "downloaded",
+    "bytes": 36631
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530078",
+    "status": "downloaded",
+    "bytes": 10573
+  },
+  {
+    "lot": "lot-02",
+    "id": "2032893674",
+    "status": "downloaded",
+    "bytes": 10567
+  },
+  {
+    "lot": "lot-02",
+    "id": "2007122960",
+    "status": "downloaded",
+    "bytes": 26130
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043775",
+    "status": "downloaded",
+    "bytes": 21459
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003044109",
+    "status": "downloaded",
+    "bytes": 7902
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043899",
+    "status": "downloaded",
+    "bytes": 18958
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660343",
+    "status": "downloaded",
+    "bytes": 8571
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660495",
+    "status": "downloaded",
+    "bytes": 24042
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660900",
+    "status": "downloaded",
+    "bytes": 10844
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661249",
+    "status": "downloaded",
+    "bytes": 9967
+  },
+  {
+    "lot": "lot-02",
+    "id": "2001620059",
+    "status": "downloaded",
+    "bytes": 7210
+  },
+  {
+    "lot": "lot-02",
+    "id": "2010201217",
+    "status": "downloaded",
+    "bytes": 25653
+  },
+  {
+    "lot": "lot-02",
+    "id": "2005530081",
+    "status": "downloaded",
+    "bytes": 8642
+  },
+  {
+    "lot": "lot-02",
+    "id": "2033140577",
+    "status": "downloaded",
+    "bytes": 4745
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008102473",
+    "status": "downloaded",
+    "bytes": 5777
+  },
+  {
+    "lot": "lot-02",
+    "id": "2076510083",
+    "status": "downloaded",
+    "bytes": 4826
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414381",
+    "status": "downloaded",
+    "bytes": 20470
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043974",
+    "status": "downloaded",
+    "bytes": 13395
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660588",
+    "status": "downloaded",
+    "bytes": 8759
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661068",
+    "status": "downloaded",
+    "bytes": 7962
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661372",
+    "status": "downloaded",
+    "bytes": 11298
+  },
+  {
+    "lot": "lot-02",
+    "id": "2012800325",
+    "status": "downloaded",
+    "bytes": 5399
+  },
+  {
+    "lot": "lot-02",
+    "id": "368501545",
+    "status": "downloaded",
+    "bytes": 19872
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008102504",
+    "status": "downloaded",
+    "bytes": 10245
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414402",
+    "status": "downloaded",
+    "bytes": 16810
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043975",
+    "status": "downloaded",
+    "bytes": 22147
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660590",
+    "status": "downloaded",
+    "bytes": 14002
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661074",
+    "status": "downloaded",
+    "bytes": 8070
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661376",
+    "status": "downloaded",
+    "bytes": 15616
+  },
+  {
+    "lot": "lot-02",
+    "id": "2012800327",
+    "status": "downloaded",
+    "bytes": 3045
+  },
+  {
+    "lot": "lot-02",
+    "id": "368501583",
+    "status": "downloaded",
+    "bytes": 20910
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008102505",
+    "status": "downloaded",
+    "bytes": 16469
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414405",
+    "status": "downloaded",
+    "bytes": 26110
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043980",
+    "status": "downloaded",
+    "bytes": 27159
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660596",
+    "status": "downloaded",
+    "bytes": 9810
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661076",
+    "status": "downloaded",
+    "bytes": 7539
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661380",
+    "status": "downloaded",
+    "bytes": 15711
+  },
+  {
+    "lot": "lot-02",
+    "id": "2012800335",
+    "status": "downloaded",
+    "bytes": 5145
+  },
+  {
+    "lot": "lot-02",
+    "id": "368501607",
+    "status": "downloaded",
+    "bytes": 24454
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008102507",
+    "status": "downloaded",
+    "bytes": 8166
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414422",
+    "status": "downloaded",
+    "bytes": 24060
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043981",
+    "status": "downloaded",
+    "bytes": 31735
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660598",
+    "status": "downloaded",
+    "bytes": 10552
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661082",
+    "status": "downloaded",
+    "bytes": 9031
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661382",
+    "status": "downloaded",
+    "bytes": 14979
+  },
+  {
+    "lot": "lot-02",
+    "id": "2012800337",
+    "status": "downloaded",
+    "bytes": 3677
+  },
+  {
+    "lot": "lot-02",
+    "id": "368501628",
+    "status": "downloaded",
+    "bytes": 17411
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008102661",
+    "status": "downloaded",
+    "bytes": 9074
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414755",
+    "status": "downloaded",
+    "bytes": 23961
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003043982",
+    "status": "downloaded",
+    "bytes": 33656
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660600",
+    "status": "downloaded",
+    "bytes": 22388
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661122",
+    "status": "downloaded",
+    "bytes": 6669
+  },
+  {
+    "lot": "lot-02",
+    "id": "2012800339",
+    "status": "downloaded",
+    "bytes": 10515
+  },
+  {
+    "lot": "lot-02",
+    "id": "368501640",
+    "status": "downloaded",
+    "bytes": 22702
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008102662",
+    "status": "downloaded",
+    "bytes": 12269
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414802",
+    "status": "downloaded",
+    "bytes": 20510
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003044008",
+    "status": "downloaded",
+    "bytes": 14626
+  },
+  {
+    "lot": "lot-02",
+    "id": "520660602",
+    "status": "downloaded",
+    "bytes": 17112
+  },
+  {
+    "lot": "lot-02",
+    "id": "520661124",
+    "status": "downloaded",
+    "bytes": 6995
+  },
+  {
+    "lot": "lot-02",
+    "id": "2012800340",
+    "status": "downloaded",
+    "bytes": 10515
+  },
+  {
+    "lot": "lot-02",
+    "id": "368501714",
+    "status": "downloaded",
+    "bytes": 25084
+  },
+  {
+    "lot": "lot-02",
+    "id": "2008102667",
+    "status": "downloaded",
+    "bytes": 6863
+  },
+  {
+    "lot": "lot-02",
+    "id": "368414852",
+    "status": "downloaded",
+    "bytes": 20221
+  },
+  {
+    "lot": "lot-02",
+    "id": "2003044013",
+    "status": "downloaded",
+    "bytes": 17506
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007122961",
+    "status": "existing"
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043815",
+    "status": "downloaded",
+    "bytes": 22719
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043913",
+    "status": "downloaded",
+    "bytes": 21629
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660349",
+    "status": "downloaded",
+    "bytes": 10980
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660497",
+    "status": "downloaded",
+    "bytes": 12273
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660902",
+    "status": "downloaded",
+    "bytes": 9102
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661251",
+    "status": "downloaded",
+    "bytes": 26412
+  },
+  {
+    "lot": "lot-03",
+    "id": "2001651102",
+    "status": "downloaded",
+    "bytes": 7126
+  },
+  {
+    "lot": "lot-03",
+    "id": "2010201218",
+    "status": "downloaded",
+    "bytes": 26893
+  },
+  {
+    "lot": "lot-03",
+    "id": "2005530082",
+    "status": "downloaded",
+    "bytes": 8424
+  },
+  {
+    "lot": "lot-03",
+    "id": "2036578722",
+    "status": "downloaded",
+    "bytes": 3903
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970286",
+    "status": "downloaded",
+    "bytes": 22209
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043834",
+    "status": "downloaded",
+    "bytes": 20366
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043933",
+    "status": "downloaded",
+    "bytes": 22308
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660358",
+    "status": "downloaded",
+    "bytes": 4564
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660501",
+    "status": "downloaded",
+    "bytes": 12120
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660916",
+    "status": "downloaded",
+    "bytes": 10175
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661253",
+    "status": "downloaded",
+    "bytes": 16206
+  },
+  {
+    "lot": "lot-03",
+    "id": "2001651103",
+    "status": "downloaded",
+    "bytes": 7229
+  },
+  {
+    "lot": "lot-03",
+    "id": "2010201219",
+    "status": "downloaded",
+    "bytes": 31268
+  },
+  {
+    "lot": "lot-03",
+    "id": "2005530083",
+    "status": "downloaded",
+    "bytes": 8524
+  },
+  {
+    "lot": "lot-03",
+    "id": "2036578723",
+    "status": "downloaded",
+    "bytes": 4478
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970287",
+    "status": "downloaded",
+    "bytes": 17587
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043835",
+    "status": "downloaded",
+    "bytes": 14543
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043934",
+    "status": "downloaded",
+    "bytes": 18728
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660378",
+    "status": "downloaded",
+    "bytes": 6247
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660517",
+    "status": "downloaded",
+    "bytes": 11072
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660918",
+    "status": "downloaded",
+    "bytes": 11579
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661303",
+    "status": "downloaded",
+    "bytes": 13373
+  },
+  {
+    "lot": "lot-03",
+    "id": "2001730490",
+    "status": "downloaded",
+    "bytes": 6315
+  },
+  {
+    "lot": "lot-03",
+    "id": "2010201220",
+    "status": "downloaded",
+    "bytes": 33508
+  },
+  {
+    "lot": "lot-03",
+    "id": "2005530084",
+    "status": "downloaded",
+    "bytes": 8546
+  },
+  {
+    "lot": "lot-03",
+    "id": "2036578959",
+    "status": "downloaded",
+    "bytes": 9759
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970288",
+    "status": "downloaded",
+    "bytes": 13586
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043837",
+    "status": "downloaded",
+    "bytes": 15884
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043935",
+    "status": "downloaded",
+    "bytes": 19389
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660380",
+    "status": "downloaded",
+    "bytes": 9072
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660519",
+    "status": "downloaded",
+    "bytes": 9909
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660931",
+    "status": "downloaded",
+    "bytes": 9439
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661305",
+    "status": "downloaded",
+    "bytes": 15070
+  },
+  {
+    "lot": "lot-03",
+    "id": "2001730491",
+    "status": "downloaded",
+    "bytes": 6216
+  },
+  {
+    "lot": "lot-03",
+    "id": "2010201221",
+    "status": "downloaded",
+    "bytes": 23431
+  },
+  {
+    "lot": "lot-03",
+    "id": "2005824774",
+    "status": "downloaded",
+    "bytes": 22490
+  },
+  {
+    "lot": "lot-03",
+    "id": "2036578965",
+    "status": "downloaded",
+    "bytes": 58365
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970289",
+    "status": "downloaded",
+    "bytes": 12622
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043838",
+    "status": "downloaded",
+    "bytes": 25426
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043936",
+    "status": "downloaded",
+    "bytes": 16354
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660396",
+    "status": "downloaded",
+    "bytes": 11170
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660521",
+    "status": "downloaded",
+    "bytes": 19256
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660959",
+    "status": "downloaded",
+    "bytes": 8942
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661307",
+    "status": "downloaded",
+    "bytes": 25067
+  },
+  {
+    "lot": "lot-03",
+    "id": "2002011578",
+    "status": "downloaded",
+    "bytes": 7389
+  },
+  {
+    "lot": "lot-03",
+    "id": "2010915876",
+    "status": "downloaded",
+    "bytes": 35454
+  },
+  {
+    "lot": "lot-03",
+    "id": "2005824775",
+    "status": "downloaded",
+    "bytes": 17826
+  },
+  {
+    "lot": "lot-03",
+    "id": "2038041976",
+    "status": "downloaded",
+    "bytes": 7435
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970293",
+    "status": "downloaded",
+    "bytes": 9915
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043841",
+    "status": "downloaded",
+    "bytes": 31965
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044023",
+    "status": "downloaded",
+    "bytes": 21560
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660398",
+    "status": "downloaded",
+    "bytes": 6892
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660533",
+    "status": "downloaded",
+    "bytes": 20895
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660961",
+    "status": "downloaded",
+    "bytes": 7813
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661309",
+    "status": "downloaded",
+    "bytes": 20282
+  },
+  {
+    "lot": "lot-03",
+    "id": "2002653556",
+    "status": "downloaded",
+    "bytes": 4552
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012310152",
+    "status": "downloaded",
+    "bytes": 5876
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007680311",
+    "status": "downloaded",
+    "bytes": 2612
+  },
+  {
+    "lot": "lot-03",
+    "id": "2038041980",
+    "status": "downloaded",
+    "bytes": 6240
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008101640",
+    "status": "downloaded",
+    "bytes": 17410
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043842",
+    "status": "downloaded",
+    "bytes": 27718
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044102",
+    "status": "downloaded",
+    "bytes": 19115
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661084",
+    "status": "downloaded",
+    "bytes": 11269
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660535",
+    "status": "downloaded",
+    "bytes": 9775
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660963",
+    "status": "downloaded",
+    "bytes": 14087
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661313",
+    "status": "downloaded",
+    "bytes": 6958
+  },
+  {
+    "lot": "lot-03",
+    "id": "2002653581",
+    "status": "downloaded",
+    "bytes": 4119
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012310154",
+    "status": "downloaded",
+    "bytes": 13767
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970193",
+    "status": "downloaded",
+    "bytes": 3220
+  },
+  {
+    "lot": "lot-03",
+    "id": "2038042063",
+    "status": "downloaded",
+    "bytes": 8462
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008234152",
+    "status": "downloaded",
+    "bytes": 12342
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043844",
+    "status": "downloaded",
+    "bytes": 20185
+  },
+  {
+    "lot": "lot-03",
+    "id": "2017260064",
+    "status": "downloaded",
+    "bytes": 19226
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660539",
+    "status": "downloaded",
+    "bytes": 17755
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661001",
+    "status": "downloaded",
+    "bytes": 6747
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661315",
+    "status": "downloaded",
+    "bytes": 7784
+  },
+  {
+    "lot": "lot-03",
+    "id": "2002653582",
+    "status": "downloaded",
+    "bytes": 4239
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800487",
+    "status": "downloaded",
+    "bytes": 13332
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970246",
+    "status": "downloaded",
+    "bytes": 2965
+  },
+  {
+    "lot": "lot-03",
+    "id": "2038042066",
+    "status": "downloaded",
+    "bytes": 6669
+  },
+  {
+    "lot": "lot-03",
+    "id": "2011985952",
+    "status": "downloaded",
+    "bytes": 26529
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043852",
+    "status": "downloaded",
+    "bytes": 12889
+  },
+  {
+    "lot": "lot-03",
+    "id": "2018092891",
+    "status": "downloaded",
+    "bytes": 16559
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660541",
+    "status": "downloaded",
+    "bytes": 6663
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661003",
+    "status": "downloaded",
+    "bytes": 6797
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661319",
+    "status": "downloaded",
+    "bytes": 13256
+  },
+  {
+    "lot": "lot-03",
+    "id": "2009244952",
+    "status": "downloaded",
+    "bytes": 3895
+  },
+  {
+    "lot": "lot-03",
+    "id": "2071094993",
+    "status": "downloaded",
+    "bytes": 15814
+  },
+  {
+    "lot": "lot-03",
+    "id": "2007970434",
+    "status": "downloaded",
+    "bytes": 13317
+  },
+  {
+    "lot": "lot-03",
+    "id": "2038042099",
+    "status": "downloaded",
+    "bytes": 8662
+  },
+  {
+    "lot": "lot-03",
+    "id": "2077222062",
+    "status": "downloaded",
+    "bytes": 28875
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043854",
+    "status": "downloaded",
+    "bytes": 16625
+  },
+  {
+    "lot": "lot-03",
+    "id": "2056476589",
+    "status": "downloaded",
+    "bytes": 9330
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660543",
+    "status": "downloaded",
+    "bytes": 12693
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661019",
+    "status": "downloaded",
+    "bytes": 8628
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661321",
+    "status": "downloaded",
+    "bytes": 14616
+  },
+  {
+    "lot": "lot-03",
+    "id": "2009244953",
+    "status": "downloaded",
+    "bytes": 4455
+  },
+  {
+    "lot": "lot-03",
+    "id": "367765556",
+    "status": "downloaded",
+    "bytes": 18809
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008101639",
+    "status": "downloaded",
+    "bytes": 41006
+  },
+  {
+    "lot": "lot-03",
+    "id": "2042844978",
+    "status": "downloaded",
+    "bytes": 5559
+  },
+  {
+    "lot": "lot-03",
+    "id": "2077222082",
+    "status": "downloaded",
+    "bytes": 27156
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043878",
+    "status": "downloaded",
+    "bytes": 20375
+  },
+  {
+    "lot": "lot-03",
+    "id": "2056476591",
+    "status": "downloaded",
+    "bytes": 15898
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660545",
+    "status": "downloaded",
+    "bytes": 5278
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661023",
+    "status": "downloaded",
+    "bytes": 7591
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661323",
+    "status": "downloaded",
+    "bytes": 17351
+  },
+  {
+    "lot": "lot-03",
+    "id": "2009244954",
+    "status": "downloaded",
+    "bytes": 6682
+  },
+  {
+    "lot": "lot-03",
+    "id": "367765559",
+    "status": "downloaded",
+    "bytes": 27648
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008101857",
+    "status": "downloaded",
+    "bytes": 28809
+  },
+  {
+    "lot": "lot-03",
+    "id": "2042844979",
+    "status": "downloaded",
+    "bytes": 8269
+  },
+  {
+    "lot": "lot-03",
+    "id": "367765547",
+    "status": "downloaded",
+    "bytes": 6656
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043896",
+    "status": "downloaded",
+    "bytes": 33725
+  },
+  {
+    "lot": "lot-03",
+    "id": "2056476592",
+    "status": "downloaded",
+    "bytes": 15240
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660553",
+    "status": "downloaded",
+    "bytes": 19287
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661025",
+    "status": "downloaded",
+    "bytes": 8435
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661326",
+    "status": "downloaded",
+    "bytes": 17304
+  },
+  {
+    "lot": "lot-03",
+    "id": "2009244966",
+    "status": "downloaded",
+    "bytes": 6114
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414064",
+    "status": "downloaded",
+    "bytes": 32975
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008102344",
+    "status": "downloaded",
+    "bytes": 5337
+  },
+  {
+    "lot": "lot-03",
+    "id": "2042844986",
+    "status": "downloaded",
+    "bytes": 8102
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414002",
+    "status": "downloaded",
+    "bytes": 19055
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043919",
+    "status": "downloaded",
+    "bytes": 27997
+  },
+  {
+    "lot": "lot-03",
+    "id": "2076880430",
+    "status": "downloaded",
+    "bytes": 13216
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660555",
+    "status": "downloaded",
+    "bytes": 9999
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661033",
+    "status": "downloaded",
+    "bytes": 7208
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661336",
+    "status": "downloaded",
+    "bytes": 7680
+  },
+  {
+    "lot": "lot-03",
+    "id": "2009245021",
+    "status": "downloaded",
+    "bytes": 3366
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414171",
+    "status": "downloaded",
+    "bytes": 19023
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008102345",
+    "status": "downloaded",
+    "bytes": 4782
+  },
+  {
+    "lot": "lot-03",
+    "id": "2042844992",
+    "status": "downloaded",
+    "bytes": 4634
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414038",
+    "status": "downloaded",
+    "bytes": 26230
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043921",
+    "status": "downloaded",
+    "bytes": 23306
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660557",
+    "status": "downloaded",
+    "bytes": 7346
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661037",
+    "status": "downloaded",
+    "bytes": 13224
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661338",
+    "status": "downloaded",
+    "bytes": 13137
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800279",
+    "status": "downloaded",
+    "bytes": 11693
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414185",
+    "status": "downloaded",
+    "bytes": 21127
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008102347",
+    "status": "downloaded",
+    "bytes": 12265
+  },
+  {
+    "lot": "lot-03",
+    "id": "2042844993",
+    "status": "downloaded",
+    "bytes": 5311
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414041",
+    "status": "downloaded",
+    "bytes": 25225
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043924",
+    "status": "downloaded",
+    "bytes": 33739
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660563",
+    "status": "downloaded",
+    "bytes": 12545
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661043",
+    "status": "downloaded",
+    "bytes": 5824
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661340",
+    "status": "downloaded",
+    "bytes": 17056
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800281",
+    "status": "downloaded",
+    "bytes": 4164
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414188",
+    "status": "downloaded",
+    "bytes": 21930
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008102351",
+    "status": "downloaded",
+    "bytes": 12347
+  },
+  {
+    "lot": "lot-03",
+    "id": "2042844994",
+    "status": "downloaded",
+    "bytes": 5325
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414067",
+    "status": "downloaded",
+    "bytes": 23312
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043925",
+    "status": "downloaded",
+    "bytes": 26588
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660565",
+    "status": "downloaded",
+    "bytes": 9954
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661045",
+    "status": "downloaded",
+    "bytes": 8289
+  },
+  {
+    "lot": "lot-03",
+    "id": "520661342",
+    "status": "downloaded",
+    "bytes": 21439
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800282",
+    "status": "downloaded",
+    "bytes": 4335
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414277",
+    "status": "downloaded",
+    "bytes": 10175
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008102353",
+    "status": "downloaded",
+    "bytes": 6045
+  },
+  {
+    "lot": "lot-03",
+    "id": "2042844995",
+    "status": "downloaded",
+    "bytes": 5314
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414079",
+    "status": "downloaded",
+    "bytes": 23401
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003043926",
+    "status": "downloaded",
+    "bytes": 34698
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660604",
+    "status": "downloaded",
+    "bytes": 9528
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800342",
+    "status": "downloaded",
+    "bytes": 4258
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501717",
+    "status": "downloaded",
+    "bytes": 28413
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008802806",
+    "status": "downloaded",
+    "bytes": 20497
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414875",
+    "status": "downloaded",
+    "bytes": 20536
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044014",
+    "status": "downloaded",
+    "bytes": 20108
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660606",
+    "status": "downloaded",
+    "bytes": 7740
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800343",
+    "status": "downloaded",
+    "bytes": 5001
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501729",
+    "status": "downloaded",
+    "bytes": 28197
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008802827",
+    "status": "downloaded",
+    "bytes": 12514
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414884",
+    "status": "downloaded",
+    "bytes": 20720
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044015",
+    "status": "downloaded",
+    "bytes": 18666
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660612",
+    "status": "downloaded",
+    "bytes": 17307
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800344",
+    "status": "downloaded",
+    "bytes": 5726
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501761",
+    "status": "downloaded",
+    "bytes": 21526
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008802840",
+    "status": "downloaded",
+    "bytes": 15146
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414887",
+    "status": "downloaded",
+    "bytes": 23136
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044016",
+    "status": "downloaded",
+    "bytes": 25174
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660616",
+    "status": "downloaded",
+    "bytes": 9959
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800345",
+    "status": "downloaded",
+    "bytes": 4956
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501764",
+    "status": "downloaded",
+    "bytes": 18906
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008948867",
+    "status": "downloaded",
+    "bytes": 4547
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414917",
+    "status": "downloaded",
+    "bytes": 16439
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044029",
+    "status": "downloaded",
+    "bytes": 11371
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660626",
+    "status": "downloaded",
+    "bytes": 12735
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800355",
+    "status": "downloaded",
+    "bytes": 4924
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501776",
+    "status": "downloaded",
+    "bytes": 23747
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008948869",
+    "status": "downloaded",
+    "bytes": 4624
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414920",
+    "status": "downloaded",
+    "bytes": 24579
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044056",
+    "status": "downloaded",
+    "bytes": 19904
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660634",
+    "status": "downloaded",
+    "bytes": 5426
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800356",
+    "status": "downloaded",
+    "bytes": 5631
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501788",
+    "status": "downloaded",
+    "bytes": 19306
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008948873",
+    "status": "downloaded",
+    "bytes": 5390
+  },
+  {
+    "lot": "lot-03",
+    "id": "368414923",
+    "status": "downloaded",
+    "bytes": 24191
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044057",
+    "status": "downloaded",
+    "bytes": 17222
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660638",
+    "status": "downloaded",
+    "bytes": 6790
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800357",
+    "status": "downloaded",
+    "bytes": 5291
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501833",
+    "status": "downloaded",
+    "bytes": 17395
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008948874",
+    "status": "downloaded",
+    "bytes": 25450
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501557",
+    "status": "downloaded",
+    "bytes": 28428
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044067",
+    "status": "downloaded",
+    "bytes": 13222
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660640",
+    "status": "downloaded",
+    "bytes": 12692
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800381",
+    "status": "downloaded",
+    "bytes": 4939
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501839",
+    "status": "downloaded",
+    "bytes": 13016
+  },
+  {
+    "lot": "lot-03",
+    "id": "2008948876",
+    "status": "downloaded",
+    "bytes": 4239
+  },
+  {
+    "lot": "lot-03",
+    "id": "368501560",
+    "status": "downloaded",
+    "bytes": 28427
+  },
+  {
+    "lot": "lot-03",
+    "id": "2003044068",
+    "status": "downloaded",
+    "bytes": 18456
+  },
+  {
+    "lot": "lot-03",
+    "id": "520660648",
+    "status": "downloaded",
+    "bytes": 13213
+  },
+  {
+    "lot": "lot-03",
+    "id": "2012800382",
+    "status": "downloaded",
+    "bytes": 4911
+  }
+]

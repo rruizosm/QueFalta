@@ -1,0 +1,18 @@
+{
+  "target": 166,
+  "myAssignedPrimaryRange": [
+    0,
+    115
+  ],
+  "rootPrimaryRange": [
+    116,
+    165
+  ],
+  "accepted": 17,
+  "rejected": [
+    "2010201218",
+    "520660349"
+  ],
+  "generated": 19,
+  "sourceDeletionEnabled": true
+}

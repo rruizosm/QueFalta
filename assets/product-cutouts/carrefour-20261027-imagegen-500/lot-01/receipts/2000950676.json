@@ -1,0 +1,17 @@
+{
+  "id": "2000950676",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/927143_00_1.jpg",
+  "sourceSha256": "e257eacdf21522fe6f85c28babcf07636c9eb351d7a0817be7ec572038f4eb0a",
+  "outputSha256": "faf9ecb6b758a0782d08694531d8b99b34781a1d5b8e0d53eee762e83f37a020",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2000950676.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-be631e20-e5bf-4cbc-ba4f-f9e3482387b6.png",
+  "visualReview": "Same Carrefour Chew Bones chicken snack bag, dog illustration and visible bones; full package with true external transparency and no material product substitution.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 1391970,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.927Z"
+}

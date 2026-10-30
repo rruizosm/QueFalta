@@ -20,6 +20,8 @@ import {
 interface CatalogStoreContextValue {
   store: StoreSelection;
   setStore: React.Dispatch<React.SetStateAction<StoreSelection>>;
+  glutenOnly: boolean;
+  setGlutenOnly: React.Dispatch<React.SetStateAction<boolean>>;
   favoriteStore: CatalogStore | null;
   toggleFavoriteStore: (store: CatalogStore) => void;
 }
@@ -37,6 +39,7 @@ export function CatalogStoreProvider({ children }: { children: React.ReactNode }
   const { profile, isPremium, loading: profileLoading } = useProfile();
   const { lang } = useTranslation();
   const [store, setStore] = useState<StoreSelection>('mercadona');
+  const [glutenOnly, setGlutenOnly] = useState(false);
   const [favoriteStore, setFavoriteStore] = useState<CatalogStore | null>(null);
   const [favoriteLoadedForUser, setFavoriteLoadedForUser] = useState<string | null>(null);
   const favoriteStoreRef = useRef<CatalogStore | null>(null);
@@ -50,6 +53,7 @@ export function CatalogStoreProvider({ children }: { children: React.ReactNode }
     const revision = ++favoriteLoadRevision.current;
     clearCatalogRequests();
     setStore('mercadona');
+    setGlutenOnly(false);
     favoriteStoreRef.current = null;
     setFavoriteStore(null);
     setFavoriteLoadedForUser(null);
@@ -126,8 +130,8 @@ export function CatalogStoreProvider({ children }: { children: React.ReactNode }
   }, [userId, profile, store, isPremium, lang, region, postalCode, lidlStoreId, enabledStores]);
 
   const value = useMemo(() => ({
-    store, setStore, favoriteStore, toggleFavoriteStore,
-  }), [favoriteStore, store, toggleFavoriteStore]);
+    store, setStore, glutenOnly, setGlutenOnly, favoriteStore, toggleFavoriteStore,
+  }), [favoriteStore, glutenOnly, store, toggleFavoriteStore]);
   return <CatalogStoreContext.Provider value={value}>{children}</CatalogStoreContext.Provider>;
 }
 

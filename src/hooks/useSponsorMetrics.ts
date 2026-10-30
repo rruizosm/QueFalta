@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native';
 import { useCallback, useEffect, useRef } from 'react';
 import { AppState, View, useWindowDimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -6,7 +7,7 @@ import { createBannerDwell, sponsorEventId, visibleBannerFraction } from '../lib
 
 export function useSponsorMetrics(userId: string | null, campaignId: string | null,
   blocked: boolean, top: number, bottomInset: number) {
-  const bannerRef = useRef<View>(null);
+  const bannerRef = useRef<ViewInstance>(null);
   const dimensions = useWindowDimensions();
   const state = useRef({ userId, campaignId, blocked, top, bottomInset, ...dimensions });
   state.current = { userId, campaignId, blocked, top, bottomInset, ...dimensions };

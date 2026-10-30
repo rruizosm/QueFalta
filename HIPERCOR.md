@@ -3,14 +3,14 @@
 > Documento canónico de la integración de Hipercor: investigación, decisiones,
 > modelo de datos, sincronización, validaciones y trabajo pendiente.
 >
-> Última actualización: 23 de septiembre de 2026.
+> Última actualización: 22 de octubre de 2026.
 
 ## 1. Estado actual
 
 La integración se encuentra en este punto:
 
-- El catálogo legado de Hipercor está publicado y contiene **20.338 productos**
-  y **10 categorías** del centro observado `010130`.
+- El catálogo legado de Hipercor contiene **20.338 productos**, 15.561
+  publicados, y **10 categorías** del centro observado `010130`.
 - El esquema multicentro ya está creado y desplegado en Supabase.
 - El backfill del catálogo legado al nuevo esquema se completó con 20.338 fichas
   maestras y 20.338 variantes del centro `010130`.
@@ -20,13 +20,21 @@ La integración se encuentra en este punto:
   asociaciones ni se han usado códigos postales de perfiles de usuario.
 - La adaptación multicentro del sincronizador existe **solo en el workspace
   local** y no se ha ejecutado para publicar centros adicionales.
-- La aplicación todavía consume el catálogo legado; aún no resuelve Hipercor por
-  el código postal del perfil.
+- Hipercor no está incorporado al selector del cliente de este checkout y aún
+  no se resuelve por el código postal del perfil. El usuario eligió preparar la
+  clasificación sin gluten y la consulta progresiva, sin activar ahora toda la
+  integración en la app.
 - La exploración masiva de códigos postales, el modo rutinario `CatalogOnly` y la
   publicación de nuevos centros quedan **aplazados para una fase futura**.
 
-En resumen: la base de datos está preparada y el diseño está documentado, pero
-QuéFalta continúa mostrando únicamente el catálogo Hipercor existente.
+La API `fetchHipercorGlutenFreeProducts(centerId, ...)` está preparada para
+cargar 80 productos y continuar con páginas de hasta 1.000, filtrando por la
+bandera de la maestra y la disponibilidad del centro explícito. Backfill e
+índices aplicados el 22-10: 1.978 maestros publicados clasificados y 1.975
+disponibles en `010130`. El sync actualiza la bandera desde el nombre. La
+migración `20261022125140_name_gluten_free_catalogs.sql` también rellena el
+espejo legado y expone el dato en `hipercor_product_centers` sin duplicarlo en
+las tablas de precios.
 
 ## 2. Objetivo funcional
 

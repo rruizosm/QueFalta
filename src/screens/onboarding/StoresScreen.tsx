@@ -103,7 +103,7 @@ export default function StoresScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
+      <StatusBar barStyle="light-content" />
       <AmbientBubbleBackdrop showGradient={false} onBlue />
 
       <TouchableOpacity

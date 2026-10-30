@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native';
 import { useEffect, useState, type RefObject } from 'react';
 import { Image, type ImageSource } from 'expo-image';
 import type { StyleProp, ViewStyle } from 'react-native';
@@ -20,7 +21,7 @@ interface Props {
   onOpenError?: () => void;
   onClick?: () => void;
   onImageReady?: (ready: boolean) => void;
-  bannerRef?: RefObject<View | null>;
+  bannerRef?: RefObject<ViewInstance | null>;
   style?: StyleProp<ViewStyle>;
 }
 

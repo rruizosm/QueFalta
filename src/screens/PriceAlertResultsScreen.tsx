@@ -119,7 +119,7 @@ export default function PriceAlertResultsScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       <ProfileSubscreenHeader
         title={t('priceAlerts.resultsTitle')}
         icon="pricetag-outline"
@@ -152,7 +152,7 @@ export default function PriceAlertResultsScreen() {
               {route.params.title ? <Text style={styles.ruleTitle}>{route.params.title}</Text> : null}
               <Text style={styles.introText}>{t('priceAlerts.resultsSubtitle')}</Text>
             </View>
-          ) : null}
+          ) : undefined}
           ListEmptyComponent={(
             <View style={styles.state}>
               <Ionicons name="notifications-off-outline" size={40} color={colors.inkFaint} />

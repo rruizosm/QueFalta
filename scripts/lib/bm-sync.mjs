@@ -1,4 +1,5 @@
 import { flattenBmCategories } from './bm.mjs';
+import { isGlutenFreeCategory } from './gluten-free-categories.mjs';
 
 const DEFAULT_EXCLUDED_ROOTS = new Set(['99999']);
 
@@ -154,6 +155,9 @@ export function bmProductRow(rawProduct, product, navigation, syncedAt) {
     root_category_id: navigation?.rootCategoryId ?? null,
     category_id: navigation?.categoryId ?? null,
     category_name: navigation?.categoryName ?? null,
+    gluten_free_label: isGlutenFreeCategory('bm', [
+      ...(product.categoryIds ?? []), ...(navigation?.sourcePathIds ?? []),
+    ]),
     unit_price: product.effectivePrice,
     base_unit_price: product.basePrice,
     price_format: priceFormat(product.effectivePrice),

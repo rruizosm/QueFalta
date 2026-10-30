@@ -3,8 +3,9 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { t } from '../i18n';
 import { getNotificationsEnabled, hasPermission } from './notifications';
+import { fetchGroupPantry } from '../api/groupPantry';
 import { readPantryLayout } from './pantryStorage';
-import { isPantryExpiryDate, type PantryItem, type PantrySection } from './pantryLayout';
+import { isPantryExpiryDate, type PantryItem, type PantrySection, type PantryLayout } from './pantryLayout';
 
 const SCHEDULES_KEY = '@pantry_expiry_notifications';
 const ANDROID_CHANNEL_ID = 'default';
@@ -67,14 +68,12 @@ async function cancelRequest(request: Notifications.NotificationRequest): Promis
   await Notifications.cancelScheduledNotificationAsync(request.identifier).catch(() => {});
 }
 
-async function reconcile(userId: string): Promise<void> {
+type Inventories = { groupId: string | null; pantry: Pick<PantryLayout, 'items'>; fridge: Pick<PantryLayout, 'items'> };
+
+async function reconcile(userId: string, inventories?: Inventories): Promise<void> {
   if (Platform.OS === 'web') return;
-  const [enabled, permitted, pantry, fridge, rawTracked] = await Promise.all([
-    getNotificationsEnabled(userId),
-    hasPermission(),
-    readPantryLayout(userId, 'pantry'),
-    readPantryLayout(userId, 'fridge'),
-    AsyncStorage.getItem(storageKey(userId)),
+  const [enabled, permitted, rawTracked] = await Promise.all([
+    getNotificationsEnabled(userId), hasPermission(), AsyncStorage.getItem(storageKey(userId)),
   ]);
   const tracked = decodeScheduleMap(rawTracked);
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
@@ -89,6 +88,19 @@ async function reconcile(userId: string): Promise<void> {
     return;
   }
 
+  if (!inventories) {
+    const rawCart = await AsyncStorage.getItem(`activeCart:${userId}`);
+    const groupId: unknown = rawCart ? JSON.parse(rawCart)?.groupId : null;
+    if (typeof groupId === 'string' && groupId) {
+      const [pantry, fridge] = await Promise.all([fetchGroupPantry(groupId, 'pantry'), fetchGroupPantry(groupId, 'fridge')]);
+      inventories = { groupId, pantry: pantry.layout, fridge: fridge.layout };
+    }
+  }
+  const [pantry, fridge] = await Promise.all([
+    inventories?.pantry ?? readPantryLayout(userId, 'pantry'),
+    inventories?.fridge ?? readPantryLayout(userId, 'fridge'),
+  ]);
+
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
       name: 'General',
@@ -101,7 +113,7 @@ async function reconcile(userId: string): Promise<void> {
   for (const [section, items] of [['pantry', pantry.items], ['fridge', fridge.items]] as const) {
     for (const item of items) {
       if (!isPantryExpiryDate(item.expiryDate) || item.expiryDate < localDateKey()) continue;
-      desired.set(notificationKey(section, item.instanceId), { section, item });
+      desired.set(notificationKey(section, `${inventories?.groupId ? `group:${inventories.groupId}:` : ''}${item.instanceId}`), { section, item });
     }
   }
 
@@ -185,11 +197,11 @@ async function reconcile(userId: string): Promise<void> {
 }
 
 /** Keep one local reminder per saved item, account and device. */
-export function syncPantryExpiryNotifications(userId: string): Promise<void> {
+export function syncPantryExpiryNotifications(userId: string, inventories?: Inventories): Promise<void> {
   if (!userId || Platform.OS === 'web') return Promise.resolve();
   const previous = syncQueue.get(userId) ?? Promise.resolve();
   let current: Promise<void>;
-  current = previous.catch(() => {}).then(() => reconcile(userId)).catch(() => {}).finally(() => {
+  current = previous.catch(() => {}).then(() => reconcile(userId, inventories)).catch(() => {}).finally(() => {
     if (syncQueue.get(userId) === current) syncQueue.delete(userId);
   });
   syncQueue.set(userId, current);

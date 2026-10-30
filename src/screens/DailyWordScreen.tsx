@@ -1,3 +1,4 @@
+import type { ScrollViewInstance } from 'react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, AppState, Platform, RefreshControl, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
@@ -140,7 +141,7 @@ export default function DailyWordScreen() {
     groupReady: cartHydrated, tab, period, offset: periodOffset,
   });
   const [chromeHeight, setChromeHeight] = useState(top + 112);
-  const playScroll = useRef<ScrollView>(null);
+  const playScroll = useRef<ScrollViewInstance>(null);
   const [playViewportHeight, setPlayViewportHeight] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(230 + bottom);
   const reducedMotion = useReducedMotion();

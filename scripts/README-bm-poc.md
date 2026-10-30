@@ -81,6 +81,13 @@ zonas, por lo que la integracion productiva debe conservar el contexto postal.
 
 ## Integración en la app (2026-09-20)
 
+El sync rellena `bm_products.gluten_free_label` desde la categoría de origen
+4110 («Sin gluten»), revisando todas las categorías y zonas del producto.
+La navegación N1/N2 de la app puede conservar una categoría principal distinta.
+`bm_product_locations` proyecta la bandera de la maestra, sin duplicarla en las
+tablas de precios; el filtro conserva la disponibilidad y el precio de la zona.
+Reglas compartidas en `scripts/lib/gluten-free-categories.mjs`.
+
 El catálogo BM se muestra en QuéFalta para cualquier código postal de las siete
 provincias representadas en la tabla anterior. La app traduce el prefijo del CP
 al CP de referencia sincronizado, resuelve `bm_postal_locations.location_id` y

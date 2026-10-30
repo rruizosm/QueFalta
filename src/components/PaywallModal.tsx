@@ -50,6 +50,7 @@ const PRIVACY_URL = 'https://quefalta.es/privacidad';
 const LIDL_LOGO = require('../../assets/stores/lidl.png');
 
 const BENEFITS: Benefit[] = [
+  { icon: 'file-tray-stacked-outline', key: 'pantry', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   ...(GROUP_CART_LIMIT_RELEASE_ENABLED
     ? [{ icon: 'people-outline' as const, key: 'groups', color: colors.blue, background: 'rgba(47,108,181,0.13)' }]
     : []),

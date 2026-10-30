@@ -1,0 +1,15 @@
+{
+  "id": "520660916",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/020870_00_1.jpg",
+  "sourceSha256": "ed81470d34f70fd9ce92140243aadcfbdecfc3ce520ae86d338d2cbecb2bb3d3",
+  "outputSha256": "ae94f95fbb8c47b5d006c0e53f0022bf0367f894251c07136f9559775b5bae7c",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/520660916.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-66b5-7472-b4f5-17e2b55e933d/exec-0faa61fa-9f67-4afb-ad90-b87ec9278cd7.png",
+  "visualReview": "Complete Granini peach1L dimpled bottle, red cap and peach label retained, alpha exterior.",
+  "validAlpha": true,
+  "visualReviewAccepted": true,
+  "bytes": 716550,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:47:45.437Z"
+}

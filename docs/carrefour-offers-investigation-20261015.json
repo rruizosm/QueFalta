@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-10-15T11:51:36.708Z",
+  "previousRevision": "f0f89506",
+  "regions": [
+    {
+      "region": "ES-AS",
+      "previous": {
+        "requests": 44,
+        "bytes": 56147389,
+        "ms": 14322,
+        "rows": 50,
+        "hasMore": true
+      },
+      "current": {
+        "requests": 1,
+        "bytes": 32919,
+        "ms": 1714,
+        "rows": 50,
+        "hasMore": true
+      },
+      "sameProductsPricesAndPromotions": true
+    },
+    {
+      "region": "ES-CT",
+      "previous": {
+        "requests": 35,
+        "bytes": 53324364,
+        "ms": 9323,
+        "rows": 50,
+        "hasMore": true
+      },
+      "current": {
+        "requests": 1,
+        "bytes": 32903,
+        "ms": 1409,
+        "rows": 50,
+        "hasMore": true
+      },
+      "sameProductsPricesAndPromotions": true
+    }
+  ],
+  "method": "Real fetchCarrefourOffers functions from previousRevision and current checkout, public anon REST, local day 2026-10-15, limit 50, sort asc; actual regions constants, adapters and resolver. Bytes measure decoded JSON response bodies, not compressed wire traffic.",
+  "reportedClient": "App Store (confirmed by user)",
+  "production": {
+    "project": "QueFalta",
+    "publishedProducts": 33615,
+    "lastProductSync": "2026-10-12T13:21:03.406Z",
+    "offerRPCExists": true,
+    "securityInvoker": true,
+    "observedLegacyIOSClient": "QuFalta/57",
+    "observedLegacyPredicate": "raw->quefalta_offers.not.is.null"
+  },
+  "validation": {
+    "clientTests": 11,
+    "sqlResolverComparisons": 69,
+    "typecheck": "passed"
+  },
+  "remaining": [
+    "Distribute existing client change to App Store users",
+    "Verify native/released client uses the paginated RPC"
+  ],
+  "changesDuringInvestigation": "Documentation and evidence only; no client changes, remote writes, migrations, build or OTA publication."
+}

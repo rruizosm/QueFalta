@@ -1,3 +1,4 @@
+import type { ViewInstance } from 'react-native';
 import { useEffect, useState } from 'react';
 import {
   View, Text, Image, Modal, Pressable, TouchableOpacity, FlatList, StyleSheet, Alert, Platform,
@@ -35,7 +36,7 @@ interface Props<T extends StoreSelection> {
   modal?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  triggerRef?: React.Ref<View>;
+  triggerRef?: React.Ref<ViewInstance>;
   onTriggerLayout?: () => void;
   /** A feature-specific allowlist: other stores are visible as coming soon. */
   availableStores?: readonly CatalogStore[];
@@ -343,7 +344,7 @@ export default function StoreDropdown<T extends StoreSelection>({
               keyExtractor={(s, index) => s?.key ?? `store-placeholder-${index}`}
               renderItem={renderItem}
               numColumns={2}
-              ListHeaderComponent={allRow}
+              ListHeaderComponent={allRow ?? undefined}
               columnWrapperStyle={styles.gridRow}
               contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + 24 }]}
               showsVerticalScrollIndicator={false}

@@ -1,3 +1,4 @@
+import type { ScrollViewInstance } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../constants/colors';
@@ -17,7 +18,7 @@ export default function WordGameScoringCarousel() {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(0);
   const [indicatorScales] = useState(() => scores.map(() => new Animated.Value(1)));

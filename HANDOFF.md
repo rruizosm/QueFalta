@@ -1,4 +1,1149 @@
+## Despensa/Nevera: pendientes solo informativos (local, 2026-10-29)
+
+- Las fotos sin colocar son View estáticas, sin onPress y con pointerEvents none.
+  No abren fichas ni borran productos, tampoco en modo papelera. Accesibilidad
+  de imagen con el nombre del producto, sin anunciar acciones inexistentes.
+- Retirados el indicador rojo y la instrucción de tocar para borrar. Conserva
+  apertura/cierre del panel, scroll, animación y recuperación automática.
+- Scroll con altura explícita ajustada al contenido (máximo 240 pt), sin flex
+  de contracción. TypeScript, ESLint dirigido y 68 pruebas de selección/animación
+  correctos. Sin SQL ni publicación; QA nativa pendiente.
+
+## Despensa/Nevera: tarjeta flotante de productos pendientes (local, 2026-10-29)
+
+- Panel redondeado con sombra, cabecera «Sin colocar», explicación breve,
+  cierre accesible de 44 pt y tarjetas de fotos en cuadrícula adaptable.
+  Conserva fotos sin nombres/cantidades por producto; modo borrar identifica
+  las tarjetas con un indicador rojo y cambia la explicación. Textos ES/CA.
+- PantryPendingPopover anima opacidad, desplazamiento y escala desde la esquina
+  inferior izquierda (280 ms al abrir, 200 ms al cerrar), con driver nativo.
+  Conserva el montaje al contraer, cancela la transición al invertir y libera
+  el contenido al terminar. Cierre sin toques ni accesibilidad; Reducir movimiento
+  aplica el estado directamente. Compartido por Despensa y Nevera.
+- TypeScript, ESLint dirigido, 64 pruebas de selección y tres pruebas de ciclo
+  de animación correctos. Sin SQL ni publicación; pendiente QA visual/táctil nativa.
+
+## Despensa: lista limitada a productos colocados en baldas (local, 2026-10-29)
+
+- La vista Lista usa exactamente pantryScene.placed, igual que PantryShelf.
+  Los pendientes de colocar permanecen guardados y accesibles desde su botón,
+  pero no aparecen en la lista. Al obtener sitio vuelven a ambas vistas.
+- 64 pruebas de selección correctas, incluida igualdad de instancias entre lista
+  y baldas, exclusión del desbordamiento y recuperación al añadir una balda.
+  TypeScript y ESLint dirigido correctos. Sin SQL ni publicación; QA visual pendiente.
+
+## Despensa/Nevera: selector de baldas de ambas secciones (local, 2026-10-29)
+
+- La ficha del producto seleccionado ofrece los carteles de Despensa y Nevera,
+  separados por sección, con nombre y emoticono. Los índices iguales mantienen
+  identidades distintas; las baldas sin cartel siguen como continuaciones.
+- Elegir la otra sección traslada esa instancia al grupo elegido, abre la ficha
+  en destino y conserva cantidad, notas, caducidad, ubicación y datos del producto.
+  También permite regresar de Nevera a Despensa. Destino lleno, sin cartel,
+  no disponible o con el mismo id no modifica el origen ni duplica productos.
+- Usa las escrituras existentes de cada inventario personal/compartido; no añade
+  una transacción entre secciones ni SQL. QA visual/táctil en dispositivo pendiente.
+- TypeScript, ESLint dirigido y 72 pruebas de selección/ficha correctos.
+
+## Despensa/Nevera: dos baldas gratuitas por sección (local, 2026-10-29)
+
+- Free permite dos baldas en Despensa y dos en Nevera; Plus amplía ambas sin
+  límite. Añadir o insertar una tercera abre el paywall. Los hooks protegen
+  también las pulsaciones rápidas, tanto personales como compartidas.
+- Inventarios nuevos parten de dos baldas. Los ya guardados, incluidos los
+  anteriores sin shelfCount, conservan estructura, carteles y productos; al
+  superar el cupo no pueden ampliarse sin Plus. La caducidad no borra contenido.
+- El paywall añade «Productos ilimitados en la despensa» con explicación del
+  cupo y las baldas ilimitadas en ambas secciones, en castellano y catalán.
+- TypeScript, ESLint dirigido y 224 pruebas de despensa correctos. Gate de
+  cliente, sin SQL ni publicación. QA visual en dispositivo pendiente.
+
+## Despensa/Nevera: escritura estable en los carteles (local, 2026-10-29)
+
+- El campo y su texto de medición muestran inmediatamente el borrador escrito,
+  sin reenviar el nombre anterior mientras llega `onTextLayout`. Evita el
+  parpadeo y los retrocesos del texto/cursor durante la escritura rápida.
+- Mantiene la validación nativa del espacio antes de persistir y descarta
+  mediciones obsoletas. El selector de emoticonos conserva el borrador pendiente.
+- TypeScript, ESLint dirigido y 31 pruebas de superficie correctos; regresión
+  comprobada antes de la corrección. Pendiente confirmar con teclado en
+  dispositivo. Sin SQL ni publicación.
+
+## Cesta: destello azul inicial en categorías pendientes (local, 2026-10-29)
+
+- `CompletedZoneHeader` monta el fondo de completado y el texto animado solo
+  después de medir el ancho. Evita crear el barrido con un desplazamiento de
+  cero y revelar la capa azul al actualizar la opacidad antes que el rango
+  nativo. Las categorías ya completadas conservan su aspecto inicial estático.
+- Conserva el barrido al completar/desmarcar y Reducir movimiento. TypeScript,
+  ESLint dirigido y cuatro pruebas de categorías correctos. Pendiente confirmar
+  visualmente en dispositivo. Sin SQL ni publicación.
+
+## Cesta: logos de supermercados sin transición de carga (local, 2026-10-29)
+
+- Las cabeceras de Lista usan `expo-image`, caché memoria/disco y transición
+  desactivada. El placeholder es el mismo logo local con el mismo ajuste `cover`,
+  para evitar un hueco o cambio de tamaño mientras se carga. Todas las cadenas.
+- TypeScript, ESLint dirigido y cuatro pruebas de completado de categorías correctos.
+  La prueba histórica `list-zones.test.mjs` falla porque importa `zoneOfCategory`,
+  retirado en el agrupado por subcategorías; ajeno a este cambio de imagen.
+- Pendiente confirmar visualmente en dispositivo. Sin SQL ni publicación.
+
+## Despensa/Nevera: límite de texto según el espacio del cartel (local, 2026-10-29)
+
+- Antes de guardar texto escrito/pegado o un cambio de emoticono, mide los
+  prefijos con Text nativo, la fuente y la escala de accesibilidad del cartel.
+  Acepta solo el prefijo que cabe dentro del 76 % de la fila, descontando
+  márgenes, emoticono y botones de edición. Mantiene el tope de seguridad de 40.
+- Los nombres antiguos se conservan y reducen su fuente en lectura para evitar
+  el corte; se aplica el límite al editarlos. Compartido por Despensa/Nevera.
+- TypeScript, ESLint dirigido y 31 pruebas de superficie correctos. Sin SQL
+  ni publicación; pendiente QA del teclado y ajuste visual en dispositivo.
+
+## Despensa/Nevera: borrar todos los productos con confirmación (local, 2026-10-29)
+
+- Al activar la papelera aparece «Borrar todo» inmediatamente a su izquierda.
+  Abre una alerta nativa con Cancelar y Borrar todo; solo la confirmación
+  elimina el inventario de la sección activa, incluidos los pendientes.
+- Conserva baldas, carteles y ubicaciones; usa el guardado personal/compartido
+  existente. Deshabilitado si el inventario está vacío o no está listo.
+  Confirmaciones invalidadas al salir del modo de borrado, cambiar de sección
+  o desmontar la pantalla. Textos ES/CA.
+- TypeScript, ESLint dirigido y 221 pruebas correctos. Sin SQL ni publicación;
+  pendiente revisión visual y táctil de la alerta y el botón en dispositivo.
+
+## Despensa/Nevera: confirmación al borrar baldas ocupadas (local, 2026-10-29)
+
+- Pulsar la papelera de una balda con productos abre una alerta nativa:
+  explica el borrado de la balda y todo su contenido y la subida de las
+  inferiores. Solo «Eliminar» ejecuta el cambio; «Cancelar» o cerrar la alerta
+  conserva el inventario. Incluye productos pendientes asignados a la balda.
+- Aplicado a Despensa/Nevera, con textos ES/CA y guardado personal/compartido
+  existente. Las baldas vacías conservan el borrado directo. Al salir de edición
+  queda invalidada la confirmación pendiente.
+- TypeScript, ESLint dirigido y 57 pruebas de pantalla correctos. Sin SQL ni
+  publicación; pendiente comprobar la presentación nativa en dispositivo.
+
+## Despensa/Nevera: compras con productos pendientes por falta de espacio (local, 2026-10-29)
+
+- «Mis compras» coloca los productos que caben y guarda los restantes con
+  `pendingPlacement`, conservando imágenes y cantidades en una sola escritura.
+  Sustituye el rechazo de la compra completa cuando no cabe. Las mediciones
+  reales siguen siendo necesarias; el alta manual del catálogo conserva su comportamiento.
+- Botón flotante en el extremo izquierdo, a la altura de borrar/añadir/editar,
+  visible solo si hay pendientes en la sección activa. Abre una cuadrícula
+  desplazable con solo imágenes, sin nombres ni cantidades visibles. Un toque
+  abre la ficha; en modo borrar elimina esa instancia. Etiquetas accesibles ES/CA.
+- Sustituye el bloque de pendientes bajo las baldas. Al liberar espacio o añadir
+  baldas se conserva la recuperación automática existente y desaparece el botón
+  al agotarse los pendientes. Persistencia personal/compartida existente, sin SQL.
+- TypeScript, ESLint dirigido y 216 pruebas de despensa correctos, incluido
+  guardado/recarga, compras sin hueco, importación mixta, cantidades, aislamiento
+  de secciones y recuperación tras borrado/ampliación. Sin publicación;
+  pendiente QA visual/táctil en dispositivo.
+
+## Despensa/Nevera: eliminar baldas con productos (local, 2026-10-29)
+
+- En edición, la papelera también aparece en baldas ocupadas. El borrado
+  elimina la balda, su cartel y todos sus productos, incluidos los pendientes
+  de colocar asignados a ella. Las baldas inferiores suben con su contenido.
+- Conserva el mínimo existente de una balda. Misma operación para inventarios
+  personales y compartidos, con guardado conjunto de estructura y productos;
+  los conflictos compartidos siguen bloqueando cambios sobre un estado obsoleto.
+- Sustituye la restricción histórica de «solo baldas vacías». Textos accesibles
+  ES/CA actualizados. TypeScript, ESLint dirigido y 82 pruebas correctos,
+  incluido guardado/recarga y protección de otros usuarios y secciones.
+  Sin SQL ni publicación; pendiente QA visual/táctil en dispositivo.
+
+## Despensa/Nevera: contenido del envase oculto en vista lista (local, 2026-10-29)
+
+- La vista lista omite el peso/volumen tanto visualmente como en su etiqueta
+  accesible. Se conserva el dato guardado y su presentación en el selector y
+  en la ficha del producto. Sin SQL; pendiente QA visual y publicación.
+
+## Despensa/Nevera: corrección del peso/volumen real (local, 2026-10-29)
+
+- Corrige la entrada anterior: `mercadona_products.packaging` describe el
+  recipiente («Bandeja»), no su contenido. Búsqueda y compras leen ahora
+  `size_instructions:raw->price_instructions` y guardan `unit_size` + `size_format`
+  en `product.metaLabel`. Convierte fracciones de kg/L a g/ml (0,5 kg → 500 g).
+- Lidl conserva packaging solo cuando contiene una cantidad con unidad;
+  no se usa «Bandeja»/«Botella» como sustituto del contenido desconocido.
+- Al enfocar o volver a primer plano, refresca también el contenido de los
+  productos Mercadona/Lidl ya guardados, personales y compartidos. Conserva
+  geometría, cantidades, notas y ediciones posteriores; no resucita borrados.
+- Catálogo real comprobado: carne picada de cerdo 2867/5241, recipiente Bandeja,
+  contenido 0,5 kg. 101 pruebas dirigidas, TypeScript y ESLint correctos.
+  Sin migración SQL; pendiente QA nativa y publicación.
+
+## Despensa/Nevera: contenido del envase al añadir (local, 2026-10-29)
+
+- El selector muestra el formato del catálogo (p. ej. «500 g», «1 L») también
+  en sus filas compactas y cuadrícula, y lo conserva como `product.metaLabel`
+  en las nuevas altas. Visible bajo el nombre en la ficha y en la vista lista.
+- «Mis compras» resuelve también `packaging` de Mercadona/Lidl. Se mantiene
+  separado del número de unidades; inventarios anteriores siguen compatibles,
+  sin rellenado retroactivo ni cantidades inventadas si el catálogo no las aporta.
+- La persistencia personal/compartida conserva el dato dentro del producto;
+  no requiere SQL. TypeScript, ESLint dirigido y 82 pruebas correctos (selección,
+  ficha, catálogo, compras y persistencia del envase). QA visual y publicación pendientes.
+
+## Despensa/Nevera: esquinas de la ficha de información (local, 2026-10-29)
+
+- La ficha abierta con la «i» usa esquinas superiores de 30 pt y recorta su
+  contenido al borde redondeado, también durante carga o error. Variante
+  `roundedTop` de StoreProductModal activada desde Despensa/Nevera.
+- Pendiente QA visual en dispositivo y publicación. Sin SQL.
+
+## Despensa/Nevera: botón de información de producto (local, 2026-10-29)
+
+- La ficha de catálogo se monta dentro del modal nativo de producto seleccionado,
+  evitando la presentación de dos modales hermanos que podía bloquear su apertura
+  en iOS. La «i» cierra el teclado antes de abrir el detalle; al cerrarlo conserva
+  la selección y los campos de la ficha de Despensa/Nevera.
+- 60 pruebas dirigidas correctas, incluida la jerarquía de presentación y el
+  retorno al producto seleccionado. TypeScript y ESLint dirigido correctos.
+  Pendiente QA en dispositivo y publicación. Sin SQL.
+
+## Carrefour desactivado en el selector de Despensa/Nevera (local, 2026-10-29)
+
+- Carrefour queda deshabilitado en el selector compartido de supermercados
+  para añadir productos; Mercadona, Lidl y BonÀrea siguen disponibles.
+- Se conserva el soporte de productos Carrefour existentes, refresco de
+  imágenes e importación desde compras. Sin cambios de catálogo ni SQL.
+- TypeScript y ESLint dirigido correctos. Pendiente QA visual en dispositivo.
+
+## Despensa/Nevera: carteles ajustados al texto (local, 2026-10-29)
+
+- El cartel calcula su ancho con el nombre o el texto vacío traducido y el
+  emoticono, con 18 pt de margen horizontal por lado y mínimo de 96 pt.
+  Conserva 36 pt de alto y limita el ancho al 76 % de la fila; los nombres
+  largos siguen siendo editables con desplazamiento dentro del campo.
+- Los botones de edición ocupan espacio solo mientras están visibles.
+  Sustituye el ancho fijo y la reserva de acciones de las entradas anteriores.
+- TypeScript, ESLint dirigido y 30 pruebas de superficie correctos.
+  Pendiente QA visual en dispositivo. Sin SQL ni publicación.
+
+## EAS iOS / Xcode 27: inicializadores de RevenueCat (2026-10-29)
+
+- El error `invalid redeclaration of synthesized memberwise init(stringRepresentation:)` coincide con el fallo de `PaywallColor` de RevenueCat iOS 5.76.0 al compilar con Xcode 27. La corrección oficial se publicó en 5.78.0 (RevenueCat/purchases-ios #6949): mueve el inicializador al cuerpo del struct para impedir el inicializador sintetizado en conflicto.
+- `react-native-purchases` fijado en 10.3.0 y lock npm actualizado; usa PurchasesHybridCommon 18.14.1 y RevenueCat iOS 5.78.0. Pods locales actualizados y lock comprobado; TypeScript correcto. Pendiente confirmar nuevo build EAS con dependencias actualizadas; el Xcode local sigue en 26.5.
+
+## Filtro del catálogo como icono (local, 2026-10-29)
+
+- Catálogo y categorías usan `CatalogFilterButton`: icono sin fondo de 44 pt,
+  con el color del tema, igual que el selector de vista. Conserva la apertura
+  de filtros; un punto indica filtro activo y se expone el estado accesible.
+- El mismo diseño se aplica a Novedades, Ofertas y Cambios de precio,
+  conservando todos sus filtros y el indicador de cualquier filtro activo.
+- TypeScript y ESLint dirigido correctos. Pendiente QA visual en dispositivo.
+  Sin SQL ni publicación.
+
+## Selector de vista con un único icono (local, 2026-10-29)
+
+- `ViewModeToggle` muestra solo el icono de la vista actual (lista/cuadrícula)
+  y alterna a la otra al pulsarlo, sin fondo ni selector doble. Área táctil de
+  44 pt, color del tema y etiqueta de vista actual con ayuda de acción ES/CA.
+- Compartido por catálogo, categorías, favoritos, novedades, ofertas, cambios
+  de precio y selector de productos de Despensa/Nevera, en ambas plataformas.
+- TypeScript y ESLint dirigido correctos. Pendiente revisión visual en dispositivo.
+  Sin SQL ni publicación.
+
+## Preparación iOS para SDK 58 (2026-10-28)
+
+- `pod install` completado: 138 pods. Workspace actualizado `ios/QueFalta.xcworkspace`, esquema `QueFalta`; `ios/QuFalta.xcworkspace` también apunta al proyecto nuevo para evitar referencias rotas. La versión anterior de su archivo de referencias se guardó en `.expo/native-backups/old-workspace-20261028.xcworkspacedata`.
+- TypeScript correcto. Compilación de simulador iniciada; la herramienta agotó su espera de 300 s y el proceso seguía compilando; se detuvo después para no competir con la compilación abierta en Xcode. Resultado nativo pendiente de confirmación.
+
+## Migración a Expo SDK 58 (local, 2026-10-27)
+
+- Expo 58.0.20, React Native 0.88.0, React 19.3.0 y módulos alineados con SDK 58; `app.json` mantiene la política de runtime por SDK y el equipo Apple.
+- Adaptados tipos de referencias nativas, propiedades retiradas de StatusBar, WebView y gestos; Swipeable usa la implementación Reanimated de Gesture Handler 3. La batería de worklets admite el nuevo formato de captura.
+- iOS regenerado con SceneDelegate; el proyecto anterior está en `.expo/native-backups/ios-sdk57-20261027`. El proyecto regenerado usa el esquema `QueFalta`; no se han instalado pods ni compilado la app nativa. Android se genera en prebuild/EAS.
+- Expo Doctor 20/20, TypeScript, ESLint dirigido y 207 pruebas de despensa correctos; exportación iOS completada (aviso por ausencia local de `google-services.json`). Pendiente verificar gestos, navegación y arranque en dispositivo, en particular la interacción del nuevo Swipeable con el gesto anterior del pager. Se necesita nueva build nativa SDK 58; un OTA SDK 58 no se entrega a binarios SDK 57. Sin publicación OTA ni de tienda.
+
+## Carrefour: lote de 500 ImageGen en curso (2026-10-27)
+
+
+## Filtro sin gluten en novedades, ofertas y cambios (local, 2026-10-27)
+
+- Añadido a la hoja de filtros de las tres pantallas, combinable con las demás
+  facetas y eliminable con «Limpiar». Usa la clasificación del catálogo.
+- Novedades y cambios recorren las páginas pendientes al activarlo; ofertas
+  busca páginas hasta reunir coincidencias. Mercadona cruza su feed de novedades
+  con el espejo; Carrefour consulta la etiqueta que su RPC de ofertas no devuelve.
+- Alcampo no tiene aún clasificación sin gluten en el catálogo. Sin migración
+  ni publicación; pendiente revisión visual y funcional en dispositivo.
+
+- Encargo expreso: 500 adicionales, agentes en paralelo y publicación como
+  tanda anterior. Tres agentes con lotes exclusivos de 167/167/166 y reservas.
+- Carpeta `assets/product-cutouts/carrefour-20261027-imagegen-500/`; ver README,
+  `batch.json`, `lot-0*/manifest.json`, recibos y `publication.json`.
+- Solo ImageGen integrado, nunca el script de umbral rechazado. Fuentes oficiales
+  vistas antes de editar; revisión visual y alfa nativo. Excluir Papelería,
+  Bazar y Calzado y conservar las cinco imágenes ImageGen ya publicadas.
+- Root coordina publicación; helper `scripts/carrefour-imagegen-500.mjs`,
+  audita por defecto y escribe solo con `--publish`. Si hay cuota real, registrar
+  `PAUSE` global y conservar resultados. Contar solo enlaces verificados.
+- El objetivo sigue pendiente hasta verificar los 500. Sin release de la app.
+
+## Carrefour habilitado en Despensa/Nevera (cliente local, backend activo, 2026-10-27)
+
+## Despensa/Nevera: altas con medidas reales antes de asignar baldas (local, 2026-10-27)
+
+- El selector mide las fotos seleccionadas antes de habilitar la confirmación;
+  «Mis compras» aplica la misma condición. Reutiliza la caché por URL exacta.
+  Muestra «Midiendo productos…» mientras espera; tras 20 s sin completar,
+  ofrece reintento sin guardar cajas provisionales ni altas parciales.
+- Las altas reciben las medidas, las validan y las guardan con cada instancia.
+  Calculan los huecos desde el extremo izquierdo con el ancho visible real,
+  manteniendo orden de selección, reservas explícitas de grupos con cartel,
+  posiciones manuales existentes y rechazo atómico si el conjunto no cabe.
+- Eliminado para nuevas altas el reparto inicial con cajas cuadradas sin medir
+  (por ejemplo, nueve productos estrechos repartidos provisionalmente 3+3+3).
+  Los inventarios ya guardados conservan sus baldas; no hay redistribución retroactiva.
+- TypeScript, ESLint dirigido y 207 pruebas de despensa correctos: nueve fotos
+  nuevas en una balda desde el primer guardado, catálogo/compras, Nevera,
+  bloqueo sin medidas, caché, selección cambiante, fallo y reintento.
+  Pendiente QA visual en dispositivo. Sin SQL ni publicación.
+
+
+- **Calidad rechazada por el usuario:** no extender el recorte por umbral de
+  estas cinco fotos. **Ya sustituidas por las cinco regeneraciones ImageGen**
+  por orden expresa del usuario, en una transacción. HTTP/MIME/SHA-256 remotos y
+  5/5 enlaces con clave pública verificados; `thumbnail` y objetos previos intactos.
+  Recibo: `docs/carrefour-imagegen-replacement-20261027.json`. PNG/prompts:
+  `assets/product-cutouts/carrefour-20261027-imagegen-5/`. Usuario vio la tanda
+  con cambios de brillo/etiquetas y pidió vincularla. TypeScript OK.
+  Investigación: 2.934 fotos BonÀrea usan PNG oficial ya transparente y solo
+  134 usan el script final del 26/10. ImageGen se usó antes para ilustraciones
+  locales. Carrefour: 350 px, alfa binario; cinco fuentes BonÀrea comprobadas:
+  1.000–1.772 px con alfa gradual. Igualdad RGB no valida contorno/transparencias.
+- Excluir Papelería, Bazar y Calzado de las futuras tandas por petición expresa.
+  El script de prueba ya lo aplica; no se cambia publicación del catálogo.
+- Cinco muestras: `520664611`, `520660281`, `521002680`, `521003205`, `521001754`.
+  Fuentes, PNG transparentes, comparativa y recibo RGB/SHA-256 en
+  `assets/product-cutouts/carrefour-20261027-sample/` (ver README).
+- Recorte por script como BonÀrea, solo alfa y revisión visual de las cinco.
+  Reproducir: `node scripts/preview-carrefour-cutouts.mjs`. TypeScript OK.
+- Cliente integrado: selector/categorías, filtro regional, compras, refresco,
+  persistencia de los cinco formatos de ID del catálogo (numérico, `prod*`,
+  `fprod*`, `VC4A-*`, `VC4AECOMM-*`), detalle y reposición a lista como Carrefour.
+  Exclusiones por nombre e IDs, antes de paginar y también al resolver compras.
+- SQL aplicado: `20261027203144_carrefour_pantry_cutouts.sql` (columna e índice).
+  Cinco PNG subidos, verificados y enlazados; originales `thumbnail` intactos.
+  Recibo: `docs/carrefour-cutouts-publicacion-20261027-5.json`. El script
+  `scripts/upload-carrefour-pantry-sample.mjs` verifica la tanda y es DRY_RUN
+  salvo `--publish`; rechaza sustituciones y categorías excluidas.
+- 199 pruebas correctas, TypeScript y ESLint dirigidos OK. Consulta real con
+  clave pública en ES/ES-CT: cinco productos, búsqueda, compras/refresco y
+  persistencia correctos. Cliente local sin commit/OTA/App Store; QA nativa pendiente.
+
+## Despensa/Nevera: posición inicial de «Añadir balda» (local, 2026-10-27)
+
+- Altura base reservada por espaciador en flujo al medir el ancho, evitando
+  que el botón permanezca arriba hasta la siguiente interacción. Los carteles
+  conservan su animación mediante padding inferior del marco compartido.
+- TypeScript, ESLint dirigido y 30 pruebas de superficie correctos. Pendiente
+  apertura en dispositivo. Sin SQL ni publicación.
+
+## Despensa/Nevera: lápiz de ubicación alineado con última fila (local, 2026-10-27)
+
+- El control de editar ubicación queda anclado abajo a la derecha del bloque
+  de opciones, a la altura de su última fila, sin pie independiente. El área
+  de opciones reserva espacio lateral para que no se superpongan los textos.
+  Conserva edición, confirmación, alta/borrado y altura medida del desplegable.
+- Sin SQL ni publicación. Pendiente QA visual en dispositivo.
+
+## Despensa/Nevera: legibilidad del botón de carrito (local, 2026-10-27)
+
+- Texto, icono y carga dentro de GlassSurface, evitando capas hermanas sobre
+  el material nativo. Cristal regular con tinte accentLight y texto ink del
+  tema, también en fallback; conserva los estados de añadir y confirmación.
+- TypeScript, ESLint de la ficha y pruebas dirigidas correctos. Pendiente
+  revisión visual en dispositivo. Sin SQL ni publicación.
+
+## Despensa/Nevera: posición libre al arrastrar (local, 2026-10-27)
+
+- Al soltar tras la pulsación mantenida, conserva la coordenada horizontal
+  elegida cuando cabe. Mantiene la elección de balda, alineación sobre ella,
+  tolerancia al soltar, bordes, tamaño y rechazo si el conjunto no cabe.
+- Los vecinos solo se desplazan al colisionar; conserva los huecos elegidos y
+  las posiciones de la balda de origen. Cancelar restaura el estado inicial.
+- `manualPosition` opcional en el formato v1 marca las posiciones conservadas:
+  normalizar, guardar, recargar, borrar otro producto y sincronizar por grupo
+  ya no compactan esas baldas. Las baldas anteriores sin posiciones manuales
+  conservan la compactación automática. Las altas pueden utilizar sus huecos.
+- Común a Despensa/Nevera y almacenamiento personal/compartido. No requiere
+  SQL nuevo. Pruebas de geometría, gesto completo, worklets serializados de
+  Expo, guardado/relectura y segundo miembro del grupo correctas. Pendiente
+  QA táctil en dispositivo; sin publicación.
+
+## Despensa y Nevera compartidas por grupo (2026-10-27)
+
+- `PantryScreen` espera a la hidratación de `CartContext` y selecciona el mismo
+  grupo activo que la cesta. No muestra el nombre del grupo bajo el selector
+  Despensa/Nevera; sin grupo conserva el inventario personal local anterior. No se copian existencias personales
+  a ningún grupo. La pantalla se remonta por cuenta + grupo para aislar fichas,
+  selectores, gestos y respuestas tardías.
+- Nueva tabla `group_pantry`: una fila por grupo y sección (`pantry`/`fridge`),
+  con existencias, cantidades, notas, caducidad, ubicación, baldas y carteles.
+  Todos los miembros pueden leer/editar; RLS bloquea usuarios ajenos y anon.
+  RPC `save_group_pantry` SECURITY INVOKER y revisión compare-and-set; claves
+  de grupo/sección inmutables mediante permisos de columna. Borrado de grupo
+  elimina sus inventarios por cascada.
+- `usePantryInventory` conserva `usePantryLayout` para uso personal y añade
+  guardado optimista por grupo, cola serial, combinación por instancia/campo,
+  Realtime y recuperación al enfocar/volver a primer plano o cada 15 s activo.
+  Altas independientes se conservan; un borrado remoto no se resucita. Sobre
+  el mismo campo prevalece el último guardado aceptado. Cambios incompatibles
+  en número de baldas requieren recargar con descarte explícito del pendiente.
+- Cola pendiente durable en AsyncStorage por usuario + grupo + sección;
+  reintento tras fallo, cambio de grupo y reinicio. La primera apertura de un
+  inventario compartido requiere lectura remota: no es una caché offline del
+  inventario completo. Renovación de imágenes al enfocar/volver conservada.
+- Avisos locales de caducidad reconciliados con los productos del grupo activo,
+  con identidad por grupo/sección/instancia; cambiar de grupo cancela los avisos
+  anteriores. Desactivar avisos funciona sin red. Textos nuevos ES/CA.
+- Migración **aplicada en producción**:
+  `supabase/migrations/20261027135915_shared_group_pantry.sql`. El fichero fue
+  generado por CLI y alineado con la versión real del historial remoto.
+  `supabase/tests/shared_group_pantry.sql` pasó con dos miembros y un usuario
+  externo: lectura/escritura, inicialización concurrente, revisiones obsoletas,
+  separación de Nevera, RLS, permisos y publicación Realtime. Todo el contenido
+  de prueba se revirtió con ROLLBACK; no se alteraron inventarios de usuarios.
+- Las 186 pruebas de despensa pasan, incluidas concurrencia, grupos/cuentas/
+  secciones y aislamiento al
+  desmontar, cola/reinicio, revocación, conflictos y avisos. TypeScript
+  y ESLint correctos. La batería completa conserva dos fallos ajenos: hash
+  histórico de `src/api/catalog.ts` en `comparator-strict-post-merge-evidence`
+  y prueba obsoleta `list-zones` que importa `zoneOfCategory` ya retirado.
+- Cliente solo local, sin commit, OTA ni publicación. Pendiente QA visual con
+  dos dispositivos/cuentas; las pruebas de hook y SQL no certifican entrega
+  de eventos websocket ni interacción nativa entre dispositivos.
+
+## Sync El Jamón: exclusión de productos fallidos (local, 2026-10-27)
+
+
+- El timeout de la ficha `11014088` bloqueó el run `40392630172` tras extraer
+  7.049 productos. Ahora se excluyen los productos sin subcategoría resuelta y
+  se publica el resto, con recuentos ajustados y SKU/motivo en log y snapshot.
+- Conserva guardias de catálogo parcial y mínimo tras filtrar. Los excluidos
+  previamente publicados se despublican con la limpieza habitual. TypeScript y
+  cuatro pruebas correctos. Pendiente publicar y ejecutar en Actions; sin SQL
+  ni cambios remotos.
+
+## Sync Bonpreu: entorno de Actions fijado (local, 2026-10-27)
+
+- Workflow corregido a Ubuntu 24.04 y Node 22.23.2. El run `40508064185`
+  falló antes del sync porque Playwright 1.60.0 no instala Chromium en el
+  nuevo Ubuntu 26.04 de `ubuntu-latest`; no hubo escrituras en el catálogo.
+- Pendiente publicar y ejecutar en Actions. Último ciclo correcto: 20/10,
+  20.792 productos. Detalle en CONTEXTO.md.
+
+## Despensa/Nevera: lista actual y acciones de ficha (local, 2026-10-27)
+
+- Debajo de notas aparece «Incluido en la lista de la compra actual» cuando
+  coincide supermercado + ID en la lista activa. Excluye artículos aplazados;
+  admite IDs antiguos de Mercadona. Consulta al abrir y al volver al primer
+  plano, descarta respuestas antiguas y limpia la suscripción al cerrar.
+  Añadir desde la ficha muestra el aviso inmediatamente tras confirmar éxito.
+- «Se ha terminado» pasa a «Eliminar» con papelera; conserva el borrado de la
+  instancia. Añadir al carrito usa GlassSurface interactivo con tinte del tema
+  y fallback opaco. Textos ES/CA. Sin SQL ni publicación.
+- TypeScript, ESLint de ficha/hook/traducciones y 176 pruebas de despensa
+  correctos, incluidas identidad, cambio de lista, errores y limpieza. Pendiente
+  QA visual/táctil nativa del botón Liquid Glass.
+
+## Despensa/Nevera: alarma de caducidad prioritaria (local, 2026-10-27)
+
+- Desde tres días naturales antes de la fecha (incluido el propio día), o si
+  ya pasó, un círculo rojo con «!» sustituye a las notas en el mismo anclaje.
+  No es pulsable ni captura gestos. Compartido por baldas/listas y ambas
+  secciones; conserva prioridad de papelera y ocultación al editar carteles.
+- La ficha conserva las notas y muestra el aviso ES/CA correspondiente en
+  Caducidad, con borde rojo y pulso suave de 800 ms por tramo. Reducir
+  movimiento mantiene el aviso fijo. Cambiar/quitar fecha y desmontar cancelan
+  la animación. El texto del producto para lectores de pantalla incluye estado.
+- Cálculo por fecha local y días de calendario, independiente del cambio de
+  hora. Un único reloj en la pantalla actualiza ambos inventarios y la ficha
+  a medianoche y al volver a primer plano; limpia temporizador y suscripción.
+- TypeScript, ESLint dirigido y 172 pruebas de despensa correctos, con límites
+  de fecha, prioridad, apertura de ficha, limpieza, movimiento reducido y reloj.
+  Pendiente QA visual/táctil en dispositivo. Sin SQL ni publicación.
+
+## Despensa/Nevera: indicador de cantidad circular (local, 2026-10-27)
+
+- Indicador de cantidad con diámetro fijo de 21,6 pt y radio de 10,8 pt.
+  Número centrado, una línea y ajuste de fuente para cifras largas; conserva
+  posición, tema, visibilidad solo para más de una unidad y gestos existentes.
+
+## Despensa/Nevera: cantidad sin multiplicador y más pequeña (local, 2026-10-27)
+
+- La pastilla muestra solo el número para cantidades mayores que uno.
+  Reducidos un 10 % ancho/alto mínimos, relleno, radio, borde y tipografía:
+  mínimo 21,6 × 18 pt y fuente 10,8 pt. Conserva anclaje y gestos.
+
+## Despensa/Nevera: cantidad visible por producto (local, 2026-10-27)
+
+- En baldas, las cantidades superiores a una unidad muestran «×2», «×3»…
+  en una pastilla de al menos 20 pt, junto al borde inferior derecho visible
+  de la foto y 4 pt hacia dentro. Usa medidas reales cuando existen y el
+  marco compacto como alternativa. Fondo opaco y colores del tema.
+- Viaja con la foto al arrastrar, se oculta con ella al abrir la ficha y no
+  intercepta gestos: tocarla abre el producto como tocar su imagen. Notas
+  permanecen arriba. La etiqueta accesible del producto incluye las unidades.
+- TypeScript, ESLint dirigido y 165 pruebas de despensa correctos (164 de la
+  suite y nueva regresión de cantidad en superficie). Pendiente QA visual en
+  dispositivo. Sin cambios de almacenamiento, SQL ni publicación.
+
+## Despensa/Nevera: botón de notas más pequeño y hacia el centro (local, 2026-10-27)
+
+- En las baldas, el botón de notas se desplaza 6 pt a la izquierda y 6 pt
+  hacia abajo desde su anclaje anterior en la esquina superior derecha.
+- Círculo e icono reducidos un 10 % (23,76 pt y 14,4 pt); el objetivo táctil
+  conserva 44 pt. Tamaño visual compartido con la vista de lista.
+- TypeScript, ESLint dirigido y 32 pruebas de notas/superficie correctos.
+  Pendiente QA visual en dispositivo. Sin SQL ni publicación.
+
+## Despensa/Nevera: baldas y espacio útil ampliados (local, 2026-10-27)
+
+- Margen lateral de las vistas de baldas: 16 → 10 pt; cada balda gana
+  12 pt de ancho total. Máximo compartido: 520 → 532 pt en pantallas grandes.
+- Margen interior de colocación: 0,02 → 0,01 por lado. El ancho útil pasa
+  del 96 % al 98 % del lienzo, además de ganar el ancho exterior. Altas,
+  compactación, arrastre y ayudas comparten estos límites en ambas secciones.
+- TypeScript, ESLint dirigido y 164 pruebas de despensa correctos.
+  Pendiente comprobación visual en dispositivo. Sin SQL ni publicación.
+
+## Despensa/Nevera: primera apertura preparada (local, 2026-10-27)
+
+- Pager monta Despensa en tiempo libre tras 350 ms de Inicio, sin navegar.
+  Ambos inventarios se leen por usuario y Nevera se monta oculta en otro turno
+  libre. Fotos anticipadas: hasta doce únicas/sección en la cola compartida,
+  usando las URL exactas de las baldas y cancelando la precarga al desmontar.
+- `PantryImageBoundsProbe` consulta las medidas persistidas de cada inventario
+  y solo monta el decodificador si quedan fotos sin medir. Una medida recibida
+  no reinicia las otras descargas del lote. Nunca reutiliza medidas de otra URL.
+- Baldas solo después de leer inventario; aviso/reintento de errores intactos.
+  TypeScript, ESLint dirigido y 168 pruebas de despensa/cola correctos.
+  Pendiente QA de apertura fría y FPS en dispositivo. Sin SQL ni publicación.
+
+## Despensa/Nevera: bocadillo sin icono de cierre (local, 2026-10-26)
+
+- Retirada la flecha derecha y su espacio reservado. El bocadillo muestra
+  únicamente el texto, con relleno horizontal simétrico. Conserva cierre suave
+  al tocar fuera, volver de Android y gesto de escape de accesibilidad.
+- Sin cambios de datos, SQL ni publicación.
+
+## Despensa/Nevera: bocadillo de nota compacto (local, 2026-10-26)
+
+- Retirados el título «Notas» y el nombre del producto del bocadillo. Solo
+  muestra el texto original y la flecha de contraer, integrada a la derecha con
+  objetivo de 44 pt. Menor altura y relleno; conserva punta, animación y scroll.
+- TypeScript, ESLint focalizado y seis pruebas del bocadillo correctos.
+  QA visual iPhone 15 Pro/iOS 26.5: nota de cacao compacta y cierre correctos.
+  Sin cambios de datos, SQL ni publicación.
+
+## Despensa/Nevera: bocadillo de notas animado (local, 2026-10-26)
+
+- La nota se presenta como bocadillo con punta hacia el botón del producto.
+  Prefiere abrir arriba; si falta espacio superior se abre debajo, manteniendo
+  la punta y el contenido dentro del área segura y el scroll para notas largas.
+- Escala y opacidad parten de la punta (`transformOrigin`), con apertura suave
+  de 240 ms y cierre de 180 ms. El Modal se desmonta tras finalizar el cierre;
+  las generaciones de cancelación impiden callbacks tardíos. Reducir movimiento
+  conserva escala 1 y duración 0, con cierre inmediato.
+- TypeScript, ESLint focalizado y 163 pruebas de despensa correctos, incluidas
+  punta como origen, cierre diferido, accesibilidad de movimiento y cancelación.
+- QA iPhone 15 Pro/iOS 26.5: notas de cacao (bocadillo sobre producto) y leche
+  (bocadillo debajo por borde superior), capturas visuales y cierre con flecha
+  correctos. Sin cambios en notas/existencias, SQL ni publicación.
+
+## Despensa/Nevera: lectura de notas sobre el producto (local, 2026-10-26)
+
+- Los productos con notas no vacías muestran un botón con icono de documento
+  en la esquina superior derecha visible de la foto, con círculo de 26,4 pt,
+  icono de 16 pt y objetivo táctil de 44 pt. Comparte anclaje y capa 10 con la
+  papelera; modo borrado y edición de carteles lo ocultan. Disponible en lista.
+- `PantryNoteButton` abre un Modal nativo transparente por encima de baldas,
+  carteles y fotos, anclado sobre el botón y limitado al área segura. Muestra
+  el nombre y la nota original, incluidos saltos de línea; el texto largo se
+  desplaza. Flecha «Contraer nota», toque fuera y volver de Android cierran.
+- Leer no abre la ficha ni escribe inventario. Cambiar de vista/sección,
+  ocultar el producto, cambiar nota/dimensiones o desmontar invalida medidas
+  tardías y cierra el panel. Textos ES/CA, tema y accent dinámicos.
+- TypeScript y ESLint focalizado correctos; 161 pruebas de despensa correctas.
+  Incluyen apertura/cierre, contenido, límites, medidas tardías, prioridad de
+  papelera, anclaje y aislamiento en baldas/listas de ambas secciones.
+- QA iPhone 15 Pro/iOS 26.5: apertura y cierre de la nota de leche en baldas y
+  lista, captura visual del panel superpuesto y desaparición de notas al activar
+  borrado. Sin modificar notas ni existencias. Sin SQL ni publicación.
+
+## Despensa/Nevera: animación del bloque Baldas (local, 2026-10-26)
+
+- «Baldas» replica la transición de «Ubicación»: altura medida, opacidad y
+  giro de flecha de 180°, con 240 ms y easing cúbico de entrada/salida.
+  Mantiene las opciones montadas durante la contracción, sin capturar toques
+  ni exponerlas a accesibilidad cuando está cerrado. Reducir movimiento usa 0 ms.
+- El aviso de grupo lleno forma parte del contenido medido. Sin cambios de
+  selección, persistencia, SQL ni publicación.
+
+## Despensa/Nevera: selector de baldas y herencia de carteles (local, 2026-10-26)
+
+- La ficha del producto incluye el bloque «Baldas», con el cartel actual y
+  selector de los carteles de la sección activa. Cambiarlo mueve solo esa
+  instancia y conserva cantidad, notas, caducidad, ubicación y geometría.
+- Un cartel agrupa su balda y las siguientes sin cartel, hasta el próximo
+  cartel o el final. La pertenencia se deriva de la balda física y los carteles
+  actuales, sin duplicarla en almacenamiento. Antes del primer cartel no hay
+  grupo asignado; los carteles sin nombre usan el número de balda.
+- Seleccionar el grupo actual conserva la posición física. Cambiar de grupo
+  busca sitio desde la balda con cartel por sus continuaciones; si está lleno,
+  no guarda ni mueve el producto y la ficha permite elegir otro. Las altas
+  desde catálogo aplican la misma capacidad de grupo y siguen siendo atómicas.
+- La regla reemplaza la selección anterior limitada a una sola balda física.
+  Arrastrar sigue eligiendo una balda física y la ficha refleja su grupo.
+- TypeScript, ESLint focalizado y 155 pruebas de despensa correctos: herencia,
+  límites entre carteles, cambios de cartel, movimientos, metadatos, grupo
+  lleno, continuación en altas y aislamiento Despensa/Nevera.
+- Textos ES/CA y guardado v1 existentes. Sin SQL ni publicación. Pendiente
+  comprobación visual/táctil nativa del nuevo bloque.
+
+## Despensa/Nevera: respuesta visual al pulsar la papelera (local, 2026-10-26)
+
+- Las papeleras de producto reducen su opacidad mientras se mantienen pulsadas,
+  tanto en baldas como en lista, compartido por Despensa y Nevera. Respuesta
+  inmediata sin animación y objetivo táctil de 44 pt conservado.
+- No cambia el borrado ni su persistencia. Sin SQL ni publicación.
+
+## Despensa/Nevera: capa táctil de papelera protegida (local, 2026-10-26)
+
+- Corregido `PantryShelf`: el mapper animado compartido de posición incluía
+  `zIndex: 0`, que sobrescribía el `zIndex: 10` de la papelera hermana y podía
+  dejar su objetivo táctil detrás de productos vecinos. Posición y capa visual
+  del producto usan ahora mappers independientes; la papelera conserva su capa.
+- Común a Despensa/Nevera. No cambia el callback de borrado, guardado ni tamaño.
+- Regresión comprueba que la posición animada conserva la capa 10 y que el
+  producto arrastrado sigue elevándose a 20. TypeScript, ESLint focalizado y
+  151 pruebas de despensa correctos. Pendiente comprobar el toque en nativo.
+  Sin SQL ni publicación.
+
+## Despensa/Nevera: vecinos se apartan durante el arrastre (local, 2026-10-26)
+
+- Al pasar una foto por una balda se comprueba si cabe el conjunto completo y
+  se previsualiza su inserción entre los vecinos según el punto señalado. Los
+  vecinos se desplazan con animación de 150 ms; la foto sostenida sigue al dedo
+  libremente, sobre baldas y productos. Usa medidas visibles sin reducir fotos.
+- Cada vista previa se calcula desde un snapshot del inicio del gesto; no
+  acumula desplazamientos ni oscila al sostener el mismo punto. Si no cabe o
+  sale del armario se restaura la disposición inicial; cancelar restaura todos
+  los vecinos. Solo guarda al soltar, con el ancla del vecino siguiente y la
+  revalidación existente del estado vivo. Retorno/ajuste de foto en 220 ms.
+- Aceptación tolerante por balda y capacidad total sustituye el requisito de
+  tener un hueco vacío previo. Ayudas verdes se recalculan sobre la vista previa.
+  Misma implementación para Despensa/Nevera y todos los productos medidos.
+- TypeScript, ESLint focalizado y 151 pruebas de despensa correctos. Incluye
+  inserción entre baldas, hover repetido estable, balda llena, cancelación de
+  todos los vecinos, no guardar durante el gesto y worklets reales de Expo.
+- QA iPhone 15 Pro/iOS 26.5: captura durante arrastre confirma que el pan se
+  aparta al pasar la leche; reordenación guardada y devuelta al orden previo con
+  otro arrastre. Sin publicación ni SQL.
+
+## Despensa/Nevera: elegir balda antes de confirmar (local, 2026-10-26)
+
+- Retirado el texto de artículos seleccionados del pie del selector. Nuevo
+  botón «Ubicar productos» abre una revisión con foto, nombre y selector de
+  balda independiente para cada producto. Solo ofrece baldas con cartel de la
+  sección activa; conserva nombre y emoticono, con número si el cartel está vacío.
+- «Sin seleccionar balda» es opcional y permite colocación automática donde
+  haya espacio. Volver al catálogo mantiene las decisiones; desmarcar un
+  producto limpia su elección. No escribe hasta «Añadir a la despensa/nevera».
+- Reserva primero las baldas elegidas para no consumirlas con altas automáticas;
+  mantiene el orden de selección guardado. Una balda elegida llena rechaza el
+  lote completo y permite cambiar la elección/reintentar, sin trasladar ese
+  producto a otra balda. Compras y persistencia por usuario/sección intactas.
+- TypeScript y ESLint focalizado correctos; 85 pruebas dirigidas correctas,
+  incluidas revisión, volver, elección opcional, baldas con cartel, reserva,
+  rechazo atómico y aislamiento. En la suite completa: 146/150; fallan cuatro
+  pruebas de arrastre en `pantry-surface`/`pantry-worklets`, que ejecutan módulos
+  de geometría y baldas ajenos a este cambio. Pendiente QA visual/táctil nativa.
+  Sin SQL ni publicación.
+
+## Despensa/Nevera: aceptación tolerante al soltar (local, 2026-10-26)
+
+- `pantryDropPlacement` elige la balda más cercana y busca sus huecos donde
+  realmente cabe la foto, usando las mismas medidas visibles que las ayudas.
+  Se elimina la exigencia de acertar a unos 20 pt de la superficie o encajar
+  completamente la foto en el hueco al soltar.
+- Acepta apuntar al hueco con parte de la foto y un margen horizontal adicional
+  de 0,04 del lienzo; ajusta el centro a una posición válida. Conserva límites
+  exteriores del armario y no desplaza productos hacia huecos remotos ni acepta
+  huecos insuficientes por ancho/altura. No cambia el arrastre libre ni su
+  animación: el ajuste ocurre solo al soltar, común a Despensa/Nevera.
+- Pruebas con el worklet serializado de Expo: soltar desalineado verticalmente,
+  sobre el inicio del hueco con media foto sobre el vecino, cerca de un borde,
+  hueco demasiado pequeño, producto eliminado y rechazo de regiones lejanas.
+  Sustituye las comprobaciones estrictas de la entrada anterior.
+- TypeScript, ESLint focalizado y 144 pruebas de despensa correctos.
+
+## Despensa/Nevera: arrastre libre y validación al soltar (local, 2026-10-26)
+
+- La foto sostenida sigue el dedo mediante coordenadas visuales compartidas en
+  UI, por encima de baldas y productos. Ya no compacta ni salta entre baldas
+  durante el gesto; vecinos e inventario permanecen quietos hasta soltar.
+- Al soltar, `pantryDropPlacement` valida ancho visible, bordes, altura, colisión
+  y cercanía a la superficie (0,045 de altura de referencia, unos 20 pt), con
+  offsets de carteles. Soltar entre baldas, fuera del armario o encima de otra
+  foto se rechaza sin guardar. La posición inicial se conserva durante el gesto.
+- Destino válido: inserta/compacta y guarda al soltar. Destino inválido o gesto
+  cancelado: retorna al origen. Foto flotante animada durante 220 ms al destino
+  final/origen; respeta movimiento reducido. Conserva pulsación de 350 ms,
+  huecos verdes, acciones accesibles y lógica compartida con Nevera.
+- TypeScript, ESLint focalizado y 143 pruebas de despensa correctos. Regresiones
+  de continuidad horizontal/vertical, solapamiento temporal permitido, vecinos
+  inmóviles, retorno por cancelación/soltar entre baldas/encima de fotos y
+  validación de drops en worklets serializados reales de Expo.
+- QA iPhone 15 Pro/iOS 26.5: captura durante arrastre muestra la leche flotando
+  por encima del borde de la balda; al soltar entre baldas retorna al origen y
+  desaparecen las ayudas. Sin cambios persistentes por esa prueba ni publicación.
+
+## Despensa/Nevera: eliminar baldas vacías (local, 2026-10-26)
+
+- En edición aparece una papelera a la derecha, debajo de «+ ↓», solo en las
+  baldas sin productos. La comprobación usa todo el inventario, incluidos los
+  pendientes de colocar, y se revalida al borrar sobre el estado actual.
+- Elimina también el cartel de esa balda; desplaza hacia arriba los productos
+  y carteles inferiores conservando sus datos. Permite reducir hasta una balda.
+  El formato v1 conserva ahora una o dos baldas tras recargar; inventarios nuevos
+  siguen empezando con tres. Guardado y reintento existentes por usuario/sección.
+- Objetivo táctil completo de 44 pt dentro de sus contenedores, textos ES/CA,
+  y funcionalidad común a Despensa/Nevera. Sin SQL ni publicación.
+- TypeScript, ESLint focalizado y 143 pruebas de despensa correctos: borrado
+  intermedio/primero/último, bloqueo por productos/pendientes, datos y carteles,
+  persistencia del hook real, aislamiento de usuario/sección y controles.
+  Pendiente QA visual/táctil nativa.
+
+## Despensa/Nevera: mover mediante pulsación mantenida y huecos disponibles (local, 2026-10-26)
+
+- El pan se activa tras 350 ms manteniendo pulsado (`activateAfterLongPress` de
+  RNGH); un toque breve sigue abriendo el producto. Conserva reordenación y
+  cambio de balda, compactación por foto visible y acciones accesibles.
+- Mientras se sostiene una foto, contornos verdes discontinuos muestran los
+  intervalos vacíos donde cabe por ancho visible y altura de balda. Excluyen la
+  propia instancia, reservan márgenes y se actualizan con la vista previa.
+  El producto sostenido se eleva visualmente. Al soltar/cancelar o cambiar el
+  inventario/modo se limpian las ayudas; solo un producto puede moverse a la vez.
+- Implementación común a Despensa/Nevera y a todos los productos. Las ayudas
+  no capturan toques ni modifican fotos, cantidades o metadatos. ES/CA actualizados.
+- TypeScript, ESLint focalizado y 137 pruebas de despensa correctos, incluyendo
+  los worklets serializados reales de Expo, cálculo de huecos para fotos anchas/
+  estrechas, altura insuficiente, activación, ocultación y cancelación.
+- QA iPhone 15 Pro/iOS 26.5: pulsación sin desplazamiento muestra los huecos,
+  soltar los oculta, reordenación horizontal con gesto sostenido correcta y
+  balda llena rechaza el traslado. Orden de prueba restaurado. Sin publicación.
+
+## Despensa/Nevera: insertar una balda debajo (local, 2026-10-26)
+
+- En modo edición, cada balda muestra a la derecha el botón «+ ↓», también
+  sin cartel. Inserta una balda justo debajo; los productos y carteles de las
+  inferiores se desplazan juntos, conservando orden, cantidades, caducidad,
+  notas, medidas de imagen y ubicaciones de cocina.
+- Disponible en Despensa y Nevera, con acabado propio, objetivo táctil de 44 pt
+  y etiqueta accesible ES/CA. Usa el guardado v1 por usuario/sección y sus
+  avisos/reintento existentes. No requiere SQL ni publicación.
+- TypeScript y ESLint focalizado correctos. 135 pruebas de despensa correctas,
+  con regresión de inserción intermedia, primera/última balda, carteles,
+  recarga y botón en ambas secciones. Pendiente QA visual/táctil nativa.
+
+## Despensa/Nevera: corrección del crash al arrastrar (local, 2026-10-26)
+
+- `compactPantryRow` capturaba `nextPackedPantryPlacement` antes de inicializarse:
+  Expo transforma los worklets y esa dependencia quedaba `undefined` en UI.
+  Movido el auxiliar antes de su consumidor; geometría y espaciado intactos.
+- Nueva regresión `scripts/tests/pantry-worklets.test.mjs`: usa el preset real
+  de Expo y ejecuta el código serializado con sus cierres capturados. Reproduce
+  `nextPackedPantryPlacement is not a function` antes del cambio; después verifica
+  compactación, reordenación y traslado entre baldas correctamente.
+- Typecheck, ESLint del módulo y 129 pruebas de despensa correctos.
+  QA nativo en iPhone 15 Pro/iOS 26.5: arrastrada la leche hacia la derecha
+  pasando el pan, confirmado visualmente el nuevo orden sin error y devuelta
+  mediante arrastre al orden original. Sin SQL ni publicación.
+
+## Despensa/Nevera: selección múltiple al añadir (local, 2026-10-26)
+
+- El selector permite marcar y desmarcar productos en lista y cuadrícula.
+  Conserva la selección por supermercado/ID entre búsquedas, categorías,
+  paginación y cambios de supermercado/vista. No guarda altas hasta confirmar.
+- Barra inferior con contador y «Añadir a la despensa/nevera», textos ES/CA y
+  estado accesible. Cerrar descarta la selección. Las compras siguen usando
+  su importación existente.
+- Confirmación atómica: si no caben todos, no añade ninguno y mantiene el
+  selector y la selección con aviso. Si caben, guarda en una actualización y
+  cierra. Conserva geometría, productos pendientes y aislamiento por sección.
+- TypeScript, ESLint focalizado, diff y 132 pruebas de despensa correctos;
+  incluyen selección entre supermercados con el mismo ID, desmarcado, alta
+  conjunta, rechazo parcial y reintento. Pendiente QA visual/táctil nativa.
+  Sin SQL ni publicación.
+
+## Despensa/Nevera: compactación por bordes visibles (local, 2026-10-26)
+
+- Cada balda se compacta desde la izquierda, con `PANTRY_PRODUCT_GAP` (0,012 del
+  ancho de lienzo, unos 4 pt en este iPhone) entre bordes visibles. Cierra también
+  los huecos excesivos de envases estrechos. Conserva tamaño de fotos, orden
+  visual dentro de la balda y orden de registros/lista. Altas, borrados, medidas
+  nuevas, lecturas y guardado usan la misma compactación.
+- Arrastrar inserta el producto entre vecinos, desplazándolos en la vista previa
+  y compactando origen/destino. Si no cabe, rechaza la inserción completa.
+  El commit guarda los vecinos afectados, usa la geometría viva y un ancla de
+  siguiente producto para conservar la intención aunque lleguen nuevas medidas.
+  Cancelar restaura el snapshot actual sin escribir. Acciones accesibles de
+  izquierda/derecha reordenan una posición; arriba/abajo conserva baldas.
+- `pendingPlacement?: true` identifica el overflow en el layout v1 existente;
+  espera detrás de los productos ya colocados y se elimina al recuperar sitio.
+  Evita intercambiar productos colocados/pendientes en cada recarga. Cantidades,
+  caducidades, notas, carteles y aislamiento por usuario/sección se conservan.
+- Encontrado en QA: las fotos oficiales `images.bonarea.com` carecen de cabecera
+  CORS, por lo que cinco fotos de esta despensa seguían sin medida. El decoder
+  usa ahora fetch/FileReader nativos y entrega los bytes originales como data
+  URL al canvas local. Sin dependencia de CORS del CDN, cambios de foto ni nuevas
+  librerías. Dos descargas simultáneas, timeout/cancelación al cambiar inventario
+  y caché acotada existente. Conserva alternativa de cuadrado completo si falla.
+- Al cambiar medida o URL se mantiene el borde izquierdo previo antes de
+  compactar para evitar que nuevos márgenes transparentes cambien el orden.
+- TypeScript, ESLint focalizado, diff y 128 pruebas correctos. Incluyen anchos
+  estrechos/anchos/asimétricos, margen uniforme, idempotencia con overflow,
+  inserción, rechazo atómico, cancelación, accesibilidad, medida tardía, blob
+  nativo, aislamiento de inventarios y conservación de existencias.
+- QA iPhone 15 Pro/iOS 26.5 tras relanzar: balda Quesos compactada, incluidos
+  pollo bonÀrea y leche Mercadona; 31/31 instancias con medida frente a 26/31
+  anteriores. Margen geométrico de 0,012 verificado en la balda. Revisión visual
+  de otras baldas visibles; no se ha probado arrastre con dedo en dispositivo
+  físico. Sin SQL ni publicación. Sustituye la política anterior de mantener
+  huecos guardados mientras no hubiera solapamiento.
+
+## Despensa/Nevera: separación por fotografía visible (local, 2026-10-26)
+
+- Colisiones, límites de balda, altas (catálogo y compras), arrastre y recuperación
+  usan los bordes visibles izquierdo/derecho de cada foto y el margen existente
+  `PANTRY_PRODUCT_GAP`. Tienen en cuenta transparencia asimétrica y el ajuste
+  `contain`; ya no dependen del ancho genérico del 55 %. Tamaño de foto intacto.
+- El área de selección de las fotos medidas también sigue su ancho visible;
+  conserva el centro del lienzo y la papelera. Los worklets reciben únicamente
+  geometría, sin nombres ni URL. El commit de arrastre revalida con la medida
+  actual para no sobrescribir una medición recibida durante el gesto.
+- Un único decodificador para la sección activa mide también los productos
+  pendientes de colocar, sin activar el modo borrado. Las URL se mantienen
+  estables al recibir metadatos para no reiniciar las descargas. La caché en
+  memoria se reaplica al cambiar de sección/añadir copias.
+- `visibleBounds` y `boundsImageUrl` se guardan por instancia en el layout v1
+  existente, aislado por usuario/sección. Se reutilizan al recargar sin conexión
+  y para añadir copias de una foto ya presente. Se invalidan si cambia la URL;
+  las respuestas tardías solo actualizan instancias vivas con la misma imagen.
+- Si una imagen aún no se ha medido, o falla la lectura/CORS, reserva su cuadrado
+  completo de forma conservadora; al medir se libera espacio. Esto puede mover
+  productos guardados de balda en la primera carga. Si no caben en ninguna,
+  permanecen guardados y accesibles como pendientes; nunca se eliminan ni reducen.
+- TypeScript, ESLint focalizado y 116 pruebas correctos: caso pan/pasta, fotos
+  anchas/estrechas/asimétricas, arrastre, overflow, persistencia real del hook,
+  caducidad/notas/cantidades, aislamiento y borrados frente a respuestas tardías.
+- iPhone 15 Pro/iOS 26.5: relanzada la app, entrada en Despensa y cambio Armario/
+  Lista comprobados. Las baldas visibles muestran las fotos separadas; sin
+  errores de JS en el registro. No se ha hecho un recorrido completo de todas
+  las baldas ni pruebas de arrastre en dispositivo físico.
+- Sin migración SQL ni publicación. Este apartado sustituye la limitación
+  anterior del decodificador exclusivo para el modo de eliminación.
+
+## Pulsación de papelera y borrado de existencias (local, 2026-10-26)
+
+- La papelera de cada producto se renderiza en una capa hermana de 44×44 pt,
+  sobre los productos y fuera de su marco compacto/gestos de selección y
+  movimiento. Esto permite pulsar toda el área aunque la esquina visible de
+  la foto sobresalga del marco de colisión; conserva anclaje y tamaño visual.
+- `onPress` elimina por `instanceId` mediante el callback de su sección y
+  `usePantryLayout.update`: retirada inmediata y guardado AsyncStorage por
+  usuario/sección. La otra sección y otras copias del mismo producto permanecen.
+  Los fallos de guardado usan el aviso/reintento existente.
+- TypeScript, ESLint focalizado y 106 pruebas correctos. Regresión de modo
+  borrado en baldas/lista, instancia elegida, escrituras y aislamiento de
+  Despensa/Nevera. Pendiente de comprobar la pulsación nativa en dispositivo.
+
+## Papelera de producto anclada a la fotografía visible (local, 2026-10-26)
+
+- Las baldas de Despensa/Nevera calculan el rectángulo de píxeles visibles de
+  cada imagen (alfa >= 16), incluido su centrado con `contentFit="contain"`.
+  La papelera se centra en su esquina superior derecha; conserva círculo de
+  26,4 pt, icono de 16 pt y área táctil de 44 pt, también si sobresale del
+  marco compacto de colisión. No cambia la fotografía ni la posición guardada.
+- Un WebView invisible por sección en modo borrado decodifica como máximo dos
+  imágenes a la vez, a un máximo de 512 px. Caché de metadatos en memoria por
+  URL (máximo 512), sin datos de usuario ni nuevas dependencias/migraciones.
+  Cambiar la URL requiere una nueva medida. Si falla la descarga/lectura CORS,
+  se conserva la posición anterior como alternativa y se reintenta al reactivar
+  el modo. Sin conexión, la caché en memoria sigue disponible.
+- TypeScript, ESLint focalizado y 105 pruebas de despensa correctos, con casos
+  de transparencia, imágenes no cuadradas, puente de mensajes y anclaje del
+  botón. Pendiente de QA visual/táctil nativa y distribución.
+
+## Despensa/Nevera: modo de eliminación directa (local, 2026-10-26)
+
+- Nuevo botón de papelera a la izquierda de añadir producto. Activa/desactiva
+  las papeleras rojas en la esquina superior derecha de cada producto; el
+  botón de modo queda rojo mientras está activo.
+- Cada papelera elimina la instancia completa y su cantidad con la persistencia
+  existente por usuario/sección. Disponible en baldas, lista y productos sin
+  espacio. En este modo no se abre la ficha ni se arrastran productos.
+- Añadir o editar carteles desactiva el modo; cambiar de sección también.
+  Textos accesibles ES/CA. Sin migración SQL ni publicación.
+- TypeScript, ESLint focalizado y 100 pruebas de despensa correctos.
+  Pendiente de comprobación visual/táctil nativa.
+
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
+
+## BonÀrea: catálogo activo completado con fotos sin fondo (producción, 2026-10-26)
+
+- Completados **135 productos**: 90 alimentos/bebidas con referencia `03*`
+  y los 45 pendientes anteriores. El recuento previo de 88 adicionales era
+  incorrecto; eran 90. Supabase confirma **3.008 activos con imagen y cero
+  pendientes**, y 3.068 productos con imagen incluyendo no activos.
+- Publicados 134 PNG nuevos en `product-illustrations/bonarea/cutouts-20261026/`
+  y enlazado un PNG oficial ya transparente en `bonarea_products.illustration_url`.
+  El usuario autorizó expresamente el recorte mediante script. Se modificó solo
+  alfa: igualdad RGB y resolución verificadas para los 134 recortes. La prueba
+  ImageGen que alteraba el brillo se descartó y eliminó.
+- Revisadas las fotos y máscaras. Los 134 objetos públicos devuelven HTTP 200
+  y el mismo SHA-256 del archivo aprobado; los 135 enlaces coinciden con la tabla.
+  Los 2.933 enlaces anteriores conservan su digest. El límite de archivo del
+  bucket se amplió temporalmente para 11 originales grandes y quedó restaurado
+  a 3 MiB; sin cambios de accesos ni políticas.
+- Recuperadas dos fuentes: Ramón Bilbao desde su JPG oficial (el catálogo
+  indicaba foto ausente) y Plum Cake Menal 600 g desde la ficha de AECOC/Pa de
+  Mel (la foto de BonÀrea muestra un embutido). `thumbnail` permanece original.
+- Eliminadas imágenes, scripts, modelos, dependencias y manifiestos temporales
+  de esta tanda: 3.346 archivos, 426.250.212 bytes, más la prueba ImageGen.
+  TypeScript correcto. Recibo resumido:
+  `docs/bonarea-cutouts-publicacion-20261026-final.json`.
+
+
+## Refresco de fotos de Despensa/Nevera (local, 2026-10-26)
+
+- Corregida la causa de que Albahaca ya guardada mostrase el diseño anterior:
+  la URL persistida no se reconciliaba con Supabase.
+- `usePantryLayout` refresca en foco/primer plano; API por súper/ID y fusión
+  sobre estado actual, conservando ediciones y sin restaurar borrados.
+  Offline conserva fotos; peticiones canceladas al perder foco/desmontar.
+- TypeScript, ESLint focalizado y 99 pruebas correctos. No distribuido;
+  pendiente QA nativa. Hasta distribuir, volver a añadir carga la nueva URL.
+
+## Albahaca Hacendado: sustitución publicada (2026-10-26)
+
+- Usuario aprueba la imagen sin fondo mostrada de Mercadona `34128`.
+  Publicada en `illustration_url`: `mercadona/34128/e8de6346726372b1.png`.
+  Foto original y antiguo objeto conservados. MIME/hash/enlace verificados.
+- Recurso, fuente y prompt: `assets/product-cutouts/mercadona-34128/`.
+  TypeScript OK; resto del catálogo pendiente. Las instancias locales ya
+  guardadas pueden conservar su URL antigua.
+
+## Nevera: paridad funcional con Despensa (local, 2026-10-22)
+
+- Selector de baldas/lista, botones flotantes de alta/edición y carteles con
+  nombre, emoticono y borrado, reutilizando la lógica y animaciones comunes.
+  Acabado azul propio; sin huecos de alta de productos en las baldas.
+- Inventarios, baldas, carteles y ubicaciones permanecen separados por usuario
+  y sección. Vista elegida y scroll independientes. Cambiar sección cierra
+  edición/buscador/ficha; los cambios tardíos de carteles se bloquean.
+- «Mis compras» se habilita también en Nevera: importación del lote completo
+  con cantidades o rechazo sin escrituras parciales si no cabe. Textos ES/CA
+  adaptados al destino. Sin SQL ni cambios de formato de almacenamiento.
+- TypeScript, ESLint focalizado y 94 pruebas correctos. QA en iPhone 15 Pro de
+  lista, alta/ficha/retirada y carteles; eliminados producto y cartel de prueba.
+  Local pendiente de publicar. Detalle al inicio de CONTEXTO.md.
+
+## Sin gluten por nombre en seis supermercados (producción/local, 2026-10-22)
+
+- Backfill `20261022125140_name_gluten_free_catalogs.sql` aplicado: publicados
+  Ametller 44, El Jamón 38, Hipercor 1.978, HiperDino 84, Lidl 2, Mercadona 49.
+  Cero NULL y discrepancias. Detector en `scripts/lib/gluten-free-names.mjs`,
+  equivalente a `public.catalog_name_gluten_free(text)`. Verificado sobre
+  2.678 nombres/casos; 21 pruebas, TypeScript, ESLint y sintaxis correctos.
+- Syncs actualizados. Ametller/Mercadona clasifican tras recibir ambos idiomas.
+  Lidl/Hipercor añaden la bandera a sus maestras reales, además del legado;
+  vistas por tienda/centro la exponen manteniendo `security_invoker=true`.
+  RPC de búsqueda Lidl y lecturas públicas comprobadas; sin nuevos avisos de
+  seguridad respecto a los previos.
+- Carga progresiva y fichas incorporadas a los cinco supers del cliente.
+  Mercadona usa bandera, orden por precio/precio unitario y región. Lidl usa
+  tienda seleccionada y cancela/recarga al cambiarla.
+- Hipercor: el usuario eligió preparar clasificación y consulta progresiva,
+  SIN incorporar ahora toda la integración en la app. API por centro explícito
+  preparada; centro 010130 tiene 1.975 disponibles. Ver `HIPERCOR.md`.
+- Índices aplicados; primera página SQL ~0,36–0,99 ms (Hipercor ~6,56 ms).
+  Código de app/sync local pendiente de publicar. Solo Alcampo sigue pendiente
+  de clasificación. Mantenimiento: `scripts/README-gluten-free-names.md`.
+
+## Sin gluten: Ahorramás, BM, Caprabo, Consum y Eroski (producción/local, 2026-10-22)
+
+- Backfill de `gluten_free_label` por categorías exclusivas aplicado mediante
+  `20261022121240_category_gluten_free_catalogs.sql`: publicados 10/80/77/13/116
+  respectivamente, cero NULL y discrepancias. Categorías mixtas de pasta
+  integral excluidas. Reglas en `scripts/lib/gluten-free-categories.mjs`.
+- BM consulta también `raw.categories` (81 marcados totales frente a 50 por
+  categoría principal); la vista de precios proyecta la bandera de su maestra
+  y conserva `security_invoker=true`. RPC de búsqueda comprobada. Sin nuevas
+  incidencias de seguridad respecto a los avisos previos.
+- Syncs actualizados; pertenencias múltiples conservadas al deduplicar
+  Ahorramás/Eroski/Caprabo y al unir zonas BM. Próximos syncs podrán ampliar el
+  backfill con pertenencias secundarias que antes se perdían.
+- Carga progresiva 80/1.000, filtro persistente y fila de ficha incorporados.
+  Respeta la ubicación BM y región/precios zonales Consum. Índices aplicados;
+  primera página SQL ~0,16–0,50 ms; BM ~3,14 ms en una zona de 77 productos.
+  App y sync locales pendientes de publicar.
+- Validación: TypeScript, ESLint, sintaxis de scripts y diff correctos; ocho
+  pruebas existentes y regresión de pertenencias múltiples/categoría secundaria
+  BM comprobadas. Lectura pública de las cinco tablas/vista verificada.
+
+## Sin gluten en Plusfresc y Sorli (producción/local, 2026-10-22)
+
+- Backfill aplicado desde `raw.characteristics[].id = "SGL_SI"` en Plusfresc y
+  `raw.agrupaciones[].idAgrupacion = 4` en Sorli. Producción verificada: 698 y
+  1.199 productos publicados (720 y 1.275 en total), cero nulos y cero
+  discrepancias. Los dos syncs
+  escriben la bandera en cada upsert.
+- Filtro progresivo, continuidad del filtro al cambiar de súper y fila de ficha
+  con el icono `barley-off` añadidos a ambos. Índices parciales aplicados por
+  precio/precio unitario. Primera página `EXPLAIN ANALYZE`: ~38,5→0,55 ms
+  Plusfresc y ~40,6→0,51 ms Sorli. App y sync locales pendientes de publicar.
+- Migración: `supabase/migrations/20261022145000_plusfresc_sorli_gluten_free_labels.sql`.
+
+## Despensa: carteles y botones «+» alineados (local, 2026-10-22)
+
+- Corregido el marco que reducía toda la escena al combinar altura animada y
+  `aspectRatio`. El ancho vuelve a depender solo del contenedor. Comprobado
+  visualmente en iPhone 15 Pro al entrar en edición, crear y borrar un cartel;
+  el cartel de prueba se eliminó después.
+- Transición local pendiente de publicar: los offsets de baldas, productos y
+  carteles inferiores, junto con la altura de la vista, comparten una animación
+  de 360 ms al crear/eliminar un cartel. El cartel y el «+» aparecen/desaparecen
+  con fundido mediante una sola vista del cartel (corregido el duplicado de la
+  animación de salida). Se respeta «Reducir movimiento». TypeScript, ESLint focalizado y
+  diff correctos. El simulador funciona mediante XcodeBuildMCP; `simctl` no
+  tuvo acceso desde el terminal de Codex.
+- El botón de añadir cartel de una balda vacía ocupa el mismo punto vertical
+  que ocuparía su cartel. Corrige la coincidencia visual del «+» de una balda
+  con el cartel de la siguiente. Los iconos de edición quedan dentro de la
+  tabla y el texto les reserva sitio. El «+» mide 20 pt, está a la izquierda bajo su
+  balda a la altura anterior y tiene fondo marrón opaco, borde sólido oscuro e
+  icono crema. TypeScript correcto; sin publicar.
+
+## Sin gluten en Froiz y Gadis (producción/local, 2026-10-22)
+
+- Backfill aplicado desde `raw.properties.is_glutenfree = true` en Froiz y
+  `raw.properties[].property_code = "16"` en Gadis. Producción verificada:
+  51 y 523 productos publicados, cero nulos y cero discrepancias. Los syncs
+  actualizan `gluten_free_label` en cada upsert.
+- Filtro progresivo y fila de ficha añadidos para ambos; índices parciales por
+  precio/precio unitario aplicados. Primera página `EXPLAIN ANALYZE`:
+  ~9,2→0,36 ms Froiz y ~14,0→0,60 ms Gadis. App y sync locales pendientes de
+  publicar.
+
+## Sin gluten en Condis y Dia (producción/local, 2026-10-22)
+
+- Backfill aplicado desde `raw.without_gluten = 1` en Condis y la etiqueta
+  `raw.allergens[].name = "Sin gluten"` en Dia. Producción verificada: 664 y
+  1.373 publicados, cero nulos y cero discrepancias. Syncs actualizados para
+  escribir `gluten_free_label` en cada upsert.
+- Catálogo progresivo y fila de característica de ficha añadidos para ambos.
+  Índices parciales de orden por precio/precio unitario aplicados.
+  `EXPLAIN ANALYZE` primera página: ~3,0→0,6 ms Condis y ~2,6→0,6 ms Dia.
+  Código local pendiente de publicar.
+
+## Fichas sin gluten de Aldi y Carrefour (local, 2026-10-22)
+
+- Añadida en las características la fila «Sin gluten» con el icono `barley-off`
+  y el texto localizado, visible cuando `glutenFreeByTag` es true. Se reutiliza
+  el patrón de las fichas de bonÀrea y Bonpreu; el cliente queda pendiente de
+  publicar.
+
+## Carrefour y Aldi: backfill sin gluten (producción/local, 2026-10-22)
+
+- `gluten_free_label` ya está rellenada en producción: 4.854 productos
+  publicados de Carrefour por `info_tags[].message = "Sin gluten"` y 263 de
+  Aldi por el asset de certificado `07_Sin_gluten`. Cero diferencias frente a
+  `raw`; ambas columnas siguen nullable y sin default.
+- Los syncs de Carrefour y Aldi escriben la bandera con la misma lógica en
+  futuros upserts. El filtro progresivo del Catálogo ya consulta la bandera,
+  respeta región para Carrefour y muestra páginas incrementales de 80 y hasta
+  1.000 productos; el código del cliente sigue local, pendiente de publicar.
+- Migración: `supabase/migrations/20261022082733_carrefour_aldi_gluten_free_labels.sql`.
+
+## Rendimiento del filtro de Carrefour y Aldi (índices en producción, cliente local, 2026-10-22)
+
+- Índices parciales por precio y precio unitario aplicados en ambas tablas con
+  `supabase/migrations/20261022085900_gluten_free_price_indexes_aldi_carrefour.sql`.
+  `EXPLAIN ANALYZE`: Aldi pasó de ~4,5 ms a ~0,4–0,5 ms; Carrefour de ~55 ms a
+  ~0,6–1,0 ms, con disponibilidad regional Catalunya incluida.
+- 263 productos de Aldi requieren 2 páginas; 4.854 de Carrefour, 6 páginas.
+  La proyección inicial serializada se estima en ~33 KB y ~49 KB, frente a
+  ~117 KB si Carrefour envía todos los precios regionales. La mejora de ~58%
+  corresponde al tamaño JSON calculado en PostgreSQL, no al tráfico HTTP real.
+  No se midió el tiempo total REST, renderizado ni imágenes.
+
+## Columna preparada para los demás supermercados (producción, 2026-10-22)
+
+- Migración `20261022081750_add_gluten_free_label_to_remaining_catalogs.sql`
+  aplicada en las otras 20 tablas maestras. Aldi y Carrefour ya tienen sus
+  etiquetas procesadas; Condis, Dia, Froiz, Gadis, Plusfresc, Sorli, Ahorramás,
+  BM, Caprabo, Consum y Eroski también están rellenadas, al igual que Ametller,
+  El Jamón, Hipercor, HiperDino, Lidl y Mercadona. Solo Alcampo sigue `NULL`.
+  Todas son `boolean` nullable y sin default.
+- Verificación remota: 20/20 columnas presentes como nullable, sin default.
+
+## Primera página visible del filtro sin gluten (local, 2026-10-22)
+
+- BonÀrea y Bonpreu muestran 80 productos tras la primera petición; las páginas
+  siguientes, de hasta 1.000, se agregan con indicador al pie y siguen el orden
+  de precio activo. La búsqueda espera a completar la carga. Se suprime la
+  espera de imágenes para este listado. Bonpreu usa columnas ligeras en
+  búsquedas/listas/categorías y conserva la consulta de detalle completa al
+  abrir la ficha. El filtro continúa cancelándose al cambiar de tienda.
+- Medición REST ES por precio ascendente con cursor (tres pasadas): bonÀrea
+  primera página 91–244 ms, total 241–396 ms; Bonpreu 105–273 ms y total
+  564–660 ms, ~753 KiB frente a ~1.270 KiB anteriores. Sin render ni imágenes.
+  Cliente local sin publicar.
+
+## Sin gluten materializado: bonÀrea y Bonpreu (2026-10-22)
+
+- Migración `20261022075606_bonarea_bonpreu_gluten_free_label.sql` aplicada en
+  producción: columna booleana generada desde `raw` e índices ES/CA. El cliente
+  local ya filtra por la columna y la usa en listados, subcategorías y fichas.
+  Los syncs existentes recalculan la bandera automáticamente al actualizar
+  `raw`; no se modificaron. 689/1.641 publicados, cero discrepancias con las
+  etiquetas. TypeScript correcto. Queda pendiente publicar el cliente local;
+  los clientes anteriores siguen leyendo `raw` sin cambios.
+- La primera página SQL baja a ~2 ms en ambos. La lectura REST completa inicial
+  desde Mac quedó en 229–342 ms bonÀrea y 668–1.083 ms Bonpreu (3 pasadas ES
+  con `offset`); la mejora posterior de arriba ya muestra la primera página.
+
+## Persistencia del filtro sin gluten entre tiendas (local, 2026-10-22)
+
+- `glutenOnly` se comparte en `CatalogStoreContext` y se reinicia al cambiar
+  de usuario. La selección permanece al cambiar tienda o remontar Catálogo;
+  las consultas activas incluyen Mercadona, bonÀrea, Bonpreu/Esclat, Aldi y
+  Carrefour.
+
+## Fichas sin gluten de bonÀrea y Bonpreu (local, 2026-10-22)
+
+- Añadida fila informativa bajo descripción/información del producto con el
+  icono `barley-off`, visible solo si la etiqueta propia indica sin gluten.
+  Las lecturas de detalle incluyen esa etiqueta. Textos ES/CA; sin SQL.
+
+## Sin gluten por etiqueta: bonÀrea y Bonpreu (local, 2026-10-22)
+
+- Catálogo y subcategorías filtran bonÀrea por `raw.caracteristiques` /
+  `SENSE_GLUTEN` y Bonpreu por `raw.iconAttributes` / `glutenFree`.
+  Lectura paginada en Catálogo. De los demás súper, Aldi y Carrefour ya tienen
+  la columna rellenada; Alcampo, Condis, Dia, Froiz, Gadis, Plusfresc y Sorli
+  siguen pendientes de implementar. Sin migración ni publicación para el filtro
+  de interfaz de esos súper.
 
 ## Integración Mac y Windows (2026-10-21)
 
@@ -132,6 +1277,37 @@
   menos relleno. Limitado al selector; otras listas y Cuadrícula no cambian.
   `npx tsc --noEmit` correcto.
 
+
+## BonÀrea: 528 fotos nuevas vinculadas; tanda de 700 parcialmente bloqueada (2026-10-24)
+
+- Revisadas 700 fotos PNG transparentes en 28 hojas de contacto y comprobadas sus URL y SHA-256 remotos. Se vincularon 528 productos alimentarios publicados y disponibles; Supabase confirma 2.933 productos con imagen y conserva los 2.405 previos.
+- La revisión automática rechazó la actualización de 700 filas porque el lote incluía artículos `05*` de ferretería/ropa y otros productos no publicados o no disponibles. No se reintentó esa escritura. Quedan 172 revisados sin vincular; requieren decidir si entran artículos y estados fuera del alcance habitual.
+- TypeScript correcto (`npx tsc --noEmit`). Borrados los archivos temporales. Recibo: `docs/bonarea-cutouts-publicacion-20261024-700-04.json`.
+
+## BonÀrea: otros 700 productos vinculados, 2405 en total (2026-10-24)
+
+- Vinculadas 700 fotos oficiales PNG con transparencia nativa a `public.bonarea_products.illustration_url`. Los 700 productos estaban publicados y disponibles; no se repiten IDs ni URL dentro del lote.
+- Las 700 fotos se revisaron en 28 hojas de contacto. Cada archivo remoto devolvió HTTP 200 y su SHA-256/tamaño coincide con el PNG revisado; no se retocaron los píxeles ni se generaron ilustraciones.
+- Verificación en Supabase: 700 nuevas URLs enlazadas y 2.405 productos con imagen en total; se preservaron las 1.705 previas. TypeScript correcto (`npx tsc --noEmit`).
+- Eliminadas las copias de trabajo, hojas de contacto y scripts temporales tras verificar la publicación. Recibo: `docs/bonarea-cutouts-publicacion-20261024-700-03.json`.
+
+## BonÀrea: otros 700 productos vinculados, 1705 en total (2026-10-24)
+
+- Publicadas **700 fotografías adicionales con transparencia** en `public.bonarea_products.illustration_url`: **1705 productos con imagen** en total. Los 1005 enlaces anteriores quedan verificados y sin cambios.
+- Selección del catálogo actual: productos publicados y disponibles, sin URL de ilustración previa y con foto oficial PNG. 700 IDs, URL y hashes distintos dentro de la tanda; sin repetir IDs ni URL de las 1005 fotos anteriores.
+- Fotos originales con alfa nativo, sin modificar el producto. Revisados los 700 en 28 vistas; comprobados los 700 PNG remotos (HTTP 200, tamaño y SHA-256). Las URL oficiales ya sirven los archivos aprobados, sin duplicar almacenamiento.
+- Omitidos 15 candidatos: 14 sin transparencia y una discrepancia conocida de foto/nombre (`13*0091305`). Sustituidos para completar exactamente 700.
+- Eliminada la carpeta temporal de adquisición, revisión y verificación después de confirmar la publicación. Sin imágenes, galerías ni manifiestos nuevos en el proyecto. Recibo resumido: `docs/bonarea-cutouts-publicacion-20261024-700-02.json`.
+- Sin cambios de esquema, políticas, app ni ilustraciones antiguas. `npx tsc --noEmit` correcto en esta tanda.
+
+## BonÀrea: 1005 fotos vinculadas en producción y copias locales eliminadas (2026-10-24)
+
+- Las tres tandas de fotografías con transparencia (5 + 300 + 700) están vinculadas en `public.bonarea_products.illustration_url`: **1005 productos**, cero ausentes o URL diferentes a las aprobadas. La columna correcta tiene dos eles (`illustration_url`).
+- Se usan las URL públicas oficiales de BonÀrea: ya sirven exactamente los PNG aprobados. Comprobados los 1005 HTTP 200, firma PNG, tamaño y SHA-256 remoto frente al archivo local antes de borrar. Sin duplicar almacenamiento.
+- La actualización final añadió 700 URL; 305 ya estaban vinculadas en la comprobación inmediatamente anterior. No se cambian `thumbnail`, esquema, políticas ni código de cliente.
+- A petición del usuario se eliminan las tres carpetas `assets/product-cutouts/bonarea-20261024-{5,300,700}/` completas (1060 archivos; 2.130.670.785 bytes), incluidas galerías, manifiestos y scripts auxiliares, más su caché temporal (1069 archivos; 2.179.875.366 bytes). Esos enlaces locales históricos ya no existen.
+- Recibo resumido: `docs/bonarea-cutouts-publicacion-20261024.json`. Las tandas anteriores de ilustraciones ImageGen, descritas debajo, quedan preservadas y fuera de esta vinculación de fotografías.
+- TypeScript ejecutado: persisten cinco errores TS2339 en `src/api/pantry.ts:47-49`, ajenos a esta operación de datos; no se modifica ese código.
 
 ## BonÀrea: segunda tanda de 1000 ilustraciones en curso (2026-10-20)
 
@@ -5837,3 +7013,11 @@ dashboard privado `rruizosm/QueFalta-Datos` (`QueFaltaDatos/`, Astro SSR + servi
 - Se eliminaron de `assets/product-illustrations/` las imágenes ilustradas
   (PNG/WebP), previews y recuperaciones nativas. Se mantienen fotos de producto
   fuente, metadatos y manifiestos. El lote publicado en Supabase permanece intacto.
+## Mercadona: fotos originales sin fondo (2026-10-26)
+
+- Nueva petición: eliminar el diseño ilustrado y usar la fotografía original
+  recortada. Alcance inmediato elegido: cinco muestras, antes del catálogo.
+- `assets/product-cutouts/mercadona-20261026-sample/` conserva los originales,
+  pruebas ImageGen y prompt. Las pruebas alteran tonos y detalles: no están
+  aprobadas ni publicadas. No se han cambiado URL ni borrado objetos remotos.
+- Pendiente un método de extracción que conserve exactamente el producto.

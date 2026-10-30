@@ -1,0 +1,17 @@
+{
+  "id": "2000950638",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/385928_00_1.jpg",
+  "sourceSha256": "da09b0e693b710c91a56ab81584a6e58e24e90a68be7ec4e7b400f484d8f7cbc",
+  "outputSha256": "2f323b9628154992c7734cc45013165ec528d8af7e8820868c498418d8019153",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/2000950638.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-946f693f-e6d6-4b72-9f49-64587c342195.png",
+  "visualReview": "Whole white TATAY liquid container with orange lid and white spout retained; white body opaque, original angle and no missing parts; background transparent.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 990638,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.923Z"
+}

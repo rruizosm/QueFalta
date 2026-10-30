@@ -1,3 +1,4 @@
+import type { ScrollViewInstance } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -111,7 +112,7 @@ export default function LoginScreen() {
   const [emailSent, setEmailSent] = useState(false);
   const [emailError, setEmailError] = useState<null | 'invalid' | 'rate' | 'generic' | 'link'>(null);
   const [providerError, setProviderError] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const emailTransition = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -221,7 +222,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
       <LoginBubbleBackdrop styles={styles} width={width} height={height} />
 
       <KeyboardAvoidingView

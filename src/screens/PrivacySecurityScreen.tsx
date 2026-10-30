@@ -96,7 +96,7 @@ export default function PrivacySecurityScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} />
 
       <ProfileSubscreenHeader title={t('profile.privacySecurity')} icon="shield-checkmark-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 

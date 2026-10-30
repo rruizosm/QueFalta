@@ -1,0 +1,18 @@
+{
+  "id": "100401194",
+  "sourceUrl": "https://static.carrefour.es/hd_350x_/img_pim_food/023414_00_1.jpg",
+  "sourceSha256": "4b96b3720c84a9895c3e5143ed636c122917f2b5f1add658e2c119c46b38eefb",
+  "outputSha256": "9a34dee5f5d667bc8649a0908b25aefe517211fefc8bbae3a5d0eef999839afc",
+  "tool": "image_gen__imagegen",
+  "promptFile": "prompts/100401194.txt",
+  "nativeOutputPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a17f27-0da3-78a1-96d2-1eb12f1e9905/exec-aae8f8e6-c566-4477-8026-af1dd0be65b4.png",
+  "visualReview": "Complete Pyrex glass tart dish and printed insert retained; transparent external background; ImageGen has brightened green insert and altered fine label details, within previously accepted generative behavior.",
+  "visualReviewAccepted": true,
+  "validAlpha": true,
+  "width": 1254,
+  "height": 1254,
+  "bytes": 1097441,
+  "sourceDeleted": true,
+  "sourceDeletedAt": "2026-10-28T06:36:03.886Z",
+  "matchingBrowserDownloadDeleted": true
+}

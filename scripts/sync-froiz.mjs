@@ -84,6 +84,7 @@ const normalize = (p) => {
     // Froiz publica esta señal de forma explícita; permite mostrar novedades
     // reales incluso antes de que exista un segundo sync para first_seen_at.
     is_new: p.is_new === true || Boolean(p.novelty),
+    gluten_free_label: p.properties?.is_glutenfree === true,
     available: p.enabled !== false, published: p.enabled !== false, raw: p, synced_at: runStart,
   };
 };

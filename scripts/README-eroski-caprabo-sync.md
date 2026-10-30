@@ -42,6 +42,15 @@ productos; en esos casos `price_per_unit` queda null. No hay un EAN verificable
 en el listado ni en el HTML de ficha, así que no se guarda EAN.
 Solo castellano (Caprabo `/ca/` redirige y no traduce los nombres de producto).
 
+### Clasificación sin gluten
+
+Se conservan todas las pertenencias de categoría al encontrar productos
+duplicados. `gluten_free_label` se recalcula desde las ramas exclusivas
+5000385 (dietética), 2060143 (galletas), 2060863 (bollería) y 2059795 (pan),
+incluidos sus descendientes mediante los ancestros de `category_ids`.
+La rama 2060851 («Pasta sin Gluten e Integral») queda excluida porque también
+contiene pasta integral con gluten. Reglas en `lib/gluten-free-categories.mjs`.
+
 ## Requisitos previos (una vez)
 
 Ejecutar en el SQL Editor de Supabase **`supabase/migrations/eroski_catalog.sql`**
